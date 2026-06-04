@@ -24,6 +24,15 @@
 .DS_Store
 *.pem
 
+# claude
+.claude
+
+# playwright
+/playwright-report
+/test-results
+/playwright/.cache
+/.playwright-mcp
+
 # debug
 npm-debug.log*
 yarn-debug.log*
