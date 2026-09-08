@@ -476,9 +476,9 @@ export default function DatePicker() {
                   position: "relative",
                 }}
               >
-                it&apos;s a{" "}
+                she said{" "}
                 <span style={{ position: "relative", whiteSpace: "nowrap", color: "var(--accent)" }}>
-                  date
+                  yes
                   <svg
                     viewBox="0 0 120 16"
                     preserveAspectRatio="none"

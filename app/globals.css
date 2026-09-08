@@ -29,6 +29,7 @@ body {
     var(--paper);
   background-size: 26px 26px, 26px 26px, auto, auto, auto;
   min-height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   position: relative;
 }

@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
 
   const body = (await req.json()) as TelegramPayload;
   const lines = [
-    `♥ <b>it's a date!</b>`,
+    `♥ <b>she said yes!</b>`,
     ``,
     `📅 <b>${body.date}</b>  ·  ${body.time}`,
     `📍 ${body.place}`,
