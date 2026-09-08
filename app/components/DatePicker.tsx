@@ -17,8 +17,11 @@ interface Scrap {
 const MARKS = ["♥", "♡", "✓", "✦", "★"];
 const TINTS = ["pink", "lav", "plum"];
 const DAYS_OF_WEEK = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+const MONTH_NAMES = [
+  "january", "february", "march", "april", "may", "june",
+  "july", "august", "september", "october", "november", "december",
+];
 const TIME_SLOTS = ["6:30 pm", "7:00 pm", "7:30 pm", "8:00 pm", "8:30 pm"];
-const TODAY_NUM = 4;
 
 let scrapId = 0;
 
@@ -39,8 +42,16 @@ export default function DatePicker() {
     return "pick a date & time above ↑";
   };
 
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
+  const currentMonthName = MONTH_NAMES[currentMonth];
+  const todayNum = today.getDate();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const firstWeekday = new Date(currentYear, currentMonth, 1).getDay();
+
   const handleDayClick = (day: number) => {
-    const d = `june ${day}`;
+    const d = `${currentMonthName} ${day}`;
     setSelectedDate(d);
     setConfirmHint(updateHint(d, selectedTime));
   };
@@ -100,8 +111,10 @@ export default function DatePicker() {
     return "var(--ink)";
   };
 
-  // June 1, 2026 is a Monday → 1 blank before it
-  const calCells = [null, ...Array.from({ length: 30 }, (_, i) => i + 1)];
+  const calCells = [
+    ...Array.from({ length: firstWeekday }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ];
 
   return (
     <>
@@ -247,7 +260,7 @@ export default function DatePicker() {
                 when you&apos;re free?
               </p>
               <div style={{ textAlign: "center", marginBottom: 10 }}>
-                <span style={{ fontFamily: "var(--hand)", fontSize: 20, color: "var(--ink)" }}>june 2026</span>
+                <span style={{ fontFamily: "var(--hand)", fontSize: 20, color: "var(--ink)" }}>{currentMonthName} {currentYear}</span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 3 }}>
                 {DAYS_OF_WEEK.map((d) => (
@@ -268,9 +281,9 @@ export default function DatePicker() {
                 ))}
                 {calCells.map((day, i) => {
                   if (day === null) return <div key={`empty-${i}`} style={{ aspectRatio: "1" }} />;
-                  const isPast = day < TODAY_NUM;
-                  const isToday = day === TODAY_NUM;
-                  const isSelected = selectedDate === `june ${day}`;
+                  const isPast = day < todayNum;
+                  const isToday = day === todayNum;
+                  const isSelected = selectedDate === `${currentMonthName} ${day}`;
                   return (
                     <div
                       key={day}
