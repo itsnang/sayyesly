@@ -141,7 +141,7 @@ export default function DateApp() {
               zIndex: 3,
             }}
           >
-            will you go on a{" "}
+            will you have{" "}
             <span
               style={{
                 position: "relative",
@@ -149,7 +149,7 @@ export default function DateApp() {
                 color: "var(--accent)",
               }}
             >
-              date
+              dinner
               <svg
                 viewBox="0 0 120 16"
                 preserveAspectRatio="none"

@@ -434,7 +434,7 @@ export default function DatePicker() {
                       boxShadow: "3px 4px 0 rgba(138,45,92,0.22)",
                     }}
                   />
-                  it&apos;s a date! ✦
+                  let&apos;s eat! ✦
                 </button>
                 <div style={{ marginTop: 13, fontSize: 13, color: "var(--ink-soft)", minHeight: 20, fontFamily: "var(--hand)", transition: "opacity .2s" }}>
                   {confirmHint}
@@ -637,7 +637,7 @@ export default function DatePicker() {
               }}
               className="note"
             >
-              {"// date confirmed"}
+              {"// dinner confirmed"}
               <br />
               🌷
             </div>
