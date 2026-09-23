@@ -8,6 +8,7 @@ import { Button, Checkbox, cx, Field, FieldError, Input, Note, Textarea } from "
 import { saveInvite } from "../../../actions";
 import { inviteFormSchema, MAX_PLAN_PHOTOS, MAX_TIME_SLOTS, type InviteFormValues } from "../../../schemas";
 import type { ThemeChoice } from "../../../server/theme-access";
+import type { ThemeContent } from "../../../themes";
 import { ImageField } from "../image-field";
 import { PreviewPhone } from "./preview-phone";
 import { QuestionField } from "./question-field";
@@ -23,6 +24,17 @@ const ROWS: { id: RowId; title: string; fields: FieldPath<InviteFormValues>[] }[
   { id: "look", title: "The look", fields: ["themeId"] },
   { id: "extras", title: "Note & picture", fields: ["message", "imageUrl"] },
 ];
+// Used only if the selected Theme is missing from the list: show everything, name nothing theme-specific.
+const ALL_CONTENT: ThemeContent = { picture: { label: "Picture", whenEmpty: "the theme's own picture" }, note: true, planPhotos: true };
+
+/** The "Note & picture" row, named after what the selected Theme actually shows. */
+function extrasTitle(content: ThemeContent): string | null {
+  if (content.note && content.picture) return "Note & picture";
+  if (content.note) return "Note";
+  if (content.picture) return "Picture";
+  return null;
+}
+
 const MAIN_FIELDS: FieldPath<InviteFormValues>[] = ["question", "recipientName"];
 
 const hasError = (errors: FieldErrors<InviteFormValues>, fields: FieldPath<InviteFormValues>[]) =>
@@ -31,11 +43,12 @@ const hasError = (errors: FieldErrors<InviteFormValues>, fields: FieldPath<Invit
 const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 /** One line, in plain words, saying what the Recipient gets from a row right now. */
-function summarise(id: RowId, v: InviteFormValues, themes: ThemeChoice[]): string {
+function summarise(id: RowId, v: InviteFormValues, themes: ThemeChoice[], content: ThemeContent): string {
   switch (id) {
     case "plan": {
       const main = [v.planPlace?.trim(), v.planActivity?.trim()].filter(Boolean).join(" · ");
-      const extras = [v.planMapUrl, v.planDressCode, v.planNotes].filter((x) => x?.trim()).length + (v.planPhotos?.length ?? 0);
+      const photos = content.planPhotos ? (v.planPhotos?.length ?? 0) : 0;
+      const extras = [v.planMapUrl, v.planDressCode, v.planNotes].filter((x) => x?.trim()).length + photos;
       if (main) return extras ? `${main} + ${count(extras, "detail", "details")}` : main;
       return extras ? count(extras, "detail", "details") : "No plan yet: it stays a surprise";
     }
@@ -47,15 +60,17 @@ function summarise(id: RowId, v: InviteFormValues, themes: ThemeChoice[]): strin
     case "look":
       return themes.find((t) => t.id === v.themeId)?.name ?? "Pick a theme";
     case "extras": {
-      const note = v.message?.trim();
-      const picture = v.imageUrl?.trim() ? "your picture" : "the kitten picture";
-      return note ? `“${note}” · ${picture}` : `No note · ${picture}`;
+      const parts: string[] = [];
+      if (content.note) parts.push(v.message?.trim() ? `“${v.message.trim()}”` : "No note");
+      if (content.picture) parts.push(v.imageUrl?.trim() ? "your picture" : content.picture.whenEmpty);
+      return parts.join(" · ");
     }
   }
 }
 
 function Row({
   row,
+  title,
   summary,
   open,
   invalid,
@@ -64,6 +79,7 @@ function Row({
   children,
 }: {
   row: (typeof ROWS)[number];
+  title?: string | undefined;
   summary: string;
   open: boolean;
   invalid: boolean;
@@ -83,7 +99,7 @@ function Row({
       >
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2 text-[15.5px] font-semibold text-ink">
-            {row.title}
+            {title ?? row.title}
             {invalid && <span className="text-[12.5px] font-medium text-red-700">needs a look</span>}
             {locked && <span className="text-[12.5px] font-normal text-muted">locked</span>}
           </span>
@@ -166,6 +182,9 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
     });
 
   const lockNote = "Locked, because they've already answered.";
+  // The selected Theme decides which optional fields are worth asking for.
+  const content = themes.find((t) => t.id === values.themeId)?.content ?? ALL_CONTENT;
+  const extras = extrasTitle(content);
 
   async function onSubmit(data: InviteFormValues) {
     setServerError(null);
@@ -196,7 +215,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
     const r = ROWS.find((x) => x.id === id)!;
     return {
       row: r,
-      summary: summarise(id, values, themes),
+      summary: summarise(id, values, themes, content),
       open: open.has(id),
       invalid: hasError(errors, r.fields),
       onToggle: () => toggle(id),
@@ -252,32 +271,34 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
                   <Input {...register("planNotes")} placeholder="I'll pick you up at 6:45" />
                 </Field>
 
-                <div className="sm:col-span-2">
-                  <p className="mb-1 flex items-baseline gap-2 text-[14px] font-medium text-ink">
-                    Photos of the place <span className="text-[12.5px] font-normal text-faint">optional, up to {MAX_PLAN_PHOTOS}</span>
-                  </p>
-                  <p className="mb-3 text-[12.5px] text-muted">The first one is shown big; the others get a small caption.</p>
-                  <div className="grid gap-3">
-                    {photos.fields.map((photo, i) => (
-                      <div key={photo.id} className="rounded-[6px] border-[1.5px] border-dashed border-ink/30 p-3">
-                        <Controller
-                          control={control}
-                          name={`planPhotos.${i}.url`}
-                          render={({ field }) => (
-                            <ImageField value={field.value} onChange={(url) => (url ? field.onChange(url) : photos.remove(i))} uploadsEnabled={uploadsEnabled} />
-                          )}
-                        />
-                        {errors.planPhotos?.[i]?.url && <FieldError>{errors.planPhotos[i]?.url?.message}</FieldError>}
-                        {i > 0 && <Input {...register(`planPhotos.${i}.caption`)} placeholder="caption, e.g. the vibe ✦" className="mt-3" />}
-                      </div>
-                    ))}
+                {content.planPhotos && (
+                  <div className="sm:col-span-2">
+                    <p className="mb-1 flex items-baseline gap-2 text-[14px] font-medium text-ink">
+                      Photos of the place <span className="text-[12.5px] font-normal text-faint">optional, up to {MAX_PLAN_PHOTOS}</span>
+                    </p>
+                    <p className="mb-3 text-[12.5px] text-muted">The first one is shown big; the others get a small caption.</p>
+                    <div className="grid gap-3">
+                      {photos.fields.map((photo, i) => (
+                        <div key={photo.id} className="rounded-[6px] border-[1.5px] border-dashed border-ink/30 p-3">
+                          <Controller
+                            control={control}
+                            name={`planPhotos.${i}.url`}
+                            render={({ field }) => (
+                              <ImageField value={field.value} onChange={(url) => (url ? field.onChange(url) : photos.remove(i))} uploadsEnabled={uploadsEnabled} />
+                            )}
+                          />
+                          {errors.planPhotos?.[i]?.url && <FieldError>{errors.planPhotos[i]?.url?.message}</FieldError>}
+                          {i > 0 && <Input {...register(`planPhotos.${i}.caption`)} placeholder="caption, e.g. the vibe ✦" className="mt-3" />}
+                        </div>
+                      ))}
+                    </div>
+                    {photos.fields.length < MAX_PLAN_PHOTOS && (
+                      <Button variant="secondary" size="sm" className="mt-3" onClick={() => photos.append({ url: "", alt: "", caption: "" })}>
+                        + Add a photo
+                      </Button>
+                    )}
                   </div>
-                  {photos.fields.length < MAX_PLAN_PHOTOS && (
-                    <Button variant="secondary" size="sm" className="mt-3" onClick={() => photos.append({ url: "", alt: "", caption: "" })}>
-                      + Add a photo
-                    </Button>
-                  )}
-                </div>
+                )}
               </div>
             </Row>
 
@@ -345,20 +366,26 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
               {errors.themeId && <FieldError className="mt-2">{errors.themeId.message}</FieldError>}
             </Row>
 
-            <Row {...row("extras")}>
-              <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
-                <Field label="A little note under the question" optional error={errors.message?.message}>
-                  <Textarea {...register("message")} rows={2} placeholder="no pressure :)" />
-                </Field>
-                <Field label="Picture at the top" optional hint="Leave it empty for the kitten with the bouquet." error={errors.imageUrl?.message}>
-                  <Controller
-                    control={control}
-                    name="imageUrl"
-                    render={({ field }) => <ImageField value={field.value} onChange={field.onChange} uploadsEnabled={uploadsEnabled} />}
-                  />
-                </Field>
-              </div>
-            </Row>
+            {extras && (
+              <Row {...row("extras")} title={extras}>
+                <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
+                  {content.note && (
+                    <Field label="A little note under the question" optional error={errors.message?.message}>
+                      <Textarea {...register("message")} rows={2} placeholder="no pressure :)" />
+                    </Field>
+                  )}
+                  {content.picture && (
+                    <Field label={content.picture.label} optional hint={`Leave it empty for ${content.picture.whenEmpty}.`} error={errors.imageUrl?.message}>
+                      <Controller
+                        control={control}
+                        name="imageUrl"
+                        render={({ field }) => <ImageField value={field.value} onChange={field.onChange} uploadsEnabled={uploadsEnabled} />}
+                      />
+                    </Field>
+                  )}
+                </div>
+              </Row>
+            )}
           </div>
         </section>
 

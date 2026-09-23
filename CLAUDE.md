@@ -61,7 +61,7 @@ A Paid theme unlocks **only** when `/api/cutluy/webhook` receives a signature-ve
 
 ### Themes
 
-Themes are code: `src/features/invites/themes/<id>/` exports a `ThemeDefinition` (the Recipient-facing client component and the link-preview image renderer), registered in `themes/index.ts`. Price and availability live in the `themes` table under the same id. Themes receive all data as props and never load or save data themselves. Adding a Theme must not touch invite logic.
+Themes are code: `src/features/invites/themes/<id>/` exports a `ThemeDefinition` (the Recipient-facing client component, its `content` description, and the link-preview image renderer), registered in `themes/index.ts`. `content` says which optional fields the Theme shows (picture, note, plan photos) and how to label them; the editor hides the rest and never names a particular Theme's look itself. Price and availability live in the `themes` table under the same id. Themes receive all data as props and never load or save data themselves. Adding a Theme must not touch invite logic.
 
 ### Rules
 

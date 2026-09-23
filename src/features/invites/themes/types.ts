@@ -22,6 +22,26 @@ export type OgImageInput = {
 
 export const OG_IMAGE_SIZE = { width: 1200, height: 630 } as const;
 
+/**
+ * Which parts of the shared Invite content a Theme shows, and how the editor
+ * should talk about them. The editor hides what the selected Theme doesn't
+ * use (keeping the values, so switching back restores them) and takes its
+ * labels from here, so it never assumes a particular Theme's look.
+ */
+export type ThemeContent = {
+  /** The picture on the ask screen; `false` when the Theme has none */
+  picture: {
+    /** Field label, e.g. "Picture at the top" */
+    label: string;
+    /** What the Recipient sees when it's left empty, e.g. "the kitten with the bouquet" */
+    whenEmpty: string;
+  } | false;
+  /** The little note under the question */
+  note: boolean;
+  /** Photos of the place on the Plan screen */
+  planPhotos: boolean;
+};
+
 /** The browser-safe half of a Theme: its Recipient-facing component. */
 export type ThemeDefinition = {
   /** Matches `themes.id` in the database */
@@ -30,6 +50,8 @@ export type ThemeDefinition = {
   name: string;
   /** Small preview image for pickers and lists */
   thumbnail: string;
+  /** What this Theme shows, so the editor only asks for that */
+  content: ThemeContent;
   /** Client component that renders the whole Recipient experience */
   Invite: ComponentType<InviteThemeProps>;
 };
