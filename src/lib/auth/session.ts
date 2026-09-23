@@ -7,8 +7,9 @@ import { cache } from "react";
 import { env, requireEnv } from "@/env";
 import { db } from "@/lib/db";
 import { users, type User } from "@/lib/db/schema";
+import { SESSION_COOKIE } from "./session-cookie";
 
-export const SESSION_COOKIE = "session";
+export { SESSION_COOKIE };
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
 function secretKey(): Uint8Array {

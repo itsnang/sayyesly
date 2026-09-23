@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
-import { InviteView } from "@/features/invites/components/invite-view";
-import { HOME_INVITE_SLUG } from "@/features/invites/home-invite";
-import { SITE_DESCRIPTION, SITE_TITLE } from "@/lib/site";
+import { LandingPage } from "@/features/landing/components/landing-page";
 
-// Until the landing page arrives in Phase 4, `/` shows the original invite.
 export const metadata: Metadata = {
-  title: SITE_TITLE,
-  description: SITE_DESCRIPTION,
+  title: "ask her out · playful date invites",
+  description: "Make a date invite where the “no” button runs away, and get the answer on Telegram.",
 };
 
 export default function Home() {
-  return <InviteView slug={HOME_INVITE_SLUG} />;
+  return <LandingPage exampleHref="/demo" />;
 }

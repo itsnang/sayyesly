@@ -22,11 +22,13 @@ export type OgImageInput = {
 
 export const OG_IMAGE_SIZE = { width: 1200, height: 630 } as const;
 
+/** The browser-safe half of a Theme: its Recipient-facing component. */
 export type ThemeDefinition = {
   /** Matches `themes.id` in the database */
   id: string;
   /** Client component that renders the whole Recipient experience */
   Invite: ComponentType<InviteThemeProps>;
-  /** Renders the 1200×630 link-preview image */
-  renderOgImage: (input: OgImageInput) => Promise<ImageResponse>;
 };
+
+/** The server-only half of a Theme: renders the 1200×630 link-preview image. */
+export type OgImageRenderer = (input: OgImageInput) => Promise<ImageResponse>;

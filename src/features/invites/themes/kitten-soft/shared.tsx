@@ -225,3 +225,8 @@ export function formatInZone(iso: string, timeZone: string) {
     time: fmt({ hour: "numeric", minute: "2-digit" }),
   };
 }
+
+/** Creator-supplied images from other sites skip Next's optimiser (it only proxies known hosts). */
+export function isRemote(src: string | null): boolean {
+  return !!src && !src.startsWith("/");
+}

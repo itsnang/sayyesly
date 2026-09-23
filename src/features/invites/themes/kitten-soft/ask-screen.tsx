@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import Image from "next/image";
 import type { QuestionSegment } from "../../types";
 import { MAYBE_LATER_AFTER_DODGES } from "../types";
-import { KittenKeyframes, Squiggle, WobbleFilter, WobblyBorder } from "./shared";
+import { isRemote, KittenKeyframes, Squiggle, WobbleFilter, WobblyBorder } from "./shared";
 
 const DEFAULT_IMAGE = "/pasted-1780506636030-0.png";
 
@@ -130,6 +130,7 @@ export function AskScreen({ question, message, imageUrl, busy, error, onYes, onD
         >
           <Image
             src={imageUrl ?? DEFAULT_IMAGE}
+            unoptimized={isRemote(imageUrl)}
             alt={imageUrl ? "" : "a kitten holding a hello kitty bouquet"}
             width={300}
             height={300}

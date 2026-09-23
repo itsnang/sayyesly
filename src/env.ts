@@ -19,6 +19,11 @@ const serverSchema = z.object({
   TELEGRAM_WEBHOOK_SECRET: optional(z.string()),
   CUTLUY_API_KEY: optional(z.string()),
   CUTLUY_WEBHOOK_SECRET: optional(z.string()),
+  R2_ACCOUNT_ID: optional(z.string()),
+  R2_ACCESS_KEY_ID: optional(z.string()),
+  R2_SECRET_ACCESS_KEY: optional(z.string()),
+  R2_BUCKET: optional(z.string()),
+  R2_PUBLIC_URL: optional(z.string().regex(/^https:\/\//, "must start with https://")),
 });
 
 const serverEnv = serverSchema.safeParse(process.env);

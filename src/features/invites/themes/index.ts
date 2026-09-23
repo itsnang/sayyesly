@@ -1,8 +1,9 @@
 import { kittenSoft } from "./kitten-soft";
 import type { ThemeDefinition } from "./types";
 
-// Adding a Theme: build it under themes/<id>/, register it here, and add a
-// `themes` row with the same id (price, availability). Nothing else changes.
+// Adding a Theme: build it under themes/<id>/, register its component here and
+// its link-preview renderer in og-images.ts, then add a `themes` row with the
+// same id (price, availability). Nothing else changes.
 const registry: Record<string, ThemeDefinition> = {
   [kittenSoft.id]: kittenSoft,
 };
@@ -14,5 +15,9 @@ export function getTheme(id: string): ThemeDefinition | null {
   return registry[id] ?? null;
 }
 
-export type { InviteThemeProps, OgImageInput, ThemeDefinition } from "./types";
-export { OG_IMAGE_SIZE } from "./types";
+export function hasTheme(id: string): boolean {
+  return id in registry;
+}
+
+export type { InviteThemeProps, OgImageInput, OgImageRenderer, ThemeDefinition } from "./types";
+export { MAYBE_LATER_AFTER_DODGES, OG_IMAGE_SIZE } from "./types";

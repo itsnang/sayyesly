@@ -9,9 +9,11 @@
 
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { HOME_INVITE_SLUG } from "../src/features/invites/home-invite";
 import { newLinkCode } from "../src/features/invites/utils/codes";
 import * as schema from "../src/lib/db/schema";
+
+// The original invite keeps its already-shared link: /i/k1tten-d1n
+const HOME_INVITE_SLUG = "k1tten-d1n";
 
 const { DATABASE_URL, SEED_OWNER_TELEGRAM_ID, SEED_RECIPIENT_NAME } = process.env;
 
@@ -71,7 +73,7 @@ async function main() {
 
   console.log(
     inserted.length > 0
-      ? `Seeded invite /i/${HOME_INVITE_SLUG} (also shown at /)`
+      ? `Seeded invite /i/${HOME_INVITE_SLUG}`
       : `Invite /i/${HOME_INVITE_SLUG} already exists; left unchanged`,
   );
 }
