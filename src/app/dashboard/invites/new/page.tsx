@@ -1,5 +1,5 @@
 import { PageHeading } from "@/components/shared/ui";
-import { InviteForm } from "@/features/invites/components/dashboard/invite-form";
+import { InviteEditor } from "@/features/invites/components/dashboard/editor/invite-editor";
 import type { InviteFormValues } from "@/features/invites/schemas";
 import { getThemeChoices } from "@/features/invites/server/theme-access";
 import { DEFAULT_THEME_ID } from "@/features/invites/themes";
@@ -28,8 +28,8 @@ export default async function NewInvitePage() {
   const themes = await getThemeChoices(user.id);
   return (
     <>
-      <PageHeading title="new invite" description="Write it, preview it, then send the link." />
-      <InviteForm inviteId={null} defaults={NEW_INVITE} answered={false} themes={themes} uploadsEnabled={isUploadConfigured()} />
+      <PageHeading title="New invite" description="Four short steps. The preview updates as you go." />
+      <InviteEditor inviteId={null} defaults={NEW_INVITE} answered={false} themes={themes} uploadsEnabled={isUploadConfigured()} />
     </>
   );
 }

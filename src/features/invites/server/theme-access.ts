@@ -3,12 +3,13 @@ import { asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { ownedThemeIds, ownsTheme } from "@/lib/db/queries";
 import { themes } from "@/lib/db/schema";
-import { hasTheme } from "../themes";
+import { getTheme, hasTheme } from "../themes";
 
 export type ThemeChoice = {
   id: string;
   name: string;
   priceCents: number;
+  thumbnail: string;
   /** Free, or the Creator has a paid Purchase of it */
   usable: boolean;
 };
@@ -21,7 +22,13 @@ export async function getThemeChoices(userId: string): Promise<ThemeChoice[]> {
   ]);
   return rows
     .filter((t) => hasTheme(t.id))
-    .map((t) => ({ id: t.id, name: t.name, priceCents: t.priceCents, usable: t.priceCents === 0 || owned.has(t.id) }));
+    .map((t) => ({
+      id: t.id,
+      name: t.name,
+      priceCents: t.priceCents,
+      thumbnail: getTheme(t.id)?.thumbnail ?? "",
+      usable: t.priceCents === 0 || owned.has(t.id),
+    }));
 }
 
 /**

@@ -1,19 +1,22 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { Badge, Button } from "@/components/shared/ui";
+import { Button } from "@/components/shared/ui";
 import { formatUsd } from "@/lib/format";
 import { buyTheme } from "../actions";
 import type { CheckoutResult, ThemeForSale } from "../types";
 import { Checkout } from "./checkout";
 
-export function ThemeShop({ themes }: { themes: ThemeForSale[] }) {
-  const [buying, setBuying] = useState<{ theme: ThemeForSale; ticket: CheckoutResult } | null>(null);
+export type ThemeForShop = ThemeForSale & { thumbnail: string };
+
+export function ThemeShop({ themes }: { themes: ThemeForShop[] }) {
+  const [buying, setBuying] = useState<{ theme: ThemeForShop; ticket: CheckoutResult } | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function start(theme: ThemeForSale) {
+  async function start(theme: ThemeForShop) {
     setBusyId(theme.id);
     setError(null);
     const ticket = await buyTheme(theme.id).catch(() => ({ error: "Couldn't reach the server." }) as CheckoutResult);
@@ -25,32 +28,33 @@ export function ThemeShop({ themes }: { themes: ThemeForSale[] }) {
   return (
     <>
       {error && (
-        <p role="alert" className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800">
+        <p role="alert" className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[14px] text-red-800">
           {error}
         </p>
       )}
-      <ul className="grid gap-3 sm:grid-cols-2">
+      <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {themes.map((theme) => (
-          <li key={theme.id} className="rounded-2xl border-2 border-[var(--line)]/40 bg-[var(--paper)] p-4">
-            <div className="flex items-center gap-2">
-              <span className="text-[17px] text-[var(--ink)]">{theme.name}</span>
-              {theme.owned ? (
-                <Badge tone="green">{theme.priceCents === 0 ? "free" : "yours"}</Badge>
-              ) : (
-                <Badge tone="pink">{formatUsd(theme.priceCents)}</Badge>
-              )}
+          <li key={theme.id} className="rounded-[18px] border border-ink/12 bg-card p-2.5">
+            <span className="relative block aspect-[4/5] overflow-hidden rounded-[12px] bg-surface">
+              {theme.thumbnail && <Image src={theme.thumbnail} alt="" fill sizes="240px" className="object-cover object-[50%_32%]" />}
+            </span>
+            <div className="mt-3 flex items-baseline justify-between px-1">
+              <span className="text-[15px] font-medium text-ink">{theme.name}</span>
+              <span className="font-mono text-[12.5px] text-muted">
+                {theme.owned ? (theme.priceCents === 0 ? "free" : "yours ✓") : formatUsd(theme.priceCents)}
+              </span>
             </div>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-3 flex gap-2 px-1 pb-1">
               <Link
                 href={`/demo?theme=${encodeURIComponent(theme.id)}`}
                 target="_blank"
-                className="rounded-xl border-2 border-[var(--line)] px-3 py-2 text-sm text-[var(--ink)] hover:bg-[var(--paper-2)]"
+                className="rounded-full border border-ink/20 px-3 py-1.5 text-[13px] text-ink hover:border-ink"
               >
-                try it ↗
+                Try it
               </Link>
               {!theme.owned && (
-                <Button onClick={() => start(theme)} disabled={busyId !== null}>
-                  {busyId === theme.id ? "starting…" : `buy for ${formatUsd(theme.priceCents)}`}
+                <Button className="!px-3.5 !py-1.5 !text-[13px]" onClick={() => start(theme)} disabled={busyId !== null}>
+                  {busyId === theme.id ? "Starting…" : `Buy ${formatUsd(theme.priceCents)}`}
                 </Button>
               )}
             </div>

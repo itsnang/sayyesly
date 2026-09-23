@@ -4,5 +4,7 @@ import { KittenNightInvite } from "./kitten-night-invite";
 // Placeholder paid theme: kitten-soft at night. Replace with a real design when ready.
 export const kittenNight: ThemeDefinition = {
   id: "kitten-night",
+  name: "Kitten Night",
+  thumbnail: "/landing/theme-night.png",
   Invite: KittenNightInvite,
 };

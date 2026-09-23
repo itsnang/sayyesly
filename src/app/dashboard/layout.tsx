@@ -7,5 +7,9 @@ export const metadata: Metadata = { title: "dashboard", robots: { index: false, 
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const user = await requireUser();
-  return <DashboardShell userName={user.name}>{children}</DashboardShell>;
+  return (
+    <DashboardShell userName={user.name} photoUrl={user.photoUrl}>
+      {children}
+    </DashboardShell>
+  );
 }

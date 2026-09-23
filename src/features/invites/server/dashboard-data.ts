@@ -9,6 +9,7 @@ import { isExpired } from "../utils";
 export type InviteStatus = "yes" | "maybe_later" | "expired" | "waiting";
 
 export type InviteSummary = {
+  themeId: string;
   id: string;
   slug: string;
   recipientName: string;
@@ -30,6 +31,7 @@ export async function listMyInvites(userId: string): Promise<InviteSummary[]> {
   const now = new Date();
   return rows.map((row) => ({
     id: row.id,
+    themeId: row.themeId,
     slug: row.slug,
     recipientName: row.recipientName,
     question: row.question.replace(/\*/g, ""),

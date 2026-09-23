@@ -49,19 +49,19 @@ export function Checkout({ ticket, themeName, onClose, onRetry }: {
 
   return (
     <div role="dialog" aria-modal="true" aria-label={`Buy ${themeName}`} className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center">
-      <div className="w-full max-w-sm rounded-2xl bg-[var(--paper)] p-5 text-center shadow-xl">
+      <div className="w-full max-w-sm rounded-[20px] border-[1.5px] border-ink bg-card p-6 text-center shadow-[6px_7px_0_var(--color-rose-soft)]">
         {status === "paid" ? (
           <>
-            <p className="font-[family-name:var(--hand)] text-4xl text-[var(--ink)]">unlocked ✓</p>
-            <p className="mt-2 text-sm text-[var(--ink-soft)]">{themeName} is yours. Pick it on any invite.</p>
+            <p className="font-display text-[34px] text-ink">unlocked ✓</p>
+            <p className="mt-2 text-sm text-muted">{themeName} is yours. Pick it on any invite.</p>
             <Button className="mt-5 w-full" onClick={onClose}>
               lovely
             </Button>
           </>
         ) : lapsed || status === "failed" ? (
           <>
-            <p className="text-lg text-[var(--ink)]">{status === "failed" ? "That payment didn't go through." : "This QR code expired."}</p>
-            <p className="mt-2 text-sm text-[var(--ink-soft)]">No money was taken. You can try again.</p>
+            <p className="text-lg text-ink">{status === "failed" ? "That payment didn't go through." : "This QR code expired."}</p>
+            <p className="mt-2 text-sm text-muted">No money was taken. You can try again.</p>
             <div className="mt-5 flex gap-2">
               <Button variant="secondary" className="flex-1" onClick={onClose}>
                 close
@@ -73,17 +73,17 @@ export function Checkout({ ticket, themeName, onClose, onRetry }: {
           </>
         ) : (
           <>
-            <p className="text-[15px] text-[var(--ink)]">
+            <p className="text-[15px] text-ink">
               Scan with any KHQR banking app to pay <b>{formatUsd(ticket.amountCents)}</b>
             </p>
             {/* eslint-disable-next-line @next/next/no-img-element -- SVG rendered by CutLuy */}
             <img src={ticket.qrImageUrl} alt="KHQR payment code" className="mx-auto mt-4 w-full max-w-[260px] rounded-xl bg-white" />
             {ticket.checkoutUrl && (
-              <a href={ticket.checkoutUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-sm text-[var(--accent)] underline">
+              <a href={ticket.checkoutUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-sm text-rose-deep underline">
                 paying on this phone? open checkout ↗
               </a>
             )}
-            <p className="mt-3 text-xs text-[var(--ink-soft)]" aria-live="polite">
+            <p className="mt-3 text-xs text-muted" aria-live="polite">
               {status === "scanned" ? "Scanned. Confirm in your banking app…" : `Waiting for payment · expires in ${countdown.label}`}
             </p>
             <Button variant="ghost" className="mt-3" onClick={onClose}>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Caveat, Architects_Daughter } from "next/font/google";
+import { Architects_Daughter, Caveat, Courier_Prime, Fraunces, Instrument_Sans } from "next/font/google";
 import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -7,6 +7,24 @@ const caveat = Caveat({
   variable: "--font-caveat",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+const instrumentSans = Instrument_Sans({
+  variable: "--font-instrument-sans",
+  subsets: ["latin"],
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  axes: ["SOFT", "opsz"],
+});
+
+const courierPrime = Courier_Prime({
+  variable: "--font-courier-prime",
+  subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 const architectsDaughter = Architects_Daughter({
@@ -43,7 +61,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${caveat.variable} ${architectsDaughter.variable} h-full`}
+      className={`${caveat.variable} ${architectsDaughter.variable} ${instrumentSans.variable} ${fraunces.variable} ${courierPrime.variable} h-full`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

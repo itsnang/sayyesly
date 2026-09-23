@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Input } from "@/components/shared/ui";
+import { inputClass } from "@/components/shared/ui";
 import { createImageUpload } from "../../actions";
 
 type ImageFieldProps = {
@@ -12,13 +12,14 @@ type ImageFieldProps = {
   placeholder?: string;
 };
 
-/** An image link, filled either by uploading a file to storage or by pasting a URL. */
+/** An image, either uploaded from the device or pasted as a link. */
 export function ImageField({ value, onChange, uploadsEnabled, disabled, placeholder }: ImageFieldProps) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [pasting, setPasting] = useState(!uploadsEnabled);
 
   async function upload(file: File) {
-    setStatus("uploading…");
+    setStatus("Uploading…");
     const ticket = await createImageUpload({ contentType: file.type, size: file.size });
     if (!ticket.uploadUrl || !ticket.publicUrl) {
       setStatus(ticket.error ?? "Upload failed.");
@@ -37,46 +38,65 @@ export function ImageField({ value, onChange, uploadsEnabled, disabled, placehol
     setStatus(null);
   }
 
+  const showPreview = value && /^(https:\/\/|\/)/.test(value);
+
   return (
     <div>
-      <div className="flex gap-2">
-        <Input
+      <div className="flex items-center gap-3">
+        <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-xl border border-dashed border-ink/25 bg-surface">
+          {showPreview ? (
+            // eslint-disable-next-line @next/next/no-img-element -- preview of an arbitrary URL
+            <img src={value} alt="" className="size-full object-cover" />
+          ) : (
+            <span className="text-[20px] text-faint">+</span>
+          )}
+        </span>
+        <div className="flex flex-wrap gap-2">
+          {uploadsEnabled && (
+            <button
+              type="button"
+              disabled={disabled || status === "Uploading…"}
+              onClick={() => fileInput.current?.click()}
+              className="rounded-full border border-ink/20 bg-card px-3.5 py-1.5 text-[13px] text-ink hover:border-ink disabled:opacity-50"
+            >
+              {value ? "Replace" : "Upload"}
+            </button>
+          )}
+          {uploadsEnabled && !pasting && (
+            <button type="button" onClick={() => setPasting(true)} className="px-1 text-[13px] text-muted underline underline-offset-4 hover:text-ink">
+              Paste a link
+            </button>
+          )}
+          {value && (
+            <button type="button" disabled={disabled} onClick={() => onChange("")} className="px-1 text-[13px] text-muted hover:text-ink">
+              Remove
+            </button>
+          )}
+        </div>
+      </div>
+      {pasting && (
+        <input
           type="url"
           inputMode="url"
           value={value}
           disabled={disabled}
-          placeholder={placeholder ?? "https://… (image link)"}
+          placeholder={placeholder ?? "https://… (link to an image)"}
           onChange={(e) => onChange(e.target.value)}
+          className={`${inputClass} mt-2`}
         />
-        {uploadsEnabled && (
-          <>
-            <button
-              type="button"
-              disabled={disabled || status === "uploading…"}
-              onClick={() => fileInput.current?.click()}
-              className="shrink-0 rounded-xl border-2 border-[var(--line)] bg-[var(--paper)] px-3 text-sm text-[var(--ink)] hover:bg-[var(--paper-2)] disabled:opacity-50"
-            >
-              upload
-            </button>
-            <input
-              ref={fileInput}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) void upload(file);
-                e.target.value = "";
-              }}
-            />
-          </>
-        )}
-      </div>
-      {status && <p className="mt-1 text-xs text-[var(--ink-soft)]">{status}</p>}
-      {value && /^(https:\/\/|\/)/.test(value) && (
-        // eslint-disable-next-line @next/next/no-img-element -- small preview of an arbitrary URL
-        <img src={value} alt="" className="mt-2 h-20 w-20 rounded-lg border border-[var(--line)]/30 object-cover" />
       )}
+      <input
+        ref={fileInput}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void upload(file);
+          e.target.value = "";
+        }}
+      />
+      {status && <p className="mt-1.5 text-[12.5px] text-muted">{status}</p>}
     </div>
   );
 }
