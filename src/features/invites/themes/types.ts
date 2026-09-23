@@ -1,12 +1,19 @@
 import type { ComponentType } from "react";
 import type { ImageResponse } from "next/og";
-import type { ActionResult, PublicInvite, QuestionSegment, SubmitAnswerInput } from "../types";
+import type { AnswerInput, PublicInvite, QuestionSegment, SubmitAnswerResult } from "../types";
 
-/** Props every Theme's invite component receives. Themes never load or save data themselves. */
+/**
+ * Props every Theme's invite component receives. Themes never load or save
+ * data themselves. When `invite.answer` is set the Invite is already answered:
+ * show that Answer instead of asking again.
+ */
 export type InviteThemeProps = {
   invite: PublicInvite;
-  submitAnswer: (input: SubmitAnswerInput) => Promise<ActionResult>;
+  submitAnswer: (input: AnswerInput) => Promise<SubmitAnswerResult>;
 };
+
+/** How many Dodges before the polite "maybe another time" way out appears. */
+export const MAYBE_LATER_AFTER_DODGES = 5;
 
 /** What a link preview may reveal: the question only, never the Recipient's name. */
 export type OgImageInput = {

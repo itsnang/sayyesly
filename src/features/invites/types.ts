@@ -1,6 +1,7 @@
 import type { PlanPhoto } from "@/lib/db/schema";
+import type { AnswerInput } from "./utils/answer";
 
-export type { PlanPhoto };
+export type { PlanPhoto, AnswerInput };
 
 /** One piece of an Invite's question; `emphasis` marks the *highlighted* word(s). */
 export type QuestionSegment = { text: string; emphasis: boolean };
@@ -20,6 +21,14 @@ export type TimeSlot = {
   startsAt: string;
 };
 
+/** A saved Answer, as the Recipient may see it again. */
+export type PublicAnswer = {
+  answer: "yes" | "maybe_later";
+  /** ISO 8601 instant; null for maybe_later */
+  startsAt: string | null;
+  note: string | null;
+};
+
 /** Everything a Theme may show to the Recipient. Contains nothing secret. */
 export type PublicInvite = {
   slug: string;
@@ -34,12 +43,17 @@ export type PublicInvite = {
   /** Only Time slots that haven't passed yet */
   timeSlots: TimeSlot[];
   allowCustomTime: boolean;
+  /** The Answer, once given; themes show it instead of asking again */
+  answer: PublicAnswer | null;
+  expired: boolean;
 };
 
-export type SubmitAnswerInput = {
-  date: string;
-  time: string;
-  note: string | null;
+export type SubmitAnswerResult = {
+  error?: string;
+  /** The Answer now on record: the one just saved, or the earlier one on a repeat submit */
+  answer?: PublicAnswer;
+  /** True when the Creator is previewing their own Invite and nothing was saved */
+  preview?: boolean;
 };
 
 export type ActionResult = { error?: string };

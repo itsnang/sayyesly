@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import Image from "next/image";
 import type { QuestionSegment } from "../../types";
+import { MAYBE_LATER_AFTER_DODGES } from "../types";
+import { KittenKeyframes, Squiggle, WobbleFilter, WobblyBorder } from "./shared";
 
 const DEFAULT_IMAGE = "/pasted-1780506636030-0.png";
 
@@ -21,28 +23,47 @@ const NO_LINES = [
   "// my hopes need this",
 ];
 
+const EDGE_PAD = 18;
+
 type AskScreenProps = {
   question: QuestionSegment[];
   message: string | null;
   imageUrl: string | null;
+  busy: boolean;
+  error: string | null;
   onYes: () => void;
+  onDodge: (count: number) => void;
+  onMaybeLater: () => void;
 };
 
-export function AskScreen({ question, message, imageUrl, onYes }: AskScreenProps) {
+export function AskScreen({ question, message, imageUrl, busy, error, onYes, onDodge, onMaybeLater }: AskScreenProps) {
   const [promptText, setPromptText] = useState("// awaiting your answer…");
   const [noLoose, setNoLoose] = useState(false);
   const [noPos, setNoPos] = useState({ left: 0, top: 0 });
   const [noFontSize, setNoFontSize] = useState(21);
   const [noPadding, setNoPadding] = useState({ x: 34, y: 15 });
   const [yesScale, setYesScale] = useState(1);
+  const [dodges, setDodges] = useState(0);
 
   const lineIdx = useRef(0);
-  const dodgeCount = useRef(0);
   const noRef = useRef<HTMLButtonElement>(null);
 
+  /** A random spot for the No button that keeps it fully on screen. */
+  const randomSpot = useCallback(() => {
+    const btnW = noRef.current?.offsetWidth ?? 80;
+    const btnH = noRef.current?.offsetHeight ?? 50;
+    const maxX = window.innerWidth - btnW - EDGE_PAD;
+    const maxY = window.innerHeight - btnH - EDGE_PAD;
+    return {
+      left: EDGE_PAD + Math.random() * Math.max(maxX - EDGE_PAD, 0),
+      top: EDGE_PAD + Math.random() * Math.max(maxY - EDGE_PAD, 0),
+    };
+  }, []);
+
   const dodge = useCallback(() => {
-    const n = dodgeCount.current + 1;
-    dodgeCount.current = n;
+    const n = dodges + 1;
+    setDodges(n);
+    onDodge(n);
 
     setPromptText("");
     setTimeout(() => {
@@ -57,47 +78,34 @@ export function AskScreen({ question, message, imageUrl, onYes }: AskScreenProps
     setNoPadding({ x: 34 * s, y: 15 * s });
 
     if (!noLoose && noRef.current) {
+      // First dodge: pin the button where it is, then let it run on the next one.
       const r = noRef.current.getBoundingClientRect();
       setNoPos({ left: r.left, top: r.top });
       setNoLoose(true);
     } else {
-      const pad = 18;
-      const btnW = noRef.current?.offsetWidth ?? 80;
-      const btnH = noRef.current?.offsetHeight ?? 50;
-      const maxX = window.innerWidth - btnW - pad;
-      const maxY = window.innerHeight - btnH - pad;
-      setNoPos({
-        left: pad + Math.random() * Math.max(maxX - pad, 0),
-        top: pad + Math.random() * Math.max(maxY - pad, 0),
-      });
+      setNoPos(randomSpot());
     }
+  }, [dodges, noLoose, onDodge, randomSpot]);
+
+  // Rotating a phone or resizing a window must never strand the button off screen.
+  useEffect(() => {
+    if (!noLoose) return;
+    const keepInside = () =>
+      setNoPos((pos) => {
+        const btnW = noRef.current?.offsetWidth ?? 80;
+        const btnH = noRef.current?.offsetHeight ?? 50;
+        return {
+          left: Math.min(Math.max(pos.left, EDGE_PAD), Math.max(window.innerWidth - btnW - EDGE_PAD, EDGE_PAD)),
+          top: Math.min(Math.max(pos.top, EDGE_PAD), Math.max(window.innerHeight - btnH - EDGE_PAD, EDGE_PAD)),
+        };
+      });
+    window.addEventListener("resize", keepInside);
+    return () => window.removeEventListener("resize", keepInside);
   }, [noLoose]);
 
   return (
     <>
-      <svg
-        style={{ position: "absolute", width: 0, height: 0 }}
-        aria-hidden="true"
-      >
-        <defs>
-          <filter id="wobble">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.014 0.022"
-              numOctaves={2}
-              seed={7}
-              result="n"
-            />
-            <feDisplacementMap
-              in="SourceGraphic"
-              in2="n"
-              scale={3}
-              xChannelSelector="R"
-              yChannelSelector="G"
-            />
-          </filter>
-        </defs>
-      </svg>
+      <WobbleFilter />
 
       <div
         style={{
@@ -151,35 +159,9 @@ export function AskScreen({ question, message, imageUrl, onYes }: AskScreenProps
           >
             {question.map((segment, i) =>
               segment.emphasis ? (
-                <span
-                  key={i}
-                  style={{
-                    position: "relative",
-                    whiteSpace: "nowrap",
-                    color: "var(--accent)",
-                  }}
-                >
+                <span key={i} style={{ position: "relative", whiteSpace: "nowrap", color: "var(--accent)" }}>
                   {segment.text}
-                  <svg
-                    viewBox="0 0 120 16"
-                    preserveAspectRatio="none"
-                    style={{
-                      position: "absolute",
-                      left: "-4%",
-                      bottom: -16,
-                      width: "108%",
-                      height: 16,
-                      filter: "url(#wobble)",
-                    }}
-                  >
-                    <path
-                      d="M3 9 C30 15 60 3 90 9 C103 12 112 10 117 7"
-                      fill="none"
-                      stroke="#e23a7a"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                    />
-                  </svg>
+                  <Squiggle />
                 </span>
               ) : (
                 segment.text
@@ -203,6 +185,7 @@ export function AskScreen({ question, message, imageUrl, onYes }: AskScreenProps
           )}
 
           <div
+            aria-live="polite"
             style={{
               marginTop: 20,
               fontSize: 18,
@@ -212,7 +195,7 @@ export function AskScreen({ question, message, imageUrl, onYes }: AskScreenProps
               opacity: promptText ? 1 : 0,
             }}
           >
-            <span style={{ color: "var(--ink-faint)" }}></span> {promptText}
+            {promptText}
           </div>
 
           <div
@@ -227,7 +210,9 @@ export function AskScreen({ question, message, imageUrl, onYes }: AskScreenProps
             }}
           >
             <button
+              type="button"
               onClick={onYes}
+              disabled={busy}
               style={{
                 fontFamily: "var(--marker)",
                 cursor: "pointer",
@@ -243,21 +228,12 @@ export function AskScreen({ question, message, imageUrl, onYes }: AskScreenProps
                 borderRadius: 11,
               }}
             >
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  pointerEvents: "none",
-                  border: "2.4px solid var(--accent)",
-                  borderRadius: 11,
-                  filter: "url(#wobble)",
-                  boxShadow: "3px 4px 0 rgba(138,45,92,0.22)",
-                }}
-              />
+              <WobblyBorder color="var(--accent)" shadow="3px 4px 0 rgba(138,45,92,0.22)" />
               yes!
             </button>
 
             <button
+              type="button"
               ref={noRef}
               onMouseEnter={dodge}
               onClick={(e) => {
@@ -280,23 +256,14 @@ export function AskScreen({ question, message, imageUrl, onYes }: AskScreenProps
                 left: noLoose ? noPos.left : undefined,
                 top: noLoose ? noPos.top : undefined,
                 zIndex: 20,
+                touchAction: "none",
                 transition: noLoose
                   ? "left .17s cubic-bezier(.2,.9,.3,1.3), top .17s cubic-bezier(.2,.9,.3,1.3), font-size .15s ease, padding .15s ease"
                   : undefined,
                 borderRadius: 11,
               }}
             >
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  pointerEvents: "none",
-                  border: "2.4px solid var(--line)",
-                  borderRadius: 11,
-                  filter: "url(#wobble)",
-                  boxShadow: "3px 4px 0 rgba(138,45,92,0.14)",
-                }}
-              />
+              <WobblyBorder />
               no
             </button>
           </div>
@@ -311,6 +278,35 @@ export function AskScreen({ question, message, imageUrl, onYes }: AskScreenProps
           >
             hover &ldquo;no&rdquo; to see what happens ✦
           </div>
+
+          {/* The polite way out. Never moves, so it's always reachable. */}
+          {dodges >= MAYBE_LATER_AFTER_DODGES && (
+            <button
+              type="button"
+              onClick={onMaybeLater}
+              disabled={busy}
+              style={{
+                marginTop: 18,
+                background: "none",
+                border: "none",
+                padding: "8px 12px",
+                fontFamily: "var(--marker)",
+                fontSize: 14,
+                color: "var(--ink-soft)",
+                textDecoration: "underline",
+                textUnderlineOffset: 3,
+                cursor: "pointer",
+                animation: "settle .4s cubic-bezier(.2,.9,.3,1.2) both",
+              }}
+            >
+              maybe another time?
+            </button>
+          )}
+          {error && (
+            <p role="alert" style={{ marginTop: 8, fontSize: 13, color: "var(--accent)" }}>
+              {`// ${error}`}
+            </p>
+          )}
         </div>
 
         {/* Margin annotations */}
@@ -354,15 +350,7 @@ export function AskScreen({ question, message, imageUrl, onYes }: AskScreenProps
         </div>
       </div>
 
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(-.4deg); }
-          50%       { transform: translateY(-9px) rotate(.4deg); }
-        }
-        @media (max-width: 860px) {
-          .note { display: none !important; }
-        }
-      `}</style>
+      <KittenKeyframes />
     </>
   );
 }
