@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { inputClass } from "@/components/shared/ui";
+import { buttonClass, inputClass } from "@/components/shared/ui";
 import { createImageUpload } from "../../actions";
 
 type ImageFieldProps = {
@@ -43,7 +43,7 @@ export function ImageField({ value, onChange, uploadsEnabled, disabled, placehol
   return (
     <div>
       <div className="flex items-center gap-3">
-        <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-xl border border-dashed border-ink/25 bg-surface">
+        <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-[6px] border-[1.5px] border-dashed border-ink/40 bg-surface">
           {showPreview ? (
             // eslint-disable-next-line @next/next/no-img-element -- preview of an arbitrary URL
             <img src={value} alt="" className="size-full object-cover" />
@@ -51,13 +51,13 @@ export function ImageField({ value, onChange, uploadsEnabled, disabled, placehol
             <span className="text-[20px] text-faint">+</span>
           )}
         </span>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {uploadsEnabled && (
             <button
               type="button"
               disabled={disabled || status === "Uploading…"}
               onClick={() => fileInput.current?.click()}
-              className="rounded-full border border-ink/20 bg-card px-3.5 py-1.5 text-[13px] text-ink hover:border-ink disabled:opacity-50"
+              className={buttonClass("secondary", "sm")}
             >
               {value ? "Replace" : "Upload"}
             </button>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { buttonClass } from "@/components/shared/ui";
 import type { InviteFormValues } from "../../../schemas";
 import { PREVIEW_MESSAGE, PREVIEW_READY } from "../../theme-preview-protocol";
 
@@ -32,9 +33,9 @@ export function PreviewPhone({ values, open, onClose }: { values: InviteFormValu
           : "hidden lg:block"
       }
     >
-      <div className="flex items-center justify-between border-b border-ink/10 px-4 py-3 lg:hidden">
+      <div className="flex items-center justify-between border-b-[1.5px] border-ink px-4 py-3 lg:hidden">
         <p className="text-[14px] font-medium text-ink">Preview · answers aren&apos;t saved</p>
-        <button type="button" onClick={onClose} className="rounded-full border border-ink/20 px-3 py-1 text-[13px] text-ink">
+        <button type="button" onClick={onClose} className={buttonClass("secondary", "sm")}>
           Close
         </button>
       </div>

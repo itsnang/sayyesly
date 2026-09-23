@@ -61,7 +61,7 @@ export function Hero() {
           <Heart className="mb-5 size-4 -rotate-12 text-rose" />
           <Envelope className="w-14 rotate-[-8deg] text-ink sm:w-16" />
         </div>
-        <span className="absolute inset-x-0 bottom-0 h-[1.5px] rounded-full bg-ink" />
+        <span className="absolute inset-x-0 bottom-0 h-[1.5px] bg-ink" />
       </div>
     </section>
   );
