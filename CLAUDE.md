@@ -13,10 +13,12 @@ bun run lint         # ESLint
 bun run typecheck    # tsc --noEmit
 bun run db:generate  # generate a migration from src/lib/db/schema
 bun run db:migrate   # apply migrations (Railway pre-deploy command)
-bun run db:seed      # seed kitten-soft theme + the original invite (idempotent)
+bun run db:seed      # seed themes + the original invite (idempotent)
+bun run telegram:webhook          # point the bot at NEXT_PUBLIC_APP_URL/api/telegram/webhook
+bun test             # unit tests (bun's built-in runner, *.test.ts next to the code)
 ```
 
-No test runner is configured. Quality gate: `bun run typecheck && bun run lint && bun run build`.
+Quality gate: `bun run typecheck && bun run lint && bun test && bun run build`. Unit tests cover the agreed seams only: answer rules (`features/invites/utils/answer.ts`), Telegram message text and command parsing, and the CutLuy webhook signature/amount check.
 
 Copy `.env.example` to `.env.local`. Locally, point `DATABASE_URL` at a separate dev database, never production.
 
@@ -43,7 +45,11 @@ src/
   env.ts               server-only, zod-validated env; use requireEnv() for optional vars
 ```
 
-Slices: `invites` (invite page, themes, answer flow, editor), later `telegram-bot`, `billing`, `auth`. **Slices must not import from each other**; share through `src/lib/` or read the database directly.
+Slices: `invites` (invite page, themes, answer flow, notifications, editor), `telegram-bot` (webhook, `/start`, `/link`), `billing` (CutLuy checkout and webhook), `auth` (login screen), `landing`. **Slices must not import from each other**; share through `src/lib/` or read the database directly. Pages in `src/app/` may compose several slices.
+
+### Payments
+
+A Paid theme unlocks **only** when `/api/cutluy/webhook` receives a signature-verified `payment.completed` whose amount matches the Purchase's `amount_cents` (copied from `themes.price_cents` on the server). Never unlock from a redirect or anything the browser sends. `canUseTheme()` gates saving an invite with a Theme.
 
 ### Themes
 

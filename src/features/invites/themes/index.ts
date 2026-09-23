@@ -1,3 +1,4 @@
+import { kittenNight } from "./kitten-night";
 import { kittenSoft } from "./kitten-soft";
 import type { ThemeDefinition } from "./types";
 
@@ -6,6 +7,7 @@ import type { ThemeDefinition } from "./types";
 // same id (price, availability). Nothing else changes.
 const registry: Record<string, ThemeDefinition> = {
   [kittenSoft.id]: kittenSoft,
+  [kittenNight.id]: kittenNight,
 };
 
 export const DEFAULT_THEME_ID = kittenSoft.id;

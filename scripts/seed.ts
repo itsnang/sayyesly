@@ -35,6 +35,14 @@ async function main() {
       target: schema.themes.id,
       set: { name: "Kitten Soft", priceCents: 0, isActive: true, sortOrder: 0 },
     });
+  // Placeholder paid theme (kitten-soft at night) so the payment flow has something to sell.
+  await db
+    .insert(schema.themes)
+    .values({ id: "kitten-night", name: "Kitten Night", priceCents: 199, isActive: true, sortOrder: 1 })
+    .onConflictDoUpdate({
+      target: schema.themes.id,
+      set: { name: "Kitten Night", priceCents: 199, isActive: true, sortOrder: 1 },
+    });
 
   const telegramId = BigInt(SEED_OWNER_TELEGRAM_ID!);
   await db

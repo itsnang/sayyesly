@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ThemePreview } from "@/features/invites/components/theme-preview";
 import type { InviteFormValues } from "@/features/invites/schemas";
-import { DEFAULT_THEME_ID } from "@/features/invites/themes";
+import { DEFAULT_THEME_ID, hasTheme } from "@/features/invites/themes";
 
 export const metadata: Metadata = {
   title: "will you have dinner with me? (demo)",
@@ -30,6 +30,8 @@ const DEMO: InviteFormValues = {
   themeId: DEFAULT_THEME_ID,
 };
 
-export default function DemoPage() {
-  return <ThemePreview fixedValues={DEMO} />;
+export default async function DemoPage({ searchParams }: PageProps<"/demo">) {
+  const { theme } = await searchParams;
+  const themeId = typeof theme === "string" && hasTheme(theme) ? theme : DEFAULT_THEME_ID;
+  return <ThemePreview fixedValues={{ ...DEMO, themeId }} />;
 }
