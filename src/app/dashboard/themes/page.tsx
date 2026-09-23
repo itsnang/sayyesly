@@ -13,7 +13,11 @@ export default async function ThemesPage() {
   });
   return (
     <>
-      <PageHeading title="Themes" description="Pay once with any KHQR banking app, then use the theme on every invite." />
+      <PageHeading
+        eyebrow="The look they open"
+        title="Themes"
+        description="Pay once by scanning a KHQR code in your banking app. The theme is yours for every invite after that."
+      />
       <ThemeShop themes={themes} />
     </>
   );

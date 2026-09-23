@@ -1,6 +1,6 @@
 "use client";
 
-import { inputClass } from "@/components/shared/ui";
+import { chipClass, FieldError, inputClass } from "@/components/shared/ui";
 
 const TEMPLATES = [
   "will you have *dinner* with me?",
@@ -50,12 +50,13 @@ export function QuestionField({ value, onChange, disabled, error }: QuestionFiel
   return (
     <div>
       <label className="block">
-        <span className="mb-1.5 block text-[13px] font-medium text-ink">Your question</span>
+        <span className="mb-1.5 block text-[14px] font-medium text-ink">Your question</span>
         <input
           className={inputClass}
           value={text}
           disabled={disabled}
           maxLength={140}
+          aria-invalid={!!error || undefined}
           placeholder="will you have dinner with me?"
           onChange={(e) => {
             const next = e.target.value;
@@ -65,15 +66,30 @@ export function QuestionField({ value, onChange, disabled, error }: QuestionFiel
           }}
         />
       </label>
-      {error && (
-        <p role="alert" className="mt-1.5 text-[12.5px] text-red-700">
-          {error}
-        </p>
+      {error && <FieldError>{error}</FieldError>}
+
+      {!disabled && (
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          <span className="mr-1 font-mono text-[11.5px] tracking-wide text-muted">or try:</span>
+          {TEMPLATES.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => onChange(t)}
+              aria-pressed={value === t}
+              className="rounded-[5px] border-[1.5px] border-dashed border-ink/35 px-2.5 py-1 text-[13px] text-ink transition hover:border-solid hover:border-ink aria-pressed:border-solid aria-pressed:border-ink aria-pressed:bg-surface"
+            >
+              {plain(t)}
+            </button>
+          ))}
+        </div>
       )}
 
-      {words.length > 0 && (
-        <div className="mt-3">
-          <p className="mb-2 text-[12.5px] text-muted">Tap a word to underline it</p>
+      {words.length > 1 && (
+        <div className="mt-5 rounded-[6px] bg-surface/70 p-3">
+          <p className="mb-2 text-[13px] text-muted">
+            <b className="font-medium text-ink">Underline one word</b> to make it stand out. Tap it again to undo.
+          </p>
           <div className="flex flex-wrap gap-1.5">
             {words.map((word, i) => {
               const selected = i === selectedIndex;
@@ -84,32 +100,12 @@ export function QuestionField({ value, onChange, disabled, error }: QuestionFiel
                   disabled={disabled || !core(word)}
                   aria-pressed={selected}
                   onClick={() => onChange(withEmphasis(text, selected ? null : i))}
-                  className={`rounded-lg px-2.5 py-1 text-[14px] transition ${
-                    selected ? "bg-ink text-canvas underline decoration-rose decoration-2 underline-offset-4" : "border border-ink/15 bg-card text-ink hover:border-ink/50"
-                  } disabled:opacity-50`}
+                  className={chipClass(selected, `px-2.5 py-1 text-[14px] ${selected ? "underline decoration-rose decoration-2 underline-offset-4" : ""}`)}
                 >
                   {word}
                 </button>
               );
             })}
-          </div>
-        </div>
-      )}
-
-      {!disabled && (
-        <div className="mt-4">
-          <p className="mb-2 text-[12.5px] text-muted">Or start from one of these</p>
-          <div className="flex flex-wrap gap-1.5">
-            {TEMPLATES.map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => onChange(t)}
-                className="rounded-full border border-dashed border-ink/30 px-3 py-1 font-mono text-[12px] text-ink transition hover:border-ink hover:bg-card"
-              >
-                {plain(t)}
-              </button>
-            ))}
           </div>
         </div>
       )}

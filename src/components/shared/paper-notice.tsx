@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Cat, Sparkle } from "./doodles";
 import { Wordmark } from "./studio";
+import { buttonClass } from "./ui";
 
 /** A full-page, calm message on the product paper (expired invite, not found, …). */
 export function PaperNotice({ title, children, action }: { title: string; children: ReactNode; action?: { href: string; label: string } }) {
@@ -20,10 +21,7 @@ export function PaperNotice({ title, children, action }: { title: string; childr
         <h1 className="mt-6 font-display text-[clamp(28px,4vw,40px)] leading-tight text-ink">{title}</h1>
         <p className="mt-3 max-w-sm text-[15.5px] leading-relaxed text-muted">{children}</p>
         {action && (
-          <Link
-            href={action.href}
-            className="mt-7 rounded-full bg-ink px-5 py-2.5 text-[14px] font-medium text-canvas transition hover:-translate-y-0.5"
-          >
+          <Link href={action.href} className={buttonClass("primary", "md", "mt-7 px-5")}>
             {action.label}
           </Link>
         )}

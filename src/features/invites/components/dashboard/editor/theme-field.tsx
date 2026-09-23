@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { buttonClass, cx, Stamp } from "@/components/shared/ui";
 import { formatUsd } from "@/lib/format";
 import type { ThemeChoice } from "../../../server/theme-access";
 
@@ -11,47 +12,62 @@ type ThemeFieldProps = {
   /** The Theme the saved invite already has; always selectable */
   savedThemeId: string;
   onChange: (id: string) => void;
+  /** Buy a locked Theme without leaving the form; falls back to the Themes page */
+  onUnlock?: ((theme: ThemeChoice) => void) | undefined;
   disabled?: boolean;
 };
 
-export function ThemeField({ themes, value, savedThemeId, onChange, disabled }: ThemeFieldProps) {
+export function ThemeField({ themes, value, savedThemeId, onChange, onUnlock, disabled }: ThemeFieldProps) {
   return (
     <div role="radiogroup" aria-label="Theme" className="grid grid-cols-2 gap-3 sm:grid-cols-3">
       {themes.map((theme) => {
-        const selectable = !disabled && (theme.usable || theme.id === savedThemeId);
+        const locked = !theme.usable && theme.id !== savedThemeId;
+        const selectable = !disabled && !locked;
         const selected = value === theme.id;
         return (
-          <div key={theme.id} className="relative">
+          <div key={theme.id} className="flex flex-col">
             <button
               type="button"
               role="radio"
               aria-checked={selected}
               disabled={!selectable}
               onClick={() => onChange(theme.id)}
-              className={`group block w-full rounded-[18px] border-[1.5px] p-2 text-left transition ${
-                selected ? "border-ink bg-card shadow-[4px_5px_0_var(--color-rose-soft)]" : "border-ink/12 bg-card hover:border-ink/40"
-              } disabled:cursor-not-allowed`}
+              className={cx(
+                "group block w-full rounded-[8px] border-[1.5px] p-1.5 text-left transition disabled:cursor-not-allowed",
+                selected ? "border-ink bg-card shadow-[4px_4px_0_var(--color-rose)]" : "border-ink/25 bg-card enabled:hover:border-ink",
+              )}
             >
-              <span className={`relative block aspect-[4/5] overflow-hidden rounded-[12px] bg-surface ${!selectable ? "opacity-55" : ""}`}>
-                {theme.thumbnail && <Image src={theme.thumbnail} alt="" fill sizes="200px" className="object-cover object-[50%_32%]" />}
+              <span className="relative block aspect-[4/5] overflow-hidden rounded-[4px] bg-surface">
+                {theme.thumbnail && (
+                  <Image src={theme.thumbnail} alt="" fill sizes="200px" className={cx("object-cover object-[50%_32%]", locked && "opacity-60 grayscale-[35%]")} />
+                )}
                 {selected && (
-                  <span className="absolute top-2 right-2 grid size-6 place-items-center rounded-full bg-ink text-[12px] text-canvas">✓</span>
+                  <span className="absolute top-2 right-2 grid size-6 place-items-center rounded-[4px] border-[1.5px] border-ink bg-ink text-[12px] text-canvas">✓</span>
+                )}
+                {locked && (
+                  <Stamp tone="ink" className="absolute top-2 left-2 bg-card">
+                    {formatUsd(theme.priceCents)}
+                  </Stamp>
                 )}
               </span>
-              <span className="mt-2 flex items-baseline justify-between gap-2 px-1">
+              <span className="mt-2 flex items-baseline justify-between gap-2 px-1 pb-0.5">
                 <span className="text-[14px] font-medium text-ink">{theme.name}</span>
-                <span className="font-mono text-[12px] text-muted">
-                  {theme.priceCents === 0 ? "free" : theme.usable ? "yours" : formatUsd(theme.priceCents)}
-                </span>
+                <span className="font-mono text-[11.5px] text-muted">{theme.priceCents === 0 ? "free" : theme.usable ? "yours" : "locked"}</span>
               </span>
             </button>
-            {!theme.usable && theme.id !== savedThemeId && (
-              <div className="mt-1.5 flex gap-3 px-1 text-[12.5px]">
-                <Link href="/dashboard/themes" className="text-rose-deep underline underline-offset-4">
-                  Unlock
-                </Link>
-                <Link href={`/demo?theme=${theme.id}`} target="_blank" className="text-muted underline underline-offset-4 hover:text-ink">
-                  Try it
+            {locked && !disabled && (
+              <div className="mt-2 grid grid-cols-[1fr_auto] gap-1.5">
+                {onUnlock ? (
+                  <button type="button" onClick={() => onUnlock(theme)} className={buttonClass("primary", "sm")}>
+                    Unlock {formatUsd(theme.priceCents)}
+                  </button>
+                ) : (
+                  <Link href="/dashboard/themes" className={buttonClass("primary", "sm")}>
+                    Unlock
+                  </Link>
+                )}
+                <Link href={`/demo?theme=${theme.id}`} target="_blank" className={buttonClass("secondary", "sm")} aria-label={`Try ${theme.name}`}>
+                  Try ↗
                 </Link>
               </div>
             )}

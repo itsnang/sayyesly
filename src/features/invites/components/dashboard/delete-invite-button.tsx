@@ -14,7 +14,7 @@ export function DeleteInviteButton({ inviteId }: { inviteId: string }) {
   if (!confirming) {
     return (
       <Button type="button" variant="danger" onClick={() => setConfirming(true)}>
-        delete invite
+        Delete invite
       </Button>
     );
   }
@@ -37,10 +37,10 @@ export function DeleteInviteButton({ inviteId }: { inviteId: string }) {
           router.push("/dashboard");
         }}
       >
-        {busy ? "deleting…" : "yes, delete"}
+        {busy ? "Deleting…" : "Yes, delete it"}
       </Button>
       <Button type="button" variant="ghost" onClick={() => setConfirming(false)}>
-        keep it
+        Keep it
       </Button>
       {error && <span className="text-sm text-red-700">{error}</span>}
     </div>

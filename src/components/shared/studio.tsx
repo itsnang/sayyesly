@@ -2,11 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import { Heart } from "./doodles";
+import { buttonClass, cx } from "./ui";
 
 // Building blocks of the product pages: warm paper, a soft serif, typewriter
 // notes and ink doodles (landing, login, dashboard).
-
-const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(" ");
 
 export function ArrowIcon({ className, direction = "right" }: { className?: string; direction?: "right" | "left" | "down" }) {
   const rotate = direction === "left" ? "rotate-180" : direction === "down" ? "rotate-90" : "";
@@ -17,17 +16,10 @@ export function ArrowIcon({ className, direction = "right" }: { className?: stri
   );
 }
 
-/** The dark ink pill, the main call to action. */
+/** The dark ink button, the main call to action. */
 export function InkButton({ href, children, className, ...rest }: Omit<ComponentProps<typeof Link>, "href"> & { href: string; children: ReactNode }) {
   return (
-    <Link
-      href={href}
-      className={cx(
-        "inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-[14px] font-medium text-canvas transition hover:-translate-y-0.5 hover:shadow-[0_6px_0_-2px_var(--color-rose)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose",
-        className,
-      )}
-      {...rest}
-    >
+    <Link href={href} className={buttonClass("primary", "md", cx("px-5", className))} {...rest}>
       {children}
     </Link>
   );

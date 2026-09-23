@@ -20,7 +20,7 @@ export function SiteNav() {
           </Link>
           <Link
             href="/dashboard/invites/new"
-            className="rounded-full border-[1.5px] border-ink px-4 py-1.5 text-ink transition hover:bg-ink hover:text-canvas max-sm:px-3 max-sm:text-[13px]"
+            className="rounded-[6px] border-[1.5px] border-ink px-4 py-1.5 text-ink transition hover:bg-ink hover:text-canvas max-sm:px-3 max-sm:text-[13px]"
           >
             Make an invite
           </Link>

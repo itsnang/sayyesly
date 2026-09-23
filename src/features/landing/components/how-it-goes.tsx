@@ -71,14 +71,14 @@ export function HowItGoes() {
           <p className="mt-2 min-h-[72px] text-[15px] leading-snug text-ink">{step.body}</p>
 
           <div className="mt-5 flex items-center gap-2">
-            <button type="button" onClick={() => go(-1)} aria-label="Previous step" className="grid size-8 place-items-center rounded-full bg-ink text-canvas">
+            <button type="button" onClick={() => go(-1)} aria-label="Previous step" className="grid size-8 place-items-center rounded-[5px] bg-ink text-canvas">
               <ArrowIcon direction="left" className="size-3" />
             </button>
             <button
               type="button"
               onClick={() => setPlaying((p) => !p)}
               aria-label={playing ? "Pause" : "Play"}
-              className="grid size-8 place-items-center rounded-full border-[1.5px] border-ink text-ink"
+              className="grid size-8 place-items-center rounded-[5px] border-[1.5px] border-ink text-ink"
             >
               {playing ? (
                 <svg viewBox="0 0 12 12" className="size-3" fill="currentColor" aria-hidden="true">
@@ -91,7 +91,7 @@ export function HowItGoes() {
                 </svg>
               )}
             </button>
-            <button type="button" onClick={() => go(1)} aria-label="Next step" className="grid size-8 place-items-center rounded-full bg-ink text-canvas">
+            <button type="button" onClick={() => go(1)} aria-label="Next step" className="grid size-8 place-items-center rounded-[5px] bg-ink text-canvas">
               <ArrowIcon className="size-3" />
             </button>
           </div>

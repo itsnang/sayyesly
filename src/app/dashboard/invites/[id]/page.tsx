@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeading } from "@/components/shared/ui";
+import { InviteStudio } from "../_components/invite-studio";
 import { DeleteInviteButton } from "@/features/invites/components/dashboard/delete-invite-button";
-import { InviteEditor } from "@/features/invites/components/dashboard/editor/invite-editor";
 import { SharePanel } from "@/features/invites/components/dashboard/share-panel";
 import { getMyInvite } from "@/features/invites/server/dashboard-data";
 import { getThemeChoices } from "@/features/invites/server/theme-access";
@@ -24,10 +24,12 @@ export default async function EditInvitePage({ params, searchParams }: PageProps
 
   return (
     <>
-      <Link href="/dashboard" className="mb-4 inline-block text-[13.5px] text-muted hover:text-ink">
-        ← All invites
-      </Link>
       <PageHeading
+        eyebrow={
+          <Link href="/dashboard" className="hover:text-ink">
+            ← All invites
+          </Link>
+        }
         title={`For ${invite.values.recipientName}`}
         description={invite.answered ? "They've answered. You can still change the plan." : "Waiting for their answer."}
       />
@@ -41,8 +43,11 @@ export default async function EditInvitePage({ params, searchParams }: PageProps
         />
       </div>
 
-      <h2 className="mb-6 font-display text-[24px] text-ink">Edit the invite</h2>
-      <InviteEditor
+      <div className="mb-8 flex items-center gap-4">
+        <h2 className="font-mono text-[12px] tracking-[0.12em] text-muted uppercase">Edit the invite</h2>
+        <span aria-hidden className="h-[1.5px] flex-1 bg-ink/20" />
+      </div>
+      <InviteStudio
         inviteId={invite.id}
         defaults={invite.values}
         answered={invite.answered}
@@ -50,7 +55,7 @@ export default async function EditInvitePage({ params, searchParams }: PageProps
         uploadsEnabled={isUploadConfigured()}
       />
 
-      <div className="mt-14 border-t border-dashed border-ink/20 pt-6">
+      <div className="mt-14 border-t-[1.5px] border-dashed border-ink/20 pt-6">
         <DeleteInviteButton inviteId={invite.id} />
       </div>
     </>

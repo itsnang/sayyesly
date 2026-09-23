@@ -1,9 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { buttonClass, type ButtonSize, type ButtonVariant } from "@/components/shared/ui";
 
 /** Copies text to the clipboard and says so for a moment. */
-export function CopyButton({ text, label = "Copy link", className }: { text: string; label?: string; className?: string }) {
+export function CopyButton({
+  text,
+  label = "Copy link",
+  variant = "secondary",
+  size = "sm",
+  className,
+}: {
+  text: string;
+  label?: string;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  className?: string;
+}) {
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -17,12 +30,9 @@ export function CopyButton({ text, label = "Copy link", className }: { text: str
           window.prompt("Copy this:", text);
         }
       }}
-      className={
-        className ??
-        "rounded-full border border-ink/20 bg-card px-3.5 py-1.5 text-[13px] text-ink transition hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose"
-      }
+      className={buttonClass(variant, size, className)}
     >
-      {copied ? "Copied ✓" : label}
+      <span aria-live="polite">{copied ? "Copied ✓" : label}</span>
     </button>
   );
 }
