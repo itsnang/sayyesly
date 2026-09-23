@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+/* kitten-soft theme tokens (themes use them through inline styles) */
+:root {
+  --paper:       #fff5f8;
+  --paper-2:     #ffe9f1;
+  --ink:         #5e2446;
+  --ink-soft:    #9c5c7e;
+  --ink-faint:   #d3a6bd;
+  --line:        #8a2d5c;
+  --accent:      #e23a7a;
+  --accent-2:    #c879ff;
+  --grid:        rgba(180,60,110,.06);
+  --tape:        rgba(255,180,205,.6);
+  --marker:      var(--font-architects-daughter), 'Comic Sans MS', cursive;
+  --hand:        var(--font-caveat), var(--font-architects-daughter), cursive;
+}
+
+/* Product UI (landing, login, dashboard): warm paper, ink doodles, scrapbook pink */
+@theme {
+  --color-canvas: #fbf6ef;
+  --color-surface: #f4ede3;
+  --color-card: #fffdf9;
+  --color-ink: #231b17;
+  --color-muted: #7c7069;
+  --color-faint: #b5a99f;
+  --color-hairline: #e6ddd2;
+  --color-rose: #de4a80;
+  --color-rose-deep: #b3305f;
+  --color-rose-soft: #f7e1e8;
+  --color-grid-pink: #f3dbe3;
+  --color-sky: #a8c8e6;
+  --color-sage: #c3d69a;
+  --color-coral: #e8694b;
+  --color-sun: #f1c84b;
+  --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-mono: var(--font-courier-prime), ui-monospace, "Courier New", monospace;
+  --font-hand: var(--font-caveat), cursive;
+}
+
+/* Base styles sit in a layer so Tailwind utilities (p-4, m-2, …) can override them. */
+@layer base {
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+
+  body {
+    font-family: var(--marker);
+    color: var(--ink);
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+      radial-gradient(130% 110% at 15% 0%, #fff0f6 0%, transparent 55%),
+      radial-gradient(130% 110% at 90% 100%, #ffe2ee 0%, transparent 55%),
+      var(--paper);
+    background-size: 26px 26px, 26px 26px, auto, auto, auto;
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+  }
+}
+
+/* Wrapper for product pages: covers the kitten paper background with the studio canvas. */
+@utility studio {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  min-height: 100vh;
+  /* body is a flex column; never shrink to one screen and let the kitten paper show below */
+  flex-shrink: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Fraunces at its display cut: thinner and softer than its text optical size */
+@utility font-display {
+  font-family: var(--font-serif);
+  font-weight: 360;
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+}
+
+/* Scrapbook grid paper */
+@utility grid-paper {
+  background-color: var(--color-grid-pink);
+  background-image:
+    linear-gradient(rgba(150, 70, 100, 0.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(150, 70, 100, 0.13) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0) rotate(-0.5deg); }
+  50% { transform: translateY(-8px) rotate(0.5deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
