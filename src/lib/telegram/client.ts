@@ -8,6 +8,19 @@ export type SendResult =
   // `status` 403 means the bot is blocked by the user or was removed from the chat.
   | { ok: false; status: number; description: string };
 
+let cachedUsername: string | null = null;
+
+/** The bot's own @username (without the @), fetched once per server instance. */
+export async function getBotUsername(): Promise<string> {
+  if (cachedUsername) return cachedUsername;
+  const token = requireEnv("TELEGRAM_BOT_TOKEN");
+  const res = await fetch(`https://api.telegram.org/bot${token}/getMe`, { cache: "no-store" });
+  const body = (await res.json()) as { ok: boolean; result?: { username?: string } };
+  if (!body.ok || !body.result?.username) throw new Error("Telegram getMe failed");
+  cachedUsername = body.result.username;
+  return cachedUsername;
+}
+
 /** Sends a Bot API message. Never throws, even when the bot isn't configured; check `ok`. */
 export async function sendMessage(
   chatId: ChatId,

@@ -11,7 +11,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "bun scripts/seed.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "telegram:webhook": "bun scripts/set-webhook.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.3",
