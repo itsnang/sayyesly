@@ -81,12 +81,13 @@ export function BuyThemeDialog({
     [theme.id],
   );
 
+  // Ask once per dialog. Without the guard, React's dev double-run of effects
+  // sends two requests that queue behind each other on the server's lock.
+  const requested = useRef(false);
   useEffect(() => {
-    let live = true;
-    void requestPayment().then((result) => live && applyResult(result));
-    return () => {
-      live = false;
-    };
+    if (requested.current) return;
+    requested.current = true;
+    void requestPayment().then(applyResult);
   }, [requestPayment, applyResult]);
 
   function retry() {
