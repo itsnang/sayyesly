@@ -1,16 +1,17 @@
 import "server-only";
 import { z } from "zod";
 
-// Optional vars belong to features that later phases switch on. Code that
-// needs one reads it through `requireEnv()`, so a missing secret fails loudly
-// at the point of use instead of blocking the whole app from starting.
+// Nothing here is required to *build*: `next build` imports server modules
+// with only build-time variables present. Code that needs a secret reads it
+// through `requireEnv()`, so a missing one fails loudly at the point of use
+// (e.g. the first database query) instead of breaking the build.
 // A blank line like `CUTLUY_API_KEY=` (as copied from .env.example) counts as unset.
-const optional = (schema: z.ZodString) =>
+const optional = (schema: z.ZodString | z.ZodURL) =>
   z.preprocess((value) => (value === "" ? undefined : value), schema.optional());
 
 const serverSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]),
-  DATABASE_URL: z.url(),
+  DATABASE_URL: optional(z.url()),
   NEXT_PUBLIC_APP_URL: z.url(),
   SESSION_SECRET: optional(z.string().min(32)),
   TELEGRAM_CLIENT_ID: optional(z.string()),
@@ -26,7 +27,22 @@ const serverSchema = z.object({
   R2_PUBLIC_URL: optional(z.string().regex(/^https:\/\//, "must start with https://")),
 });
 
-const serverEnv = serverSchema.safeParse(process.env);
+/**
+ * The site's public origin. Set NEXT_PUBLIC_APP_URL in production (login
+ * redirects and webhooks depend on it); otherwise fall back to the host's own
+ * URL (Vercel preview/production, Railway), then localhost.
+ */
+function resolveAppUrl(): string {
+  const { NEXT_PUBLIC_APP_URL, VERCEL_ENV, VERCEL_URL, VERCEL_PROJECT_PRODUCTION_URL, RAILWAY_PUBLIC_DOMAIN } =
+    process.env;
+  if (NEXT_PUBLIC_APP_URL) return NEXT_PUBLIC_APP_URL;
+  if (VERCEL_ENV === "preview" && VERCEL_URL) return `https://${VERCEL_URL}`;
+  if (VERCEL_PROJECT_PRODUCTION_URL) return `https://${VERCEL_PROJECT_PRODUCTION_URL}`;
+  if (RAILWAY_PUBLIC_DOMAIN) return `https://${RAILWAY_PUBLIC_DOMAIN}`;
+  return "http://localhost:3000";
+}
+
+const serverEnv = serverSchema.safeParse({ ...process.env, NEXT_PUBLIC_APP_URL: resolveAppUrl() });
 
 if (!serverEnv.success) {
   console.error("Invalid server environment variables:", z.treeifyError(serverEnv.error));
