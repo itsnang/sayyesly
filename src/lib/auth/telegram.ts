@@ -73,10 +73,12 @@ export async function exchangeCode({
       "Content-Type": "application/x-www-form-urlencoded",
       Accept: "application/json",
     },
+    // Same fields as Telegram's documented token request (client_id repeated in the body).
     body: new URLSearchParams({
       grant_type: "authorization_code",
       code,
       redirect_uri: telegramRedirectUri(),
+      client_id: requireEnv("TELEGRAM_CLIENT_ID"),
       code_verifier: codeVerifier,
     }),
     cache: "no-store",
