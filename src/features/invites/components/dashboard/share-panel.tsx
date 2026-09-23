@@ -1,11 +1,10 @@
-import { Heart, Sparkle } from "@/components/shared/doodles";
-import { buttonClass, cx, Eyebrow } from "@/components/shared/ui";
+import { buttonClass, inputClass } from "@/components/shared/ui";
 import { CopyButton } from "./copy-button";
 import { RefreshOnFocus } from "./refresh-on-focus";
 
 /**
- * The invite link, ready to send, plus one tap to tell a group chat.
- * `justCreated` turns it into the "your invite is ready" moment.
+ * The Share drawer's content: the invite link, ready to send, and one tap to
+ * tell a group chat. `justCreated` adds the "it's ready" line after creating.
  */
 export function SharePanel({
   shareUrl,
@@ -30,78 +29,68 @@ export function SharePanel({
   const addToGroup = botUsername ? `https://t.me/${botUsername}?startgroup=${encodeURIComponent(linkCode)}` : null;
 
   return (
-    <section
-      aria-label="Send your invite"
-      className={cx("relative rounded-[8px] border-[1.5px] border-ink bg-card p-5 sm:p-7", justCreated && "shadow-[6px_6px_0_var(--color-rose)]")}
-    >
+    <div className="grid gap-8">
       <RefreshOnFocus />
-      {justCreated && (
-        <>
-          <Sparkle aria-hidden className="absolute -top-4 -right-3 size-8 text-ink" />
-          <Heart aria-hidden className="absolute -top-3 right-8 size-5 text-rose" />
-        </>
-      )}
-      <Eyebrow>{justCreated ? "Done · step 2 of 2" : "Share"}</Eyebrow>
-      <h2 className="mt-1 font-display text-[26px] leading-tight text-ink">{justCreated ? "Now send it." : "Send the link"}</h2>
-      <p className="mt-1 text-[15px] text-muted">
-        {justCreated ? `Send this link to ${who}. You'll hear the answer on Telegram.` : `Send this to ${who}, wherever you talk.`}
-      </p>
 
-      <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-        <code className="min-w-0 flex-1 truncate font-sans rounded-[6px] border-[1.5px] border-dashed border-ink/40 bg-surface px-3.5 py-2.5 text-[14px] text-ink">
-          {shareUrl}
-        </code>
-        <div className="grid grid-cols-2 gap-2 sm:flex">
+      <section aria-labelledby="share-link">
+        {justCreated && <p className="mb-4 text-[15px] font-medium text-ink">Your invite is ready.</p>}
+        <h3 id="share-link" className="text-[13.5px] font-medium text-ink">
+          Link
+        </h3>
+        <p className="mt-0.5 text-[13px] text-muted">Send it to {who}. You&apos;ll hear the answer on Telegram.</p>
+        <input readOnly value={shareUrl} aria-label="Invite link" className={`${inputClass} mt-3 text-muted`} />
+        <div className="mt-2 grid grid-cols-2 gap-2">
           <CopyButton text={shareUrl} variant="primary" size="md" />
-          <a href={telegramShare} target="_blank" rel="noopener noreferrer" className={buttonClass("telegram")}>
+          <a href={telegramShare} target="_blank" rel="noopener noreferrer" className={buttonClass("secondary")}>
             Send in Telegram
           </a>
         </div>
-      </div>
-      <p className="mt-2.5 text-[12.5px] text-muted">Opening it yourself while logged in shows a preview. Nothing you tap there is saved.</p>
+        <p className="mt-2 text-[12.5px] text-muted">If you open it while logged in, you see a preview. Nothing you tap there is saved.</p>
+      </section>
 
-      {/* Group chat */}
-      <div className="mt-6 border-t-[1.5px] border-dashed border-ink/20 pt-5">
-        <h3 className="text-[15px] font-semibold text-ink">Tell a group chat too</h3>
-        <p className="mt-0.5 text-[14px] text-muted">Your friends hear the answer the moment it comes in. Optional.</p>
+      <section aria-labelledby="share-groups" className="border-t border-ink/10 pt-6">
+        <h3 id="share-groups" className="text-[13.5px] font-medium text-ink">
+          Group chats <span className="font-normal text-faint">optional</span>
+        </h3>
+        <p className="mt-0.5 text-[13px] text-muted">Linked groups hear the answer the moment it comes in.</p>
 
         {linkedGroups.length > 0 && (
-          <ul aria-label="Linked groups" className="mt-3 flex flex-wrap gap-1.5">
+          <ul aria-label="Linked groups" className="mt-3 divide-y divide-ink/10 rounded-[7px] border border-ink/10">
             {linkedGroups.map((g) => (
-              <li key={g.id} className="rounded-[5px] border-[1.5px] border-emerald-800/60 bg-emerald-50 px-2.5 py-1 text-[13.5px] text-emerald-900">
-                ✓ {g.title ?? "A group chat"}
+              <li key={g.id} className="flex items-center justify-between gap-3 px-3 py-2 text-[14px] text-ink">
+                <span className="truncate">{g.title ?? "A group chat"}</span>
+                <span className="shrink-0 text-[12.5px] text-emerald-800">Linked</span>
               </li>
             ))}
           </ul>
         )}
 
         {addToGroup && (
-          <a href={addToGroup} target="_blank" rel="noopener noreferrer" className={buttonClass("secondary", "md", "mt-3")}>
-            {linkedGroups.length > 0 ? "Add another group" : "Add the bot to a group chat"}
+          <a href={addToGroup} target="_blank" rel="noopener noreferrer" className={buttonClass("secondary", "md", "mt-3 w-full")}>
+            {linkedGroups.length > 0 ? "Add another group" : "Add the bot to a group"}
           </a>
         )}
 
-        <details className="group mt-3">
-          <summary className="cursor-pointer list-none text-[13.5px] text-muted underline decoration-ink/25 underline-offset-4 hover:text-ink [&::-webkit-details-marker]:hidden">
-            {addToGroup ? "Didn't work?" : "How to link a group"}
+        <details className="mt-3">
+          <summary className="cursor-pointer list-none text-[13px] text-muted hover:text-ink [&::-webkit-details-marker]:hidden">
+            {addToGroup ? "Didn't work? Link it by hand" : "How to link a group"}
           </summary>
-          <div className="mt-2 rounded-[6px] bg-surface/70 p-3.5 text-[14px] text-muted">
+          <div className="mt-2 text-[13.5px] text-muted">
             <ol className="list-decimal space-y-1 pl-5">
-              <li>Add {botUsername ? <b className="font-medium text-ink">@{botUsername}</b> : "the bot"} to the group.</li>
-              <li>
-                Send <code className="rounded-[4px] border border-ink/20 bg-card px-1.5 py-0.5 font-sans text-ink">{command}</code> there.
-              </li>
+              <li>Add {botUsername ? <span className="text-ink">@{botUsername}</span> : "the bot"} to the group.</li>
+              <li>Send this message in the group:</li>
             </ol>
-            <div className="mt-3 flex flex-wrap items-center gap-3">
-              <CopyButton text={command} label="Copy command" />
+            <div className="mt-2 flex items-center gap-2">
+              <code className="flex-1 rounded-[7px] border border-ink/10 bg-surface px-3 py-2 font-sans text-[14px] text-ink">{command}</code>
+              <CopyButton text={command} label="Copy" />
             </div>
-            <p className="mt-3 text-[12.5px] leading-snug">
-              The group button doesn&apos;t work when you can&apos;t add members to that group, or when the bot is already in it. Keep the code
-              among friends: anyone with it can link a group.
+            <p className="mt-2 text-[12.5px] leading-snug">
+              The button above can&apos;t link a group you can&apos;t add members to, or one the bot is already in. Anyone with this code can
+              link a group, so keep it between friends.
             </p>
           </div>
         </details>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { chipClass, FieldError, inputClass } from "@/components/shared/ui";
+import { FieldError, inputClass } from "@/components/shared/ui";
 
 const TEMPLATES = [
   "will you have *dinner* with me?",
@@ -49,48 +49,57 @@ export function QuestionField({ value, onChange, disabled, error }: QuestionFiel
 
   return (
     <div>
-      <label className="block">
-        <span className="mb-1.5 block text-[14px] font-medium text-ink">Your question</span>
-        <input
-          className={inputClass}
-          value={text}
-          disabled={disabled}
-          maxLength={140}
-          aria-invalid={!!error || undefined}
-          placeholder="will you have dinner with me?"
-          onChange={(e) => {
-            const next = e.target.value;
-            // Keep the underline on the same word while they type around it.
-            const keep = current === null ? -1 : next.split(/\s+/).filter(Boolean).findIndex((w) => core(w) === current);
-            onChange(keep >= 0 ? withEmphasis(next, keep) : next);
-          }}
-        />
-      </label>
+      <div className="mb-1.5 flex items-center justify-between gap-3">
+        <label htmlFor="question" className="text-[13.5px] font-medium text-ink">
+          Question
+        </label>
+        {!disabled && (
+          <details className="relative">
+            <summary className="flex cursor-pointer list-none items-center gap-1 rounded-[6px] px-1.5 py-0.5 text-[13px] text-muted hover:bg-surface hover:text-ink [&::-webkit-details-marker]:hidden">
+              Examples
+              <svg viewBox="0 0 16 16" aria-hidden className="size-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 6l4 4 4-4" />
+              </svg>
+            </summary>
+            <div className="absolute top-full right-0 z-30 mt-1 w-64 rounded-[8px] border border-ink/12 bg-white p-1 shadow-[0_12px_32px_-12px_rgba(35,27,23,0.35)]">
+              {TEMPLATES.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={(e) => {
+                    onChange(t);
+                    e.currentTarget.closest("details")?.removeAttribute("open");
+                  }}
+                  className="block w-full rounded-[6px] px-2.5 py-2 text-left text-[14px] text-ink hover:bg-surface"
+                >
+                  {plain(t)}
+                </button>
+              ))}
+            </div>
+          </details>
+        )}
+      </div>
+      <input
+        id="question"
+        className={inputClass}
+        value={text}
+        disabled={disabled}
+        maxLength={140}
+        aria-invalid={!!error || undefined}
+        placeholder="will you have dinner with me?"
+        onChange={(e) => {
+          const next = e.target.value;
+          // Keep the underline on the same word while they type around it.
+          const keep = current === null ? -1 : next.split(/\s+/).filter(Boolean).findIndex((w) => core(w) === current);
+          onChange(keep >= 0 ? withEmphasis(next, keep) : next);
+        }}
+      />
       {error && <FieldError>{error}</FieldError>}
 
-      {!disabled && (
-        <div className="mt-3 flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 text-[11.5px] tracking-wide text-muted">or try:</span>
-          {TEMPLATES.map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => onChange(t)}
-              aria-pressed={value === t}
-              className="rounded-[5px] border-[1.5px] border-dashed border-ink/35 px-2.5 py-1 text-[13px] text-ink transition hover:border-solid hover:border-ink aria-pressed:border-solid aria-pressed:border-ink aria-pressed:bg-surface"
-            >
-              {plain(t)}
-            </button>
-          ))}
-        </div>
-      )}
-
       {words.length > 1 && (
-        <div className="mt-5 rounded-[6px] bg-surface/70 p-3">
-          <p className="mb-2 text-[13px] text-muted">
-            <b className="font-medium text-ink">Underline one word</b> to make it stand out. Tap it again to undo.
-          </p>
-          <div className="flex flex-wrap gap-1.5">
+        <div className="mt-2.5">
+          <p className="mb-1 text-[12.5px] text-muted">Tap a word to highlight it</p>
+          <p className="flex flex-wrap gap-x-0.5 gap-y-1 text-[15px] leading-7 text-ink">
             {words.map((word, i) => {
               const selected = i === selectedIndex;
               return (
@@ -100,13 +109,17 @@ export function QuestionField({ value, onChange, disabled, error }: QuestionFiel
                   disabled={disabled || !core(word)}
                   aria-pressed={selected}
                   onClick={() => onChange(withEmphasis(text, selected ? null : i))}
-                  className={chipClass(selected, `px-2.5 py-1 text-[14px] ${selected ? "underline decoration-rose decoration-2 underline-offset-4" : ""}`)}
+                  className={
+                    selected
+                      ? "rounded-[5px] bg-rose-soft px-1 font-medium text-rose-deep underline decoration-rose decoration-2 underline-offset-4"
+                      : "rounded-[5px] px-1 transition hover:bg-surface disabled:hover:bg-transparent"
+                  }
                 >
                   {word}
                 </button>
               );
             })}
-          </div>
+          </p>
         </div>
       )}
     </div>
