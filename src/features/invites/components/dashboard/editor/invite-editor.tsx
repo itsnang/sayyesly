@@ -18,6 +18,7 @@ import { ImageField } from "../image-field";
 import { DesktopMock, DeviceToggle, PhoneMock, PreviewSheet, type Device } from "./live-preview";
 import { QuestionField } from "./question-field";
 import { isThemeLocked, ThemeField } from "./theme-field";
+import { PhotosField } from "./photos-field";
 import { TimesField } from "./times-field";
 
 type SectionId = "plan" | "when" | "extras";
@@ -409,26 +410,16 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
                     <p className="mb-2 flex items-baseline gap-2 text-[13.5px] font-medium text-ink">
                       Photos <span className="text-[12.5px] font-normal text-faint">optional, up to {MAX_PLAN_PHOTOS}</span>
                     </p>
-                    <div className="grid gap-3">
-                      {photos.fields.map((photo, i) => (
-                        <div key={photo.id} className="rounded-[8px] border border-ink/10 p-3">
-                          <Controller
-                            control={control}
-                            name={`planPhotos.${i}.url`}
-                            render={({ field }) => (
-                              <ImageField value={field.value} onChange={(url) => (url ? field.onChange(url) : photos.remove(i))} uploadsEnabled={uploadsEnabled} />
-                            )}
-                          />
-                          {errors.planPhotos?.[i]?.url && <FieldError>{errors.planPhotos[i]?.url?.message}</FieldError>}
-                          {i > 0 && <Input {...register(`planPhotos.${i}.caption`)} placeholder="Caption" className="mt-3" />}
-                        </div>
-                      ))}
-                    </div>
-                    {photos.fields.length < MAX_PLAN_PHOTOS && (
-                      <Button variant="secondary" size="sm" className="mt-3" onClick={() => photos.append({ url: "", alt: "", caption: "" })}>
-                        Add a photo
-                      </Button>
-                    )}
+                    <PhotosField
+                      photos={photos.fields.map((f, i) => ({ key: f.id, url: values.planPhotos?.[i]?.url ?? "" }))}
+                      max={MAX_PLAN_PHOTOS}
+                      uploadsEnabled={uploadsEnabled}
+                      onAdd={(url) => photos.append({ url, alt: "", caption: "" })}
+                      onRemove={(i) => photos.remove(i)}
+                      onUrlChange={(i, url) => setValue(`planPhotos.${i}.url`, url, { shouldDirty: true, shouldValidate: !!errors.planPhotos?.[i] })}
+                      caption={(i) => <Input {...register(`planPhotos.${i}.caption`)} placeholder="Caption, e.g. the view" />}
+                      error={(i) => errors.planPhotos?.[i]?.url?.message}
+                    />
                   </div>
                 )}
               </div>
