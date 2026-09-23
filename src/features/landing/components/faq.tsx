@@ -27,7 +27,7 @@ const QUESTIONS = [
 
 export function Faq() {
   return (
-    <section id="faq" aria-labelledby="faq-title" className="mx-auto mt-24 max-w-3xl scroll-mt-10 px-5 sm:px-8">
+    <section id="faq" aria-labelledby="faq-title" className="mx-auto mt-24 max-w-3xl scroll-mt-24 px-5 sm:px-8">
       <h2 id="faq-title" className="text-center font-display text-[clamp(28px,3.6vw,40px)] text-ink">
         Things people ask
       </h2>

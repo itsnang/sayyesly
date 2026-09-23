@@ -38,7 +38,7 @@ function Polaroid({
 
 export function ThemesBoard() {
   return (
-    <section id="themes" aria-labelledby="themes-title" className="mx-auto mt-28 max-w-6xl scroll-mt-10 px-5 sm:mt-36 sm:px-8">
+    <section id="themes" aria-labelledby="themes-title" className="mx-auto mt-28 max-w-6xl scroll-mt-24 px-5 sm:mt-36 sm:px-8">
       <div className="text-center">
         <h2 id="themes-title" className="font-display text-[clamp(30px,4vw,44px)] leading-tight text-ink">
           Pick a mood

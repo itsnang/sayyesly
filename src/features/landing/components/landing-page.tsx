@@ -12,7 +12,7 @@ import { ThemesBoard } from "./themes-board";
 
 export function LandingPage() {
   return (
-    <div className="studio w-full overflow-x-hidden">
+    <div className="studio w-full overflow-x-clip">
       <SiteNav />
       <main>
         <Hero />

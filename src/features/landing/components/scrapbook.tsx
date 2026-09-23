@@ -16,7 +16,7 @@ function PaperCard({ src, alt, position, className }: { src: string; alt: string
 
 export function Scrapbook() {
   return (
-    <section id="how" aria-labelledby="scrapbook-title" className="relative mt-24 scroll-mt-10">
+    <section id="how" aria-labelledby="scrapbook-title" className="relative mt-24 scroll-mt-24">
       <div className="grid-paper relative">
         <TornEdge position="top" className="text-grid-pink" seed={3} />
 

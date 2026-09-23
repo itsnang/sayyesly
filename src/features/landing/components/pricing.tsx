@@ -39,7 +39,7 @@ function Receipt({ title, number, children, className }: { title: string; number
 
 export function Pricing() {
   return (
-    <section id="pricing" aria-labelledby="pricing-title" className="relative mx-auto mt-28 max-w-6xl scroll-mt-10 px-5 sm:mt-36 sm:px-8">
+    <section id="pricing" aria-labelledby="pricing-title" className="relative mx-auto mt-28 max-w-6xl scroll-mt-24 px-5 sm:mt-36 sm:px-8">
       <div className="text-center">
         <h2 id="pricing-title" className="font-display text-[clamp(30px,4vw,44px)] leading-tight text-ink">
           What it costs
