@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/env";
 import { takePendingLogin } from "@/lib/auth/oauth-state";
 import { createSession } from "@/lib/auth/session";
-import { BOT_ACCESS_SCOPE, exchangeCode, verifyIdToken } from "@/lib/auth/telegram";
+import { BOT_ACCESS_SCOPE, exchangeCode, isTelegramLoginConfigured, verifyIdToken } from "@/lib/auth/telegram";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 
@@ -12,6 +12,8 @@ function redirectTo(path: string) {
 
 // GET /api/auth/telegram/callback?code=…&state=… → logs the Creator in.
 export async function GET(req: NextRequest) {
+  if (!isTelegramLoginConfigured()) return redirectTo("/login?error=unavailable");
+
   const params = req.nextUrl.searchParams;
   const code = params.get("code");
   const state = params.get("state");

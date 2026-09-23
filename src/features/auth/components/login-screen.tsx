@@ -5,10 +5,11 @@ import { Wordmark } from "@/components/shared/studio";
 const ERRORS: Record<string, string> = {
   expired: "That login took too long or was opened in another browser. Please try again.",
   failed: "Telegram couldn't log you in. Please try again.",
+  unavailable: "Logging in isn't switched on yet. Please try again a little later.",
 };
 
 /** "Log in with Telegram": the only way in. */
-export function LoginScreen({ next, error }: { next: string; error: string | null }) {
+export function LoginScreen({ next, error, available }: { next: string; error: string | null; available: boolean }) {
   const href = `/api/auth/telegram?next=${encodeURIComponent(next)}`;
   return (
     <div className="studio flex w-full flex-col">
@@ -30,12 +31,13 @@ export function LoginScreen({ next, error }: { next: string; error: string | nul
               Log in to write an invite and hear the answer on Telegram.
             </p>
 
-            {error && (
+            {(error || !available) && (
               <p role="alert" className="mt-5 rounded-lg bg-rose-soft px-3 py-2 text-[13.5px] text-rose-deep">
-                {ERRORS[error] ?? ERRORS.failed}
+                {!available ? ERRORS.unavailable : (ERRORS[error ?? ""] ?? ERRORS.failed)}
               </p>
             )}
 
+            {available && (
             <a
               href={href}
               className="mt-7 flex w-full items-center justify-center gap-2.5 rounded-full bg-[#2aabee] px-4 py-3 text-[15px] font-medium text-white transition hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
@@ -45,6 +47,7 @@ export function LoginScreen({ next, error }: { next: string; error: string | nul
               </svg>
               Log in with Telegram
             </a>
+            )}
             <p className="mt-4 font-mono text-[11.5px] leading-relaxed text-muted">
               we only see your telegram name and photo.
               <br />

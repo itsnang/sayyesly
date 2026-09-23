@@ -14,6 +14,11 @@ const jwks = createRemoteJWKSet(new URL(`${ISSUER}/.well-known/jwks.json`));
 export const BOT_ACCESS_SCOPE = "telegram:bot_access";
 const SCOPES = ["openid", "profile", BOT_ACCESS_SCOPE];
 
+/** Whether every setting Telegram login needs is present (client id/secret and the session secret). */
+export function isTelegramLoginConfigured(): boolean {
+  return !!(env.TELEGRAM_CLIENT_ID && env.TELEGRAM_CLIENT_SECRET && env.SESSION_SECRET);
+}
+
 export function telegramRedirectUri(): string {
   return new URL("/api/auth/telegram/callback", env.NEXT_PUBLIC_APP_URL).toString();
 }
