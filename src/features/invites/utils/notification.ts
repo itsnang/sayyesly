@@ -13,7 +13,8 @@ export type AnswerNotificationInput = {
 
 /** The Telegram message (HTML parse mode) telling the Creator and Linked groups about an Answer. */
 export function answerNotification(input: AnswerNotificationInput): string {
-  const name = escapeHtml(input.recipientName);
+  // The Recipient name is optional; without one the message says "They".
+  const name = input.recipientName.trim() ? escapeHtml(input.recipientName.trim()) : "They";
   const note = input.note ? `💬 <i>"${escapeHtml(input.note)}"</i>` : null;
 
   if (input.answer === "maybe_later") {

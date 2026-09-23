@@ -22,7 +22,8 @@ export const MAX_PLAN_PHOTOS = 3;
 
 export const inviteFormSchema = z
   .object({
-    recipientName: z.string().trim().min(1, "Who is this for?").max(60, "Keep it under 60 characters"),
+    // Optional: only the Creator sees it (dashboard, Telegram). Empty means "no name".
+    recipientName: optionalText(60),
     question: z
       .string()
       .trim()

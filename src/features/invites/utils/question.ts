@@ -16,3 +16,9 @@ export function parseQuestion(question: string): QuestionSegment[] {
 export function questionText(segments: QuestionSegment[]): string {
   return segments.map((s) => s.text).join("");
 }
+
+/** How the Creator's own screens name an Invite: "For Sreyneang", or the question when there's no name. */
+export function inviteTitle(recipientName: string, question: string): string {
+  const name = recipientName.trim();
+  return name ? `For ${name}` : questionText(parseQuestion(question));
+}

@@ -5,6 +5,7 @@ import { InkButton } from "@/components/shared/studio";
 import { Stamp } from "@/components/shared/ui";
 import type { InviteStatus, InviteSummary } from "../../server/dashboard-data";
 import { getTheme } from "../../themes";
+import { inviteTitle } from "../../utils";
 import { CopyButton } from "./copy-button";
 
 const STATUS: Record<InviteStatus, { label: string; tone: "rose" | "green" | "amber" | "grey" }> = {
@@ -23,6 +24,10 @@ function agreedLabel(iso: string, timeZone: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(iso));
+}
+
+function createdLabel(iso: string) {
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(iso));
 }
 
 export function EmptyInvites() {
@@ -59,15 +64,18 @@ export function InviteList({ invites, siteUrl }: { invites: InviteSummary[]; sit
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
                 <Link href={`/dashboard/invites/${invite.id}`} className="min-w-0 after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-rose">
-                  <span className="block truncate font-display text-[21px] leading-tight text-ink">For {invite.recipientName}</span>
+                  <span className="block truncate font-display text-[21px] leading-tight text-ink">{inviteTitle(invite.recipientName, invite.question)}</span>
                 </Link>
                 <Stamp tone={status.tone}>{status.label}</Stamp>
               </div>
               <p className="mt-1 truncate text-[14px] text-muted">
                 {invite.status === "yes" && invite.agreedAt ? (
                   <span className="text-ink">{agreedLabel(invite.agreedAt, invite.timezone)}</span>
-                ) : (
+                ) : invite.recipientName.trim() ? (
                   invite.question
+                ) : (
+                  // The title is already the question; say when it was made instead.
+                  `Made ${createdLabel(invite.createdAt)}`
                 )}
               </p>
             </div>

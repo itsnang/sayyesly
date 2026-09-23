@@ -1,7 +1,7 @@
 import "server-only";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { invites, inviteTimeSlots } from "@/lib/db/schema";
+import { invites, inviteTimeSlots, linkedGroups } from "@/lib/db/schema";
 import { utcToZonedParts } from "@/lib/time";
 import type { InviteFormValues } from "../schemas";
 import { isExpired } from "../utils";
@@ -47,6 +47,8 @@ export type EditableInvite = {
   slug: string;
   linkCode: string;
   answered: boolean;
+  /** Group chats that hear the Answer, newest last */
+  linkedGroups: { id: string; title: string | null }[];
   values: InviteFormValues;
 };
 
@@ -54,7 +56,11 @@ export type EditableInvite = {
 export async function getMyInvite(inviteId: string, userId: string): Promise<EditableInvite | null> {
   const row = await db.query.invites.findFirst({
     where: and(eq(invites.id, inviteId), eq(invites.creatorId, userId)),
-    with: { timeSlots: { orderBy: asc(inviteTimeSlots.startsAt) }, answer: { columns: { id: true } } },
+    with: {
+      timeSlots: { orderBy: asc(inviteTimeSlots.startsAt) },
+      answer: { columns: { id: true } },
+      linkedGroups: { columns: { id: true, chatTitle: true }, orderBy: asc(linkedGroups.createdAt) },
+    },
   });
   if (!row) return null;
   return {
@@ -62,6 +68,7 @@ export async function getMyInvite(inviteId: string, userId: string): Promise<Edi
     slug: row.slug,
     linkCode: row.linkCode,
     answered: !!row.answer,
+    linkedGroups: row.linkedGroups.map((g) => ({ id: g.id, title: g.chatTitle })),
     values: {
       recipientName: row.recipientName,
       question: row.question,

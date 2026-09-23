@@ -57,7 +57,7 @@ export function Sheet({ className, ...props }: ComponentProps<"section">) {
 
 /** Typewriter label above a group: `01 · the plan`. */
 export function Eyebrow({ children, className }: { children: ReactNode; className?: string }) {
-  return <p className={cx("font-mono text-[11.5px] tracking-[0.12em] text-muted uppercase", className)}>{children}</p>;
+  return <p className={cx("text-[12px] font-semibold tracking-[0.08em] text-muted uppercase", className)}>{children}</p>;
 }
 
 export function Field({
@@ -79,7 +79,7 @@ export function Field({
     <label className={cx("block", className)}>
       <span className="mb-1.5 flex items-baseline gap-2 text-[14px] font-medium text-ink">
         {label}
-        {optional && <span className="font-mono text-[11px] font-normal tracking-wide text-faint">optional</span>}
+        {optional && <span className="text-[12.5px] font-normal text-faint">optional</span>}
       </span>
       {children}
       {hint && !error && <span className="mt-1.5 block text-[12.5px] leading-snug text-muted">{hint}</span>}
@@ -129,7 +129,7 @@ export function Stamp({ tone, children, className }: { tone: keyof typeof stampT
   return (
     <span
       className={cx(
-        "inline-flex items-center gap-1 rounded-[3px] border-[1.5px] px-1.5 py-px font-mono text-[11px] leading-[1.35] font-bold tracking-[0.08em] uppercase",
+        "inline-flex items-center gap-1 rounded-[3px] border-[1.5px] px-1.5 py-px text-[11px] leading-[1.35] font-bold tracking-[0.08em] uppercase",
         stampTones[tone],
         className,
       )}

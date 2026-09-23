@@ -35,9 +35,13 @@ export async function buyTheme(themeId: string): Promise<CheckoutResult> {
   if (!themeIdSchema.safeParse(themeId).success) return { error: "Unknown theme." };
   if (!rateLimit(`buy:${user.id}`, 6, 60_000)) return { error: "Too many tries. Please wait a minute." };
 
-  const theme = await db.query.themes.findFirst({ where: eq(themes.id, themeId) });
+  // Independent reads, so they share one round trip's worth of waiting.
+  const [theme, owned] = await Promise.all([
+    db.query.themes.findFirst({ where: eq(themes.id, themeId) }),
+    ownsTheme(user.id, themeId),
+  ]);
   if (!theme?.isActive) return { error: "That theme isn't available." };
-  if (theme.priceCents === 0 || (await ownsTheme(user.id, themeId))) return { owned: true };
+  if (theme.priceCents === 0 || owned) return { owned: true };
 
   // One checkout at a time per Creator and Theme: a second tap waits here, then
   // finds the first tap's still-valid QR instead of creating another payment.

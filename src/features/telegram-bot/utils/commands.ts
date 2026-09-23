@@ -18,3 +18,24 @@ export function parseCommand(text: string, botUsername: string): BotCommand | nu
   if (addressee && addressee.toLowerCase() !== botUsername.toLowerCase()) return null;
   return { command: command!, arg: arg ?? "" };
 }
+
+export type GroupCommandMeaning = { kind: "link"; code: string } | { kind: "link-usage" } | { kind: "hint" } | null;
+
+/**
+ * What a command sent in a group asks the bot to do. The one-tap
+ * `t.me/<bot>?startgroup=<Link code>` link arrives as `/start <code>`, so it
+ * links the group exactly like `/link <code>`.
+ */
+export function interpretGroupCommand({ command, arg }: BotCommand): GroupCommandMeaning {
+  const code = parseLinkCode(arg);
+  switch (command) {
+    case "link":
+      return code ? { kind: "link", code } : { kind: "link-usage" };
+    case "start":
+      return code ? { kind: "link", code } : { kind: "hint" };
+    case "help":
+      return { kind: "hint" };
+    default:
+      return null;
+  }
+}

@@ -41,7 +41,7 @@ export function PreviewPhone({ values, open, onClose }: { values: InviteFormValu
       </div>
 
       <div className="flex-1 overflow-hidden lg:sticky lg:top-24">
-        <p className="mb-3 hidden text-center font-mono text-[12px] text-muted lg:block">what they&apos;ll see · try the buttons</p>
+        <p className="mb-3 hidden text-center text-[12px] text-muted lg:block">what they&apos;ll see · try the buttons</p>
         {/* Phone bezel on desktop; the full screen on phones */}
         <div className="h-full lg:mx-auto lg:w-[310px] lg:rounded-[36px] lg:border-[1.5px] lg:border-ink lg:bg-card lg:p-[7px] lg:shadow-[0_22px_40px_-20px_rgba(60,30,20,0.45)]">
           <div className="relative h-full overflow-hidden lg:h-[616px] lg:rounded-[29px]">

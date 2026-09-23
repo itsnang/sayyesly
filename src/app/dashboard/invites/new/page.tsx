@@ -28,7 +28,7 @@ export default async function NewInvitePage() {
   const themes = await getThemeChoices(user.id);
   return (
     <>
-      <PageHeading eyebrow="Step 1 of 2 · write it" title="New invite" description="Fill in what you like; only the name and question are needed. The preview updates as you type." />
+      <PageHeading eyebrow="Step 1 of 2 · write it" title="New invite" description="It is ready to send as it is. Change the question if you like, and make it yours below." />
       <InviteStudio inviteId={null} defaults={NEW_INVITE} answered={false} themes={themes} uploadsEnabled={isUploadConfigured()} />
     </>
   );

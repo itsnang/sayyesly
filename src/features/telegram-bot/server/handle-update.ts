@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { invites, linkedGroups, users } from "@/lib/db/schema";
 import { escapeHtml, getBotUsername, sendMessage } from "@/lib/telegram";
 import type { Chat, Update } from "../types";
-import { parseCommand, parseLinkCode } from "../utils/commands";
+import { interpretGroupCommand, parseCommand } from "../utils/commands";
 
 const isGroup = (chat: Chat) => chat.type === "group" || chat.type === "supergroup";
 
@@ -20,8 +20,8 @@ function helpText(): string {
     "",
     `Make an invite at ${dashboard}. When someone answers it, I'll message you right here.`,
     "",
-    "Want a group to hear the news too? Add me to that group, then send <code>/link CODE</code> there. " +
-      "You'll find the code on your invite in the dashboard.",
+    "Want a group to hear the news too? Tap <b>Add the bot to a group chat</b> on your invite in the dashboard, " +
+      "or add me to the group and send <code>/link CODE</code> there.",
   ].join("\n");
 }
 
@@ -47,6 +47,15 @@ async function handleMessage(message: NonNullable<Update["message"]>) {
   const parsed = parseCommand(message.text, await getBotUsername());
   if (!parsed) return;
 
+  if (isGroup(chat)) {
+    const meaning = interpretGroupCommand(parsed);
+    if (meaning?.kind === "link") await linkGroup(chat, meaning.code);
+    else if (meaning?.kind === "link-usage")
+      await reply(chat, "Send it like this: <code>/link K7PQ2XRM</code>. The code is on your invite in the dashboard.");
+    else if (meaning?.kind === "hint") await reply(chat, "Send <code>/link CODE</code> here to get invite news in this group 💌");
+    return;
+  }
+
   switch (parsed.command) {
     case "start":
     case "help": {
@@ -57,28 +66,22 @@ async function handleMessage(message: NonNullable<Update["message"]>) {
           .set({ canDm: true, updatedAt: new Date() })
           .where(eq(users.telegramId, BigInt(message.from.id)));
       }
-      await reply(chat, isGroup(chat) ? "Send <code>/link CODE</code> here to get invite news in this group 💌" : helpText());
+      await reply(chat, helpText());
       return;
     }
     case "link": {
-      await linkGroup(chat, parsed.arg);
+      await reply(chat, "Add me to a group first, then send <code>/link CODE</code> in that group.");
       return;
     }
   }
 }
 
-async function linkGroup(chat: Chat, arg: string) {
-  if (!isGroup(chat)) {
-    await reply(chat, "Add me to a group first, then send <code>/link CODE</code> in that group.");
-    return;
-  }
-
-  const code = parseLinkCode(arg);
-  if (!code) {
-    await reply(chat, "Send it like this: <code>/link K7PQ2XRM</code>. The code is on your invite in the dashboard.");
-    return;
-  }
-
+/**
+ * Links a group to the Invite with this Link code. Works from the command
+ * alone (chat id and title are on the message), whatever order Telegram
+ * delivers the membership update in, and is harmless to repeat.
+ */
+async function linkGroup(chat: Chat, code: string) {
   const invite = await db.query.invites.findFirst({
     where: eq(invites.linkCode, code),
     columns: { id: true, recipientName: true },
@@ -93,7 +96,8 @@ async function linkGroup(chat: Chat, arg: string) {
     .values({ inviteId: invite.id, chatId: BigInt(chat.id), chatTitle: chat.title ?? null })
     .onConflictDoNothing({ target: [linkedGroups.inviteId, linkedGroups.chatId] });
 
-  await reply(chat, `Linked ✓ This group will hear the moment ${escapeHtml(invite.recipientName)} answers 💌`);
+  const who = invite.recipientName.trim() ? `${escapeHtml(invite.recipientName)} answers` : "they answer";
+  await reply(chat, `Linked ✓ This group will hear the moment ${who} 💌`);
 }
 
 async function handleMembership(change: NonNullable<Update["my_chat_member"]>) {

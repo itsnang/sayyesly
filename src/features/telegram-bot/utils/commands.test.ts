@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parseCommand, parseLinkCode } from "./commands";
+import { interpretGroupCommand, parseCommand, parseLinkCode } from "./commands";
 
 describe("parseLinkCode", () => {
   test("accepts a code typed in lowercase or with spaces around it", () => {
@@ -31,5 +31,33 @@ describe("parseCommand", () => {
   test("ordinary chat messages are not commands", () => {
     expect(parseCommand("see you at 7!", "askherout_bot")).toBeNull();
     expect(parseCommand("", "askherout_bot")).toBeNull();
+  });
+});
+
+describe("interpretGroupCommand", () => {
+  const inGroup = (text: string) => interpretGroupCommand(parseCommand(text, "askherout_bot")!);
+
+  test("the one-tap startgroup link arrives as /start with the Link code, and links the group", () => {
+    expect(inGroup("/start@AskHerOut_bot K7PQ2XRM")).toEqual({ kind: "link", code: "K7PQ2XRM" });
+    expect(inGroup("/start k7pq2xrm")).toEqual({ kind: "link", code: "K7PQ2XRM" });
+  });
+
+  test("/link with a Link code links the group too", () => {
+    expect(inGroup("/link K7PQ2XRM")).toEqual({ kind: "link", code: "K7PQ2XRM" });
+  });
+
+  test("a bare /start or /help gets the hint, and so does /start with something that isn't a code", () => {
+    expect(inGroup("/start")).toEqual({ kind: "hint" });
+    expect(inGroup("/help")).toEqual({ kind: "hint" });
+    expect(inGroup("/start hello")).toEqual({ kind: "hint" });
+  });
+
+  test("/link without a valid code explains how to send it", () => {
+    expect(inGroup("/link")).toEqual({ kind: "link-usage" });
+    expect(inGroup("/link K7PQ")).toEqual({ kind: "link-usage" });
+  });
+
+  test("other commands are ignored", () => {
+    expect(inGroup("/settings")).toBeNull();
   });
 });

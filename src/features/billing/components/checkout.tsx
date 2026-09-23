@@ -81,12 +81,13 @@ export function BuyThemeDialog({
     [theme.id],
   );
 
+  // Ask once per dialog. Without the guard, React's dev double-run of effects
+  // sends two requests that queue behind each other on the server's lock.
+  const requested = useRef(false);
   useEffect(() => {
-    let live = true;
-    void requestPayment().then((result) => live && applyResult(result));
-    return () => {
-      live = false;
-    };
+    if (requested.current) return;
+    requested.current = true;
+    void requestPayment().then(applyResult);
   }, [requestPayment, applyResult]);
 
   function retry() {
@@ -132,7 +133,7 @@ export function BuyThemeDialog({
               {theme.name}
             </h2>
           </div>
-          <p className="pt-5 font-mono text-[18px] font-bold text-ink">{formatUsd(ticket?.amountCents ?? theme.priceCents)}</p>
+          <p className="pt-5 text-[18px] font-bold text-ink">{formatUsd(ticket?.amountCents ?? theme.priceCents)}</p>
         </div>
 
         <div className="px-5 pt-5 pb-5 text-center">
@@ -154,7 +155,7 @@ export function BuyThemeDialog({
                 width={360}
                 className="mx-auto mt-4 h-auto w-full max-w-[280px] drop-shadow-[3px_3px_0_var(--color-ink)]"
               />
-              <p className="mt-4 flex items-center justify-center gap-2 font-mono text-[12.5px] text-muted" aria-live="polite">
+              <p className="mt-4 flex items-center justify-center gap-2 text-[12.5px] text-muted" aria-live="polite">
                 <span aria-hidden className="size-2 animate-pulse bg-rose" />
                 Waiting for payment · {countdown.label}
               </p>
@@ -171,7 +172,7 @@ export function BuyThemeDialog({
 
           {shown === "paid" && (
             <div className="py-4">
-              <p className="inline-block -rotate-3 rounded-[4px] border-[2.5px] border-emerald-800 px-3 py-1 font-mono text-[20px] font-bold tracking-[0.1em] text-emerald-800 uppercase">
+              <p className="inline-block -rotate-3 rounded-[4px] border-[2.5px] border-emerald-800 px-3 py-1 text-[20px] font-bold tracking-[0.1em] text-emerald-800 uppercase">
                 Paid ✓
               </p>
               <p className="mt-4 text-[15px] text-ink">{theme.name} is yours. Use it on any invite.</p>

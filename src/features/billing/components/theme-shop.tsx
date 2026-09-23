@@ -28,7 +28,7 @@ export function ThemeShop({ themes }: { themes: ThemeForShop[] }) {
             </span>
             <div className="mt-3 flex items-baseline justify-between gap-2 px-1">
               <span className="truncate text-[15px] font-medium text-ink">{theme.name}</span>
-              {!theme.owned && <span className="font-mono text-[13px] font-bold text-ink">{formatUsd(theme.priceCents)}</span>}
+              {!theme.owned && <span className="text-[13px] font-bold text-ink">{formatUsd(theme.priceCents)}</span>}
             </div>
             <div className="mt-3 grid gap-1.5 px-1 pb-1">
               {!theme.owned && (
