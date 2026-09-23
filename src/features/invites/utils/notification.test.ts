@@ -67,4 +67,20 @@ describe("answerNotification", () => {
     expect(text).toContain("📍 A &amp; B's");
     expect(text).toContain("&lt;/i&gt;&lt;a href='x'&gt;click&lt;/a&gt;");
   });
+
+  test("an Invite with no Recipient name still reads naturally", () => {
+    const yes = answerNotification({ ...base, recipientName: "  ", answer: "yes", startsAt: null, noDodges: 2 });
+    expect(yes).toBe(
+      [
+        "🎉 <b>They said YES!</b>",
+        "",
+        "📍 mauu steak",
+        "🗺 https://maps.app.goo.gl/abc",
+        "",
+        "(They tried to click No 2 times 😂)",
+      ].join("\n"),
+    );
+    const later = answerNotification({ ...base, recipientName: "", answer: "maybe_later", startsAt: null });
+    expect(later.split("\n")[0]).toBe("💌 <b>They said maybe another time.</b>");
+  });
 });

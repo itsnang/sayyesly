@@ -52,7 +52,7 @@ export function ThemeField({ themes, value, savedThemeId, onChange, onUnlock, di
               </span>
               <span className="mt-2 flex items-baseline justify-between gap-2 px-1 pb-0.5">
                 <span className="text-[14px] font-medium text-ink">{theme.name}</span>
-                <span className="font-mono text-[11.5px] text-muted">{theme.priceCents === 0 ? "free" : theme.usable ? "yours" : "locked"}</span>
+                <span className="text-[11.5px] text-muted">{theme.priceCents === 0 ? "free" : theme.usable ? "yours" : "locked"}</span>
               </span>
             </button>
             {locked && !disabled && (

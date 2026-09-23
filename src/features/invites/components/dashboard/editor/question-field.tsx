@@ -70,7 +70,7 @@ export function QuestionField({ value, onChange, disabled, error }: QuestionFiel
 
       {!disabled && (
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 font-mono text-[11.5px] tracking-wide text-muted">or try:</span>
+          <span className="mr-1 text-[11.5px] tracking-wide text-muted">or try:</span>
           {TEMPLATES.map((t) => (
             <button
               key={t}

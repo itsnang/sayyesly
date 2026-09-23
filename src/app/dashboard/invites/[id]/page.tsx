@@ -6,6 +6,7 @@ import { DeleteInviteButton } from "@/features/invites/components/dashboard/dele
 import { SharePanel } from "@/features/invites/components/dashboard/share-panel";
 import { getMyInvite } from "@/features/invites/server/dashboard-data";
 import { getThemeChoices } from "@/features/invites/server/theme-access";
+import { inviteTitle } from "@/features/invites/utils";
 import { requireUser } from "@/lib/auth/session";
 import { SITE_URL } from "@/lib/site";
 import { isUploadConfigured } from "@/lib/storage/r2";
@@ -30,7 +31,7 @@ export default async function EditInvitePage({ params, searchParams }: PageProps
             ← All invites
           </Link>
         }
-        title={`For ${invite.values.recipientName}`}
+        title={inviteTitle(invite.values.recipientName, invite.values.question)}
         description={invite.answered ? "They've answered. You can still change the plan." : "Waiting for their answer."}
       />
       <div className="mb-12">
@@ -39,12 +40,13 @@ export default async function EditInvitePage({ params, searchParams }: PageProps
           linkCode={invite.linkCode}
           botUsername={botUsername}
           recipientName={invite.values.recipientName}
+          linkedGroups={invite.linkedGroups}
           justCreated={query.created === "1"}
         />
       </div>
 
       <div className="mb-8 flex items-center gap-4">
-        <h2 className="font-mono text-[12px] tracking-[0.12em] text-muted uppercase">Edit the invite</h2>
+        <h2 className=" text-[12px] tracking-[0.12em] text-muted uppercase">Edit the invite</h2>
         <span aria-hidden className="h-[1.5px] flex-1 bg-ink/20" />
       </div>
       <InviteStudio

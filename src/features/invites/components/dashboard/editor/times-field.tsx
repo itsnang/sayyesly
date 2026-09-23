@@ -66,7 +66,7 @@ export function TimesField({ slots, timezone, onAdd, onRemove, disabled, max }: 
   return (
     <div className={cx("min-w-0", disabled && "pointer-events-none opacity-60")}>
       <p className="mb-2 text-[14px] font-medium text-ink">
-        <span className="mr-1.5 font-mono text-[12px] text-muted">1</span>Pick a time
+        <span className="mr-1.5 text-[12px] text-muted">1</span>Pick a time
       </p>
       <div className="flex flex-wrap gap-1.5">
         {QUICK_TIMES.map(([value, label]) => (
@@ -77,7 +77,7 @@ export function TimesField({ slots, timezone, onAdd, onRemove, disabled, max }: 
       </div>
 
       <p className="mt-5 mb-2 text-[14px] font-medium text-ink">
-        <span className="mr-1.5 font-mono text-[12px] text-muted">2</span>Tap the days you&apos;re free
+        <span className="mr-1.5 text-[12px] text-muted">2</span>Tap the days you&apos;re free
       </p>
       <div className="no-scrollbar -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
         {days.map((d) => {
@@ -94,7 +94,7 @@ export function TimesField({ slots, timezone, onAdd, onRemove, disabled, max }: 
               onClick={() => toggle(slot)}
               className={chipClass(on, "flex min-w-[64px] shrink-0 flex-col items-center px-2 py-2")}
             >
-              <span className="font-mono text-[10.5px] tracking-wider uppercase opacity-75">{d.weekday}</span>
+              <span className="text-[11px] font-semibold tracking-wide uppercase opacity-70">{d.weekday}</span>
               <span className="text-[14px] font-medium">{d.day}</span>
             </button>
           );

@@ -46,7 +46,7 @@ export function LoginScreen({ next, error, available }: { next: string; error: s
               Log in with Telegram
             </a>
             )}
-            <p className="mt-4 font-mono text-[11.5px] leading-relaxed text-muted">
+            <p className="mt-4 text-[11.5px] leading-relaxed text-muted">
               we only see your telegram name and photo.
               <br />
               the bot will message you when someone answers.
