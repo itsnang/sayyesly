@@ -2,14 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { buttonClass, cx, Stamp } from "@/components/shared/ui";
+import { buttonClass, cx } from "@/components/shared/ui";
 import { formatUsd } from "@/lib/format";
 import type { ThemeChoice } from "../../../server/theme-access";
 
 type ThemeFieldProps = {
   themes: ThemeChoice[];
   value: string;
-  /** The Theme the saved invite already has; always selectable */
+  /** The Theme the saved invite already has; always usable */
   savedThemeId: string;
   onChange: (id: string) => void;
   /** Buy a locked Theme without leaving the form; falls back to the Themes page */
@@ -17,63 +17,82 @@ type ThemeFieldProps = {
   disabled?: boolean;
 };
 
-export function ThemeField({ themes, value, savedThemeId, onChange, onUnlock, disabled }: ThemeFieldProps) {
+/** Whether this Creator may save an invite with the Theme (free, bought, or already on the invite). */
+export function isThemeLocked(theme: ThemeChoice | undefined, savedThemeId: string): boolean {
+  return !!theme && !theme.usable && theme.id !== savedThemeId;
+}
+
+function LockIcon() {
   return (
-    <div role="radiogroup" aria-label="Theme" className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-      {themes.map((theme) => {
-        const locked = !theme.usable && theme.id !== savedThemeId;
-        const selectable = !disabled && !locked;
-        const selected = value === theme.id;
-        return (
-          <div key={theme.id} className="flex flex-col">
-            <button
-              type="button"
-              role="radio"
-              aria-checked={selected}
-              disabled={!selectable}
-              onClick={() => onChange(theme.id)}
-              className={cx(
-                "group block w-full rounded-[8px] border-[1.5px] p-1.5 text-left transition disabled:cursor-not-allowed",
-                selected ? "border-ink bg-card shadow-[4px_4px_0_var(--color-rose)]" : "border-ink/25 bg-card enabled:hover:border-ink",
-              )}
-            >
-              <span className="relative block aspect-[4/5] overflow-hidden rounded-[4px] bg-surface">
-                {theme.thumbnail && (
-                  <Image src={theme.thumbnail} alt="" fill sizes="200px" className={cx("object-cover object-[50%_32%]", locked && "opacity-60 grayscale-[35%]")} />
-                )}
-                {selected && (
-                  <span className="absolute top-2 right-2 grid size-6 place-items-center rounded-[4px] border-[1.5px] border-ink bg-ink text-[12px] text-canvas">✓</span>
-                )}
-                {locked && (
-                  <Stamp tone="ink" className="absolute top-2 left-2 bg-card">
-                    {formatUsd(theme.priceCents)}
-                  </Stamp>
-                )}
-              </span>
-              <span className="mt-2 flex items-baseline justify-between gap-2 px-1 pb-0.5">
-                <span className="text-[14px] font-medium text-ink">{theme.name}</span>
-                <span className="text-[11.5px] text-muted">{theme.priceCents === 0 ? "free" : theme.usable ? "yours" : "locked"}</span>
-              </span>
+    <svg viewBox="0 0 16 16" aria-hidden className="size-3" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3.5" y="7" width="9" height="6.5" rx="1.5" />
+      <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" />
+    </svg>
+  );
+}
+
+/**
+ * The themes, always in view: a strip of cards that put the Theme on the live
+ * preview when tapped, paid ones included, so people can try before they buy.
+ * Saving with a locked Theme is refused; the unlock prompt says so up front.
+ */
+export function ThemeField({ themes, value, savedThemeId, onChange, onUnlock, disabled }: ThemeFieldProps) {
+  const selected = themes.find((t) => t.id === value);
+  const selectedLocked = isThemeLocked(selected, savedThemeId);
+
+  return (
+    <div>
+      <ul aria-label="Themes" className="no-scrollbar -mx-5 flex snap-x gap-3 overflow-x-auto px-5 pb-1">
+        {themes.map((theme) => {
+          const locked = isThemeLocked(theme, savedThemeId);
+          const on = value === theme.id;
+          return (
+            <li key={theme.id} className="w-[104px] shrink-0 snap-start">
+              <button
+                type="button"
+                disabled={disabled}
+                aria-pressed={on}
+                aria-label={locked ? `${theme.name}, ${formatUsd(theme.priceCents)}. Try it on your invite` : theme.name}
+                onClick={() => onChange(theme.id)}
+                className="group block w-full rounded-[8px] text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <span
+                  className={cx(
+                    "relative block aspect-[4/5] overflow-hidden rounded-[8px] border bg-surface transition",
+                    on ? "border-ink ring-2 ring-ink/80 ring-offset-2" : "border-ink/10 group-hover:border-ink/35",
+                  )}
+                >
+                  {theme.thumbnail && <Image src={theme.thumbnail} alt="" fill sizes="104px" className="object-cover object-[50%_30%]" />}
+                  {locked && (
+                    <span className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded-[5px] bg-white/95 px-1.5 py-0.5 text-[11.5px] font-semibold text-ink">
+                      <LockIcon /> {formatUsd(theme.priceCents)}
+                    </span>
+                  )}
+                </span>
+                <span className="mt-1.5 block truncate text-[13px] font-medium text-ink">{theme.name}</span>
+                <span className="block text-[12px] text-muted">{theme.priceCents === 0 ? "Free" : theme.usable ? "Yours" : "Try it free"}</span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+
+      {selected && selectedLocked && !disabled && (
+        <div className="mt-3 flex items-center justify-between gap-3 rounded-[8px] bg-surface px-3 py-2.5">
+          <p className="min-w-0 text-[13px] leading-snug text-ink">
+            <b className="font-semibold">{selected.name}</b> is on your preview. Unlock it to send it.
+          </p>
+          {onUnlock ? (
+            <button type="button" onClick={() => onUnlock(selected)} className={buttonClass("primary", "sm", "shrink-0")}>
+              Unlock {formatUsd(selected.priceCents)}
             </button>
-            {locked && !disabled && (
-              <div className="mt-2 grid grid-cols-[1fr_auto] gap-1.5">
-                {onUnlock ? (
-                  <button type="button" onClick={() => onUnlock(theme)} className={buttonClass("primary", "sm")}>
-                    Unlock {formatUsd(theme.priceCents)}
-                  </button>
-                ) : (
-                  <Link href="/dashboard/themes" className={buttonClass("primary", "sm")}>
-                    Unlock
-                  </Link>
-                )}
-                <Link href={`/demo?theme=${theme.id}`} target="_blank" className={buttonClass("secondary", "sm")} aria-label={`Try ${theme.name}`}>
-                  Try ↗
-                </Link>
-              </div>
-            )}
-          </div>
-        );
-      })}
+          ) : (
+            <Link href="/dashboard/themes" className={buttonClass("primary", "sm", "shrink-0")}>
+              Unlock
+            </Link>
+          )}
+        </div>
+      )}
     </div>
   );
 }

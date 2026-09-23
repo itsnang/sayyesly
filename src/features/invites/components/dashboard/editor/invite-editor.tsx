@@ -1,61 +1,85 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Controller, useFieldArray, useForm, useWatch, type FieldErrors, type FieldPath } from "react-hook-form";
-import { Button, Checkbox, cx, Field, FieldError, Input, Note, Textarea } from "@/components/shared/ui";
+import { Wordmark } from "@/components/shared/studio";
+import { Button, buttonClass, Checkbox, cx, Field, FieldError, Input, Note, Textarea } from "@/components/shared/ui";
+import { formatUsd } from "@/lib/format";
 import { saveInvite } from "../../../actions";
 import { inviteFormSchema, MAX_PLAN_PHOTOS, MAX_TIME_SLOTS, type InviteFormValues } from "../../../schemas";
 import type { ThemeChoice } from "../../../server/theme-access";
+import type { ThemeContent } from "../../../themes";
+import { inviteTitle } from "../../../utils";
 import { ImageField } from "../image-field";
-import { PreviewPhone } from "./preview-phone";
+import { DesktopMock, DeviceToggle, PhoneMock, PreviewSheet, type Device } from "./live-preview";
 import { QuestionField } from "./question-field";
-import { ThemeField } from "./theme-field";
+import { isThemeLocked, ThemeField } from "./theme-field";
 import { TimesField } from "./times-field";
 
-type RowId = "plan" | "when" | "look" | "extras";
+type SectionId = "plan" | "when" | "extras";
 
-// The optional "Make it yours" layer: every field here already has a working default.
-const ROWS: { id: RowId; title: string; fields: FieldPath<InviteFormValues>[] }[] = [
-  { id: "plan", title: "The plan", fields: ["planPlace", "planActivity", "planMapUrl", "planDressCode", "planNotes", "planPhotos"] },
+// The optional layer: every field here already has a working default.
+const SECTIONS: { id: SectionId; title: string; fields: FieldPath<InviteFormValues>[] }[] = [
+  { id: "plan", title: "Plan", fields: ["planPlace", "planActivity", "planMapUrl", "planDressCode", "planNotes", "planPhotos"] },
   { id: "when", title: "When", fields: ["timezone", "timeSlots", "allowCustomTime"] },
-  { id: "look", title: "The look", fields: ["themeId"] },
-  { id: "extras", title: "Note & picture", fields: ["message", "imageUrl"] },
+  { id: "extras", title: "Extras", fields: ["message", "imageUrl"] },
 ];
-const MAIN_FIELDS: FieldPath<InviteFormValues>[] = ["question", "recipientName"];
+const MAIN_FIELDS: FieldPath<InviteFormValues>[] = ["question", "recipientName", "themeId"];
+
+// Used only if the selected Theme is missing from the list: show everything, name nothing theme-specific.
+const ALL_CONTENT: ThemeContent = { picture: { label: "Picture", whenEmpty: "the theme's own picture" }, note: true, planPhotos: true };
+
+/** The Extras section's name, after what the selected Theme actually shows (null: nothing to set). */
+function extrasTitle(content: ThemeContent): string | null {
+  if (content.note && content.picture) return "Note & picture";
+  if (content.note) return "Note";
+  if (content.picture) return "Picture";
+  return null;
+}
 
 const hasError = (errors: FieldErrors<InviteFormValues>, fields: FieldPath<InviteFormValues>[]) =>
   fields.some((f) => f.split(".")[0]! in errors);
 
+/** True only in the browser (false during server rendering and hydration), for portals into document.body. */
+const useIsClient = () =>
+  useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+
 const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
-/** One line, in plain words, saying what the Recipient gets from a row right now. */
-function summarise(id: RowId, v: InviteFormValues, themes: ThemeChoice[]): string {
+/** One short line saying what the Recipient gets from a section right now. */
+function summarise(id: SectionId, v: InviteFormValues, content: ThemeContent): string {
   switch (id) {
     case "plan": {
       const main = [v.planPlace?.trim(), v.planActivity?.trim()].filter(Boolean).join(" · ");
-      const extras = [v.planMapUrl, v.planDressCode, v.planNotes].filter((x) => x?.trim()).length + (v.planPhotos?.length ?? 0);
-      if (main) return extras ? `${main} + ${count(extras, "detail", "details")}` : main;
-      return extras ? count(extras, "detail", "details") : "No plan yet: it stays a surprise";
+      const photos = content.planPhotos ? (v.planPhotos?.length ?? 0) : 0;
+      const extras = [v.planMapUrl, v.planDressCode, v.planNotes].filter((x) => x?.trim()).length + photos;
+      if (main) return extras ? `${main} +${extras}` : main;
+      return extras ? count(extras, "detail", "details") : "A surprise";
     }
     case "when": {
       const n = v.timeSlots?.length ?? 0;
-      if (n === 0) return v.allowCustomTime ? "They suggest a time" : "Offer a time, or let them suggest one";
-      return `${count(n, "time", "times")} offered${v.allowCustomTime ? ", or they suggest one" : ""}`;
+      if (n === 0) return v.allowCustomTime ? "They pick" : "Needs a time";
+      return `${count(n, "time", "times")}${v.allowCustomTime ? " or they pick" : ""}`;
     }
-    case "look":
-      return themes.find((t) => t.id === v.themeId)?.name ?? "Pick a theme";
     case "extras": {
-      const note = v.message?.trim();
-      const picture = v.imageUrl?.trim() ? "your picture" : "the kitten picture";
-      return note ? `“${note}” · ${picture}` : `No note · ${picture}`;
+      const parts: string[] = [];
+      if (content.note && v.message?.trim()) parts.push(`“${v.message.trim()}”`);
+      if (content.picture) parts.push(v.imageUrl?.trim() ? "Your picture" : "Default picture");
+      return parts.join(" · ") || "None";
     }
   }
 }
 
-function Row({
-  row,
+function Section({
+  title,
   summary,
   open,
   invalid,
@@ -63,7 +87,7 @@ function Row({
   onToggle,
   children,
 }: {
-  row: (typeof ROWS)[number];
+  title: string;
   summary: string;
   open: boolean;
   invalid: boolean;
@@ -71,39 +95,32 @@ function Row({
   onToggle: () => void;
   children: ReactNode;
 }) {
-  const bodyId = `row-${row.id}`;
   return (
-    <div id={`section-${row.id}`} className="scroll-mt-20">
+    <div className="border-t border-ink/10">
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        aria-controls={bodyId}
-        className="flex w-full items-center gap-3 px-4 py-4 text-left transition hover:bg-surface/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-rose sm:px-5"
+        className="flex w-full items-center gap-3 px-5 py-3.5 text-left transition hover:bg-surface/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-rose"
       >
-        <span className="min-w-0 flex-1">
-          <span className="flex items-center gap-2 text-[15.5px] font-semibold text-ink">
-            {row.title}
-            {invalid && <span className="text-[12.5px] font-medium text-red-700">needs a look</span>}
-            {locked && <span className="text-[12.5px] font-normal text-muted">locked</span>}
-          </span>
-          <span className="mt-0.5 block truncate text-[14px] text-muted">{summary}</span>
+        <span className="w-24 shrink-0 text-[14px] font-medium text-ink">{title}</span>
+        <span className={cx("min-w-0 flex-1 truncate text-right text-[13.5px]", invalid ? "font-medium text-red-700" : "text-muted")}>
+          {invalid ? "Needs a look" : locked ? `${summary} · locked` : summary}
         </span>
-        <span
+        <svg
+          viewBox="0 0 16 16"
           aria-hidden
-          className={cx(
-            "grid size-7 shrink-0 place-items-center rounded-[5px] border-[1.5px] text-[16px] leading-none transition",
-            open ? "border-ink bg-ink text-canvas" : "border-ink/25 text-ink",
-          )}
+          className={cx("size-4 shrink-0 text-faint transition-transform", open && "rotate-90")}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         >
-          {open ? "−" : "+"}
-        </span>
+          <path d="M6 3.5 10.5 8 6 12.5" />
+        </svg>
       </button>
-      {open && (
-        <div id={bodyId} className="min-w-0 px-4 pt-1 pb-5 sm:px-5">
-          {children}
-        </div>
-      )}
+      {open && <div className="min-w-0 px-5 pt-1 pb-6">{children}</div>}
     </div>
   );
 }
@@ -114,6 +131,12 @@ type InviteEditorProps = {
   answered: boolean;
   themes: ThemeChoice[];
   uploadsEnabled: boolean;
+  /** The Share drawer's content (link, group chats); only for saved invites */
+  share?: ReactNode;
+  /** Open the Share drawer straight away, e.g. right after creating */
+  shareOpen?: boolean | undefined;
+  /** Shown at the very end of the settings, e.g. deleting the invite */
+  footer?: ReactNode;
   /**
    * Buy a locked Theme without leaving the form. Call `select` once it's
    * unlocked to switch the invite to it.
@@ -121,14 +144,22 @@ type InviteEditorProps = {
   onUnlockTheme?: ((theme: ThemeChoice, select: () => void) => void) | undefined;
 };
 
-export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnabled, onUnlockTheme }: InviteEditorProps) {
+/**
+ * The invite studio: the live invite on a canvas (phone or desktop) and one
+ * column of settings beside it. The question is always open; every optional
+ * section is a single line with its current value until you open it.
+ */
+export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnabled, share, shareOpen, footer, onUnlockTheme }: InviteEditorProps) {
   const router = useRouter();
   const isNew = inviteId === null;
+  const [open, setOpen] = useState<Set<SectionId>>(() => new Set());
+  const [device, setDevice] = useState<Device>("phone");
   const [serverError, setServerError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [sharing, setSharing] = useState(!!shareOpen);
   const [editingZone, setEditingZone] = useState(false);
-  const [open, setOpen] = useState<Set<RowId>>(() => new Set());
+  const isClient = useIsClient();
 
   const {
     register,
@@ -136,6 +167,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
     handleSubmit,
     reset,
     setValue,
+    trigger,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<InviteFormValues>({ resolver: zodResolver(inviteFormSchema), defaultValues: defaults, mode: "onTouched" });
   const slots = useFieldArray({ control, name: "timeSlots" });
@@ -149,6 +181,13 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
     if (zone && zone !== defaults.timezone) setValue("timezone", zone);
   }, [isNew, defaults.timezone, setValue]);
 
+  // "Offer a time or let them pick" spans two fields: re-check it as soon as either changes.
+  const slotCount = values.timeSlots?.length ?? 0;
+  const timesError = !!errors.timeSlots;
+  useEffect(() => {
+    if (timesError) void trigger("timeSlots");
+  }, [slotCount, values.allowCustomTime, timesError, trigger]);
+
   const timeZones = useMemo(() => {
     try {
       return Intl.supportedValuesOf("timeZone");
@@ -157,7 +196,17 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
     }
   }, []);
 
-  const toggle = (id: RowId) =>
+  // The selected Theme decides which optional fields are worth asking for.
+  const content = themes.find((t) => t.id === values.themeId)?.content ?? ALL_CONTENT;
+  const extras = extrasTitle(content);
+  // A paid Theme can be tried on the preview before buying; it has to be unlocked to save.
+  const selectedTheme = themes.find((t) => t.id === values.themeId);
+  const themeLocked = isThemeLocked(selectedTheme, defaults.themeId);
+  const unlock = (theme: ThemeChoice) => onUnlockTheme?.(theme, () => setValue("themeId", theme.id, { shouldDirty: true }));
+  const title = isNew ? "New invite" : inviteTitle(values.recipientName ?? "", values.question ?? "");
+  const lockNote = "Locked, because they've already answered.";
+
+  const toggle = (id: SectionId) =>
     setOpen((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -165,11 +214,25 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
       return next;
     });
 
-  const lockNote = "Locked, because they've already answered.";
+  const section = (id: SectionId) => {
+    const s = SECTIONS.find((x) => x.id === id)!;
+    return {
+      title: id === "extras" && extras ? extras : s.title,
+      summary: summarise(id, values, content),
+      open: open.has(id),
+      invalid: hasError(errors, s.fields),
+      onToggle: () => toggle(id),
+    };
+  };
 
   async function onSubmit(data: InviteFormValues) {
     setServerError(null);
     setSaved(false);
+    if (themeLocked && selectedTheme) {
+      if (onUnlockTheme) unlock(selectedTheme);
+      else setServerError(`Unlock ${selectedTheme.name} on the Themes page first.`);
+      return;
+    }
     const result = await saveInvite(inviteId, data);
     if (result.error || !result.id) {
       setServerError(result.error ?? "Couldn't save. Please try again.");
@@ -184,33 +247,102 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
     router.refresh();
   }
 
-  // Open every row with a problem and bring the first one into view.
+  // Open every section with a problem; React Hook Form focuses the first field.
   const onInvalid = (errs: FieldErrors<InviteFormValues>) => {
-    const broken = ROWS.filter((r) => hasError(errs, r.fields)).map((r) => r.id);
+    const broken = SECTIONS.filter((s) => hasError(errs, s.fields)).map((s) => s.id);
     if (broken.length) setOpen((prev) => new Set([...prev, ...broken]));
-    const first = hasError(errs, MAIN_FIELDS) ? "main" : broken[0];
-    if (first) requestAnimationFrame(() => document.getElementById(`section-${first}`)?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    if (!hasError(errs, MAIN_FIELDS) && broken[0]) {
+      requestAnimationFrame(() => document.getElementById(`section-${broken[0]}`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
+    }
   };
 
-  const row = (id: RowId) => {
-    const r = ROWS.find((x) => x.id === id)!;
-    return {
-      row: r,
-      summary: summarise(id, values, themes),
-      open: open.has(id),
-      invalid: hasError(errors, r.fields),
-      onToggle: () => toggle(id),
-    };
-  };
+  const status = serverError ? (
+    <span role="alert" className="truncate text-[13px] font-medium text-red-700">
+      {serverError}
+    </span>
+  ) : saved && !isDirty ? (
+    <span className="text-[13px] text-emerald-800">Saved</span>
+  ) : !isNew && isDirty ? (
+    <span className="text-[13px] text-muted">Unsaved changes</span>
+  ) : null;
+
+  const primary =
+    themeLocked && selectedTheme ? (
+      <Button type="submit" form="invite-form" size="sm">
+        Unlock {formatUsd(selectedTheme.priceCents)}
+      </Button>
+    ) : isNew ? (
+      <Button type="submit" form="invite-form" size="sm" disabled={isSubmitting}>
+        {isSubmitting ? "Creating…" : "Create invite"}
+      </Button>
+    ) : (
+      <Button type="submit" form="invite-form" size="sm" disabled={isSubmitting || !isDirty}>
+        {isSubmitting ? "Saving…" : "Save"}
+      </Button>
+    );
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-14">
-      <form onSubmit={handleSubmit(onSubmit, onInvalid)} noValidate className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-8">
-        {answered && <Note>They&apos;ve answered, so the question, times and theme are locked. You can still change the plan.</Note>}
+    <div className="flex min-h-dvh flex-col bg-white lg:h-dvh">
+      {/* The only bar */}
+      <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-ink/10 bg-white/95 px-4 backdrop-blur lg:static">
+        <Link href="/dashboard" aria-label="All invites" className="shrink-0">
+          <Wordmark className="text-[19px] max-sm:hidden" />
+          <span className="text-[18px] text-ink sm:hidden">←</span>
+        </Link>
+        <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-2 text-[14px] sm:border-l sm:border-ink/10 sm:pl-3">
+          <Link href="/dashboard" className="shrink-0 text-muted hover:text-ink max-sm:hidden">
+            Invites
+          </Link>
+          <span aria-hidden className="text-faint max-sm:hidden">
+            /
+          </span>
+          <span className="truncate font-medium text-ink">{title}</span>
+        </nav>
+        <div className="ml-auto flex min-w-0 items-center gap-2.5">
+          {status}
+          {share && (
+            <button type="button" onClick={() => setSharing(true)} className={buttonClass("secondary", "sm")}>
+              Share
+            </button>
+          )}
+          <div className="max-lg:hidden">{primary}</div>
+        </div>
+      </header>
 
-        {/* The only part that matters: already filled in, ready to send */}
-        <section id="section-main" aria-label="Your question" className="scroll-mt-20 rounded-[8px] border-[1.5px] border-ink bg-card p-4 sm:p-6">
-          <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+        {/* Canvas (right on large screens): the invite is the hero */}
+        <div className="hidden min-w-0 flex-1 flex-col bg-stage lg:flex">
+          <div className="flex shrink-0 items-center justify-center gap-3 p-4">
+            <DeviceToggle value={device} onChange={setDevice} />
+            {themeLocked && selectedTheme && onUnlockTheme && (
+              <button type="button" onClick={() => unlock(selectedTheme)} className={buttonClass("primary", "sm")}>
+                Unlock {selectedTheme.name} · {formatUsd(selectedTheme.priceCents)}
+              </button>
+            )}
+          </div>
+          <div className="grid min-h-0 flex-1 place-items-center px-8 pb-8">
+            {device === "phone" ? (
+              <PhoneMock values={values} className="h-full max-h-[780px]" />
+            ) : (
+              <DesktopMock values={values} className="w-[min(100%,1100px,calc((100dvh-10rem)*1.6))]" />
+            )}
+          </div>
+        </div>
+
+        {/* Settings */}
+        <form
+          id="invite-form"
+          onSubmit={handleSubmit(onSubmit, onInvalid)}
+          noValidate
+          className="min-w-0 flex-1 pb-24 lg:order-first lg:w-[400px] lg:flex-none lg:overflow-y-auto lg:border-r lg:border-ink/10 lg:pb-0"
+        >
+          {answered && (
+            <div className="px-5 pt-5">
+              <Note>They&apos;ve answered, so the question, times and theme are locked. You can still change the plan.</Note>
+            </div>
+          )}
+
+          <div id="section-main" className="grid grid-cols-[minmax(0,1fr)] gap-5 px-5 pt-5 pb-6">
             <Controller
               control={control}
               name="question"
@@ -218,79 +350,102 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
                 <QuestionField value={field.value} onChange={field.onChange} disabled={answered} error={errors.question?.message ?? (answered ? lockNote : undefined)} />
               )}
             />
-            <Field label="Who is it for?" optional hint="Only you see it: in your invites list and your Telegram messages." error={errors.recipientName?.message}>
-              <Input {...register("recipientName")} aria-invalid={!!errors.recipientName || undefined} placeholder="e.g. Sreyneang" autoComplete="off" />
+            <Field label="For" optional hint="Only you see this, in your list and Telegram messages." error={errors.recipientName?.message}>
+              <Input {...register("recipientName")} aria-invalid={!!errors.recipientName || undefined} placeholder="Their name" autoComplete="off" />
             </Field>
           </div>
-        </section>
 
-        <section aria-labelledby="make-it-yours">
-          <div className="mb-3 flex items-baseline justify-between gap-3">
-            <h2 id="make-it-yours" className="font-display text-[24px] leading-none text-ink">
-              Make it yours
-            </h2>
-            <p className="text-[13.5px] text-muted">All optional</p>
+          {/* Themes are what we sell: always in view, and every one can be tried on the preview */}
+          <div id="section-theme" className="border-t border-ink/10 px-5 pt-5 pb-6">
+            <div className="mb-3 flex items-baseline justify-between gap-3">
+              <h2 className="text-[13.5px] font-medium text-ink">Theme</h2>
+              {answered ? (
+                <span className="text-[12.5px] text-muted">Locked</span>
+              ) : (
+                <span className="text-[12.5px] text-muted">Tap to try one on</span>
+              )}
+            </div>
+            <Controller
+              control={control}
+              name="themeId"
+              render={({ field }) => (
+                <ThemeField
+                  themes={themes}
+                  value={field.value}
+                  savedThemeId={defaults.themeId}
+                  onChange={field.onChange}
+                  onUnlock={onUnlockTheme && unlock}
+                  disabled={answered}
+                />
+              )}
+            />
+            {errors.themeId && <FieldError className="mt-2">{errors.themeId.message}</FieldError>}
           </div>
 
-          <div className="divide-y-[1.5px] divide-ink/15 overflow-hidden rounded-[8px] border-[1.5px] border-ink bg-card">
-            <Row {...row("plan")}>
-              <p className="mb-4 text-[13.5px] text-muted">What they see after they say yes. Leave it empty to keep it a surprise.</p>
-              <div className="grid grid-cols-[minmax(0,1fr)] gap-5 sm:grid-cols-2">
+          <div id="section-plan">
+            <Section {...section("plan")}>
+              <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
+                <p className="text-[13px] text-muted">Shown after they say yes. Leave it empty to keep it a surprise.</p>
                 <Field label="Where" optional error={errors.planPlace?.message}>
                   <Input {...register("planPlace")} placeholder="mauu steak" />
                 </Field>
                 <Field label="What you'll do" optional error={errors.planActivity?.message}>
                   <Input {...register("planActivity")} placeholder="steak dinner" />
                 </Field>
-                <Field label="Map link" optional hint="In Google Maps: Share → Copy link." error={errors.planMapUrl?.message} className="sm:col-span-2">
+                <Field label="Map link" optional hint="In Google Maps: Share → Copy link." error={errors.planMapUrl?.message}>
                   <Input {...register("planMapUrl")} type="url" inputMode="url" placeholder="https://maps.app.goo.gl/…" />
                 </Field>
-                <Field label="Dress code" optional error={errors.planDressCode?.message}>
-                  <Input {...register("planDressCode")} placeholder="comfy" />
-                </Field>
-                <Field label="Anything else" optional error={errors.planNotes?.message}>
-                  <Input {...register("planNotes")} placeholder="I'll pick you up at 6:45" />
-                </Field>
-
-                <div className="sm:col-span-2">
-                  <p className="mb-1 flex items-baseline gap-2 text-[14px] font-medium text-ink">
-                    Photos of the place <span className="text-[12.5px] font-normal text-faint">optional, up to {MAX_PLAN_PHOTOS}</span>
-                  </p>
-                  <p className="mb-3 text-[12.5px] text-muted">The first one is shown big; the others get a small caption.</p>
-                  <div className="grid gap-3">
-                    {photos.fields.map((photo, i) => (
-                      <div key={photo.id} className="rounded-[6px] border-[1.5px] border-dashed border-ink/30 p-3">
-                        <Controller
-                          control={control}
-                          name={`planPhotos.${i}.url`}
-                          render={({ field }) => (
-                            <ImageField value={field.value} onChange={(url) => (url ? field.onChange(url) : photos.remove(i))} uploadsEnabled={uploadsEnabled} />
-                          )}
-                        />
-                        {errors.planPhotos?.[i]?.url && <FieldError>{errors.planPhotos[i]?.url?.message}</FieldError>}
-                        {i > 0 && <Input {...register(`planPhotos.${i}.caption`)} placeholder="caption, e.g. the vibe ✦" className="mt-3" />}
-                      </div>
-                    ))}
-                  </div>
-                  {photos.fields.length < MAX_PLAN_PHOTOS && (
-                    <Button variant="secondary" size="sm" className="mt-3" onClick={() => photos.append({ url: "", alt: "", caption: "" })}>
-                      + Add a photo
-                    </Button>
-                  )}
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Dress code" optional error={errors.planDressCode?.message}>
+                    <Input {...register("planDressCode")} placeholder="comfy" />
+                  </Field>
+                  <Field label="Notes" optional error={errors.planNotes?.message}>
+                    <Input {...register("planNotes")} placeholder="pick-up at 6:45" />
+                  </Field>
                 </div>
-              </div>
-            </Row>
 
-            <Row {...row("when")} locked={answered}>
-              <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
+                {content.planPhotos && (
+                  <div>
+                    <p className="mb-2 flex items-baseline gap-2 text-[13.5px] font-medium text-ink">
+                      Photos <span className="text-[12.5px] font-normal text-faint">optional, up to {MAX_PLAN_PHOTOS}</span>
+                    </p>
+                    <div className="grid gap-3">
+                      {photos.fields.map((photo, i) => (
+                        <div key={photo.id} className="rounded-[8px] border border-ink/10 p-3">
+                          <Controller
+                            control={control}
+                            name={`planPhotos.${i}.url`}
+                            render={({ field }) => (
+                              <ImageField value={field.value} onChange={(url) => (url ? field.onChange(url) : photos.remove(i))} uploadsEnabled={uploadsEnabled} />
+                            )}
+                          />
+                          {errors.planPhotos?.[i]?.url && <FieldError>{errors.planPhotos[i]?.url?.message}</FieldError>}
+                          {i > 0 && <Input {...register(`planPhotos.${i}.caption`)} placeholder="Caption" className="mt-3" />}
+                        </div>
+                      ))}
+                    </div>
+                    {photos.fields.length < MAX_PLAN_PHOTOS && (
+                      <Button variant="secondary" size="sm" className="mt-3" onClick={() => photos.append({ url: "", alt: "", caption: "" })}>
+                        Add a photo
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </Section>
+          </div>
+
+          <div id="section-when">
+            <Section {...section("when")} locked={answered}>
+              <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
                 <Checkbox
                   {...register("allowCustomTime")}
                   disabled={answered}
-                  label="Let them suggest a time"
-                  description="They get a calendar and can pick any day and time. On by default, so you don't have to offer any."
+                  label="Let them pick a time"
+                  description="They get a calendar and choose any day and time."
                 />
                 <div>
-                  <p className="mb-3 text-[13.5px] text-muted">Or offer specific times as well:</p>
+                  <p className="mb-3 text-[13px] text-muted">Or offer specific times:</p>
                   <TimesField
                     slots={values.timeSlots ?? []}
                     timezone={values.timezone}
@@ -301,12 +456,11 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
                   />
                 </div>
                 {(errors.timeSlots?.message || errors.timeSlots?.root?.message) && (
-                  <FieldError className="-mt-3">{errors.timeSlots?.message ?? errors.timeSlots?.root?.message}</FieldError>
+                  <FieldError className="-mt-2">{errors.timeSlots?.message ?? errors.timeSlots?.root?.message}</FieldError>
                 )}
-
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t-[1.5px] border-dashed border-ink/20 pt-4 text-[13px] text-muted">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px] text-muted">
                   <span>
-                    Times are in <b className="font-medium text-ink">{values.timezone.replace(/_/g, " ")}</b>, wherever they open the link.
+                    Time zone: <b className="font-medium text-ink">{values.timezone.replace(/_/g, " ")}</b>
                   </span>
                   {!answered && (
                     <button type="button" onClick={() => setEditingZone((v) => !v)} className="text-ink underline underline-offset-4">
@@ -325,73 +479,69 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
                   </Field>
                 )}
               </div>
-            </Row>
-
-            <Row {...row("look")} locked={answered}>
-              <Controller
-                control={control}
-                name="themeId"
-                render={({ field }) => (
-                  <ThemeField
-                    themes={themes}
-                    value={field.value}
-                    savedThemeId={defaults.themeId}
-                    onChange={field.onChange}
-                    onUnlock={onUnlockTheme && ((theme) => onUnlockTheme(theme, () => setValue("themeId", theme.id, { shouldDirty: true })))}
-                    disabled={answered}
-                  />
-                )}
-              />
-              {errors.themeId && <FieldError className="mt-2">{errors.themeId.message}</FieldError>}
-            </Row>
-
-            <Row {...row("extras")}>
-              <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
-                <Field label="A little note under the question" optional error={errors.message?.message}>
-                  <Textarea {...register("message")} rows={2} placeholder="no pressure :)" />
-                </Field>
-                <Field label="Picture at the top" optional hint="Leave it empty for the kitten with the bouquet." error={errors.imageUrl?.message}>
-                  <Controller
-                    control={control}
-                    name="imageUrl"
-                    render={({ field }) => <ImageField value={field.value} onChange={field.onChange} uploadsEnabled={uploadsEnabled} />}
-                  />
-                </Field>
-              </div>
-            </Row>
+            </Section>
           </div>
-        </section>
 
-        {/* One place to finish, always in reach */}
-        <div className="sticky bottom-0 z-20 -mx-4 flex items-center gap-2 border-t-[1.5px] border-ink bg-canvas px-4 py-3 sm:mx-0 sm:rounded-[8px] sm:border-[1.5px] sm:bg-card sm:shadow-[4px_4px_0_var(--color-ink)]">
-          <Button variant="secondary" className="lg:hidden" onClick={() => setPreviewOpen(true)}>
-            Preview
-          </Button>
-          <p className="hidden text-[13.5px] text-muted lg:block">{isNew ? "Ready to send as it is." : "Changes show up on their link right away."}</p>
+          {extras && (
+            <div id="section-extras">
+              <Section {...section("extras")}>
+                <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
+                  {content.note && (
+                    <Field label="Note under the question" optional error={errors.message?.message}>
+                      <Textarea {...register("message")} rows={2} placeholder="no pressure :)" />
+                    </Field>
+                  )}
+                  {content.picture && (
+                    <Field label={content.picture.label} optional hint={`Leave it empty for ${content.picture.whenEmpty}.`} error={errors.imageUrl?.message}>
+                      <Controller
+                        control={control}
+                        name="imageUrl"
+                        render={({ field }) => <ImageField value={field.value} onChange={field.onChange} uploadsEnabled={uploadsEnabled} />}
+                      />
+                    </Field>
+                  )}
+                </div>
+              </Section>
+            </div>
+          )}
 
-          <div className="ml-auto flex min-w-0 items-center gap-3">
-            {serverError && (
-              <p role="alert" className="min-w-0 text-[13px] font-medium text-red-700">
-                {serverError}
-              </p>
-            )}
-            {saved && !isDirty && !serverError && <p className="text-[13px] text-emerald-800">Saved ✓</p>}
-            {isNew ? (
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating…" : "Create invite →"}
-              </Button>
-            ) : (
-              <Button type="submit" disabled={isSubmitting || !isDirty}>
-                {isSubmitting ? "Saving…" : "Save changes"}
-              </Button>
-            )}
-          </div>
+          {footer && <div className="border-t border-ink/10 px-5 py-6">{footer}</div>}
+        </form>
+      </div>
+
+      {/* Phones: preview and the main action stay in reach */}
+      <div className="fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-ink/10 bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
+        <Button variant="secondary" className="flex-1" onClick={() => setPreviewOpen(true)}>
+          Preview
+        </Button>
+        <div className="flex-[2] [&>button]:w-full [&>button]:py-2.5 [&>button]:text-[14px]">{primary}</div>
+      </div>
+
+      {previewOpen && <PreviewSheet values={values} onClose={() => setPreviewOpen(false)} />}
+      {isClient && sharing && share && createPortal(<ShareDrawer onClose={() => setSharing(false)}>{share}</ShareDrawer>, document.body)}
+    </div>
+  );
+}
+
+/** Share opens as a drawer over the studio, so the settings stay put. */
+function ShareDrawer({ onClose, children }: { onClose: () => void; children: ReactNode }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div className="studio !min-h-0 fixed inset-0 z-50 flex justify-end bg-ink/35" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div role="dialog" aria-modal="true" aria-label="Share" className="flex h-full w-full max-w-[440px] flex-col bg-white shadow-[-12px_0_40px_-16px_rgba(35,27,23,0.35)]">
+        <div className="flex h-14 shrink-0 items-center justify-between border-b border-ink/10 px-5">
+          <h2 className="text-[15px] font-semibold text-ink">Share</h2>
+          <button type="button" onClick={onClose} className={buttonClass("ghost", "sm")}>
+            Close
+          </button>
         </div>
-      </form>
-
-      <aside aria-label="Preview">
-        <PreviewPhone values={values} open={previewOpen} onClose={() => setPreviewOpen(false)} />
-      </aside>
+        <div className="flex-1 overflow-y-auto px-5 py-5">{children}</div>
+      </div>
     </div>
   );
 }

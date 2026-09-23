@@ -15,6 +15,10 @@ const NAV = [
 export function DashboardShell({ userName, photoUrl, children }: { userName: string; photoUrl: string | null; children: ReactNode }) {
   const pathname = usePathname();
   const writing = pathname === "/dashboard/invites/new";
+  const studio = /^\/dashboard\/invites\/[^/]+$/.test(pathname);
+  // The invite editor is a full-screen studio with its own single bar.
+  if (studio) return <div className="studio w-full">{children}</div>;
+
   return (
     <div className="studio w-full">
       <header className="sticky top-0 z-30 border-b-[1.5px] border-ink bg-canvas/95 backdrop-blur">
