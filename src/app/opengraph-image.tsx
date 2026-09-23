@@ -1,4 +1,4 @@
-import { renderSiteOgImage } from "@/features/invites/og-image";
+import { renderSiteOgImage } from "@/features/invites/server/og-image";
 import { OG_IMAGE_SIZE } from "@/features/invites/themes";
 import { SITE_TITLE } from "@/lib/site";
 

@@ -1,4 +1,4 @@
-import { renderInviteOgImage } from "@/features/invites/og-image";
+import { renderInviteOgImage } from "@/features/invites/server/og-image";
 import { OG_IMAGE_SIZE } from "@/features/invites/themes";
 
 export const alt = "someone has a question for you 💌";

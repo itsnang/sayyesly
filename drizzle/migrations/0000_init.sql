@@ -1,4 +1,4 @@
-CREATE TYPE "public"."answer" AS ENUM('yes', 'maybe_later');--> statement-breakpoint
+CREATE TYPE "public"."answer_kind" AS ENUM('yes', 'maybe_later');--> statement-breakpoint
 CREATE TYPE "public"."purchase_status" AS ENUM('pending', 'paid', 'expired', 'failed');--> statement-breakpoint
 CREATE TABLE "users" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
@@ -53,16 +53,16 @@ CREATE TABLE "invite_time_slots" (
 	"starts_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "responses" (
+CREATE TABLE "answers" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"invite_id" uuid NOT NULL,
-	"answer" "answer" NOT NULL,
+	"kind" "answer_kind" NOT NULL,
 	"time_slot_id" uuid,
 	"starts_at" timestamp with time zone,
 	"note" text,
 	"no_dodges" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "responses_invite_id_unique" UNIQUE("invite_id")
+	CONSTRAINT "answers_invite_id_unique" UNIQUE("invite_id")
 );
 --> statement-breakpoint
 CREATE TABLE "linked_groups" (
@@ -93,8 +93,8 @@ CREATE TABLE "purchases" (
 ALTER TABLE "invites" ADD CONSTRAINT "invites_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invites" ADD CONSTRAINT "invites_theme_id_themes_id_fk" FOREIGN KEY ("theme_id") REFERENCES "public"."themes"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invite_time_slots" ADD CONSTRAINT "invite_time_slots_invite_id_invites_id_fk" FOREIGN KEY ("invite_id") REFERENCES "public"."invites"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "responses" ADD CONSTRAINT "responses_invite_id_invites_id_fk" FOREIGN KEY ("invite_id") REFERENCES "public"."invites"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "responses" ADD CONSTRAINT "responses_time_slot_id_invite_time_slots_id_fk" FOREIGN KEY ("time_slot_id") REFERENCES "public"."invite_time_slots"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "answers" ADD CONSTRAINT "answers_invite_id_invites_id_fk" FOREIGN KEY ("invite_id") REFERENCES "public"."invites"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "answers" ADD CONSTRAINT "answers_time_slot_id_invite_time_slots_id_fk" FOREIGN KEY ("time_slot_id") REFERENCES "public"."invite_time_slots"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "linked_groups" ADD CONSTRAINT "linked_groups_invite_id_invites_id_fk" FOREIGN KEY ("invite_id") REFERENCES "public"."invites"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "purchases" ADD CONSTRAINT "purchases_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "purchases" ADD CONSTRAINT "purchases_theme_id_themes_id_fk" FOREIGN KEY ("theme_id") REFERENCES "public"."themes"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint

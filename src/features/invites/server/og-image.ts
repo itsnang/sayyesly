@@ -1,8 +1,8 @@
 import "server-only";
 import { getPublicInvite } from "./data";
-import { DEFAULT_THEME_ID } from "./themes";
-import { getOgImageRenderer } from "./themes/og-images";
-import { parseQuestion } from "./utils";
+import { DEFAULT_THEME_ID } from "../themes";
+import { getOgImageRenderer } from "../themes/og-images";
+import { parseQuestion } from "../utils";
 
 const FALLBACK_QUESTION = parseQuestion("a question, just for *you*");
 

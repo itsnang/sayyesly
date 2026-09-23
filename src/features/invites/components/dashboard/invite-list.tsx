@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Badge, ButtonLink, Card } from "@/components/shared/ui";
-import type { InviteStatus, InviteSummary } from "../../dashboard-data";
+import type { InviteStatus, InviteSummary } from "../../server/dashboard-data";
 
 const STATUS: Record<InviteStatus, { label: string; tone: "pink" | "green" | "grey" | "amber" }> = {
   yes: { label: "said yes 🎉", tone: "green" },

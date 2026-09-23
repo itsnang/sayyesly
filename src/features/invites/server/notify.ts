@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { invites, users } from "@/lib/db/schema";
 import { sendMessage } from "@/lib/telegram";
-import { answerNotification } from "./utils/notification";
+import { answerNotification } from "../utils/notification";
 
 /**
  * Tells the Creator (by DM, when allowed) and every Linked group about the
@@ -13,19 +13,19 @@ import { answerNotification } from "./utils/notification";
 export async function notifyAnswer(inviteId: string): Promise<void> {
   const invite = await db.query.invites.findFirst({
     where: eq(invites.id, inviteId),
-    with: { creator: true, response: true, linkedGroups: true },
+    with: { creator: true, answer: true, linkedGroups: true },
   });
-  if (!invite?.response) return;
+  if (!invite?.answer) return;
 
   const text = answerNotification({
     recipientName: invite.recipientName,
-    answer: invite.response.answer,
-    startsAt: invite.response.startsAt,
+    answer: invite.answer.kind,
+    startsAt: invite.answer.startsAt,
     timezone: invite.timezone,
     place: invite.planPlace,
     mapUrl: invite.planMapUrl,
-    note: invite.response.note,
-    noDodges: invite.response.noDodges,
+    note: invite.answer.note,
+    noDodges: invite.answer.noDodges,
   });
 
   const sends: Promise<void>[] = invite.linkedGroups.map(async (group) => {

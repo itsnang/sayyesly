@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/session";
 import { submitAnswer } from "../actions";
-import { getInviteCreatorId, getPublicInvite } from "../data";
+import { getInviteCreatorId, getPublicInvite } from "../server/data";
 import { getTheme } from "../themes";
 import { ExpiredScreen } from "./expired-screen";
 import { PreviewBanner } from "./preview-banner";

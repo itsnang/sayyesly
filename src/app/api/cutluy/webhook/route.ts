@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/env";
-import { handleCutluyEvent } from "@/features/billing/handle-webhook";
+import { handleCutluyEvent } from "@/features/billing/server/handle-webhook";
 import { verifyCutluySignature } from "@/features/billing/utils/cutluy-webhook";
 
 // POST /api/cutluy/webhook — register this URL in the CutLuy dashboard.

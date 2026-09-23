@@ -40,8 +40,16 @@ Follows [nextjs-vertical-slice-starter-pack](https://github.com/itsnang/nextjs-v
 ```
 src/
   app/                 routes only; compose slice components
-  features/<slice>/    actions/ components/ themes/ utils/ types.ts data.ts
-  lib/                 domain-agnostic shared code: db/, auth/, telegram/, site.ts
+  features/<slice>/
+    actions/           'use server' files (+ index.ts barrel without 'use server')
+    components/        UI
+    schemas/           zod form schemas shared by React Hook Form and the actions
+    server/            server-only modules: queries, integrations, webhook handlers ('server-only' import)
+    themes/            (invites) the theme registry
+    utils/             pure, domain-aware helpers; unit tests live next to them (*.test.ts)
+    types.ts
+  lib/                 shared code: db/ (+ db/queries for cross-slice reads), auth/, telegram/,
+                       cutluy/, storage/, time/, format/, validation.ts, rate-limit.ts, site.ts
   env.ts               server-only, zod-validated env; use requireEnv() for optional vars
 ```
 
@@ -59,7 +67,8 @@ Themes are code: `src/features/invites/themes/<id>/` exports a `ThemeDefinition`
 
 - `'use server'` goes on each action file, never on the `actions/index.ts` barrel
 - Auth check is the **first** thing in every action that needs a Creator; derive identity from the session (`getCurrentUser()` / `requireUser()`), never accept a user id from the client
-- Validate every mutation's input with zod on the server. Never trust the client for prices, ownership or theme access
+- Validate every mutation's input with zod on the server, including ids (`idSchema` / `isId` from `@/lib/validation`). Never trust the client for prices, ownership or theme access
+- Changes to an Invite's lockable fields (question, Time slots, time zone, Custom time, Theme) and saving an Answer both take `SELECT … FOR UPDATE` on the invite row, so they can't interleave
 - `revalidatePath()` / `revalidateTag()` only **after** the mutation commits
 - Actions return `{ error?: string }` on failure instead of throwing
 - Absolute URLs and redirects are built from `NEXT_PUBLIC_APP_URL`; secrets never go in `NEXT_PUBLIC_*`

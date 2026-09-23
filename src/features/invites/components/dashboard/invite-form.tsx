@@ -6,9 +6,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { Button, Card, Field, Input, Textarea } from "@/components/shared/ui";
+import { formatUsd } from "@/lib/format";
 import { saveInvite } from "../../actions";
 import { inviteFormSchema, MAX_PLAN_PHOTOS, MAX_TIME_SLOTS, type InviteFormValues } from "../../schemas";
-import type { ThemeChoice } from "../../theme-access";
+import type { ThemeChoice } from "../../server/theme-access";
 import { ImageField } from "./image-field";
 import { PREVIEW_MESSAGE, PREVIEW_READY } from "../theme-preview-protocol";
 
@@ -19,8 +20,6 @@ type InviteFormProps = {
   themes: ThemeChoice[];
   uploadsEnabled: boolean;
 };
-
-const price = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
 export function InviteForm({ inviteId, defaults, answered, themes, uploadsEnabled }: InviteFormProps) {
   const router = useRouter();
@@ -249,7 +248,7 @@ export function InviteForm({ inviteId, defaults, answered, themes, uploadsEnable
                     <span className="text-xs text-emerald-700">unlocked</span>
                   ) : (
                     <Link href="/dashboard/themes" className="text-xs text-[var(--accent)] underline">
-                      🔒 {price(theme.priceCents)}
+                      🔒 {formatUsd(theme.priceCents)}
                     </Link>
                   )}
                 </label>

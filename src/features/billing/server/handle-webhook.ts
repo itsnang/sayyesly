@@ -4,7 +4,8 @@ import { z } from "zod";
 import { cutluyPaymentSchema } from "@/lib/cutluy/client";
 import { db } from "@/lib/db";
 import { purchases } from "@/lib/db/schema";
-import { amountMatchesCents } from "./utils/cutluy-webhook";
+import { isId } from "@/lib/validation";
+import { amountMatchesCents } from "../utils/cutluy-webhook";
 
 const eventSchema = z.object({
   id: z.string(),
@@ -25,7 +26,7 @@ export async function handleCutluyEvent(body: unknown): Promise<WebhookOutcome> 
   const { type, data } = parsed.data;
   const payment = data.payment;
 
-  if (!payment.reference_id || !/^[0-9a-f-]{36}$/i.test(payment.reference_id)) {
+  if (!payment.reference_id || !isId(payment.reference_id)) {
     return { status: 200, message: "not one of ours" };
   }
   const purchase = await db.query.purchases.findFirst({ where: eq(purchases.id, payment.reference_id) });

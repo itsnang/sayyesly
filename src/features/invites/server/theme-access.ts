@@ -1,8 +1,9 @@
 import "server-only";
-import { and, asc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { purchases, themes } from "@/lib/db/schema";
-import { hasTheme } from "./themes";
+import { ownedThemeIds, ownsTheme } from "@/lib/db/queries";
+import { themes } from "@/lib/db/schema";
+import { hasTheme } from "../themes";
 
 export type ThemeChoice = {
   id: string;
@@ -11,14 +12,6 @@ export type ThemeChoice = {
   /** Free, or the Creator has a paid Purchase of it */
   usable: boolean;
 };
-
-async function ownedThemeIds(userId: string): Promise<Set<string>> {
-  const rows = await db
-    .select({ themeId: purchases.themeId })
-    .from(purchases)
-    .where(and(eq(purchases.userId, userId), eq(purchases.status, "paid")));
-  return new Set(rows.map((r) => r.themeId));
-}
 
 /** Themes a Creator can pick from, with whether they may use each one. */
 export async function getThemeChoices(userId: string): Promise<ThemeChoice[]> {
@@ -39,10 +32,5 @@ export async function canUseTheme(userId: string, themeId: string): Promise<bool
   if (!hasTheme(themeId)) return false;
   const theme = await db.query.themes.findFirst({ where: eq(themes.id, themeId) });
   if (!theme?.isActive) return false;
-  if (theme.priceCents === 0) return true;
-  const paid = await db.query.purchases.findFirst({
-    where: and(eq(purchases.userId, userId), eq(purchases.themeId, themeId), eq(purchases.status, "paid")),
-    columns: { id: true },
-  });
-  return !!paid;
+  return theme.priceCents === 0 || ownsTheme(userId, themeId);
 }

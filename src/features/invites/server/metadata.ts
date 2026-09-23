@@ -1,7 +1,7 @@
 import "server-only";
 import type { Metadata } from "next";
 import { getPublicInvite } from "./data";
-import { questionText } from "./utils";
+import { questionText } from "../utils";
 
 const DESCRIPTION = "someone has a question for you 💌";
 

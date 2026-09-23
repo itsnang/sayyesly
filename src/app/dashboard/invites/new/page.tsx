@@ -1,7 +1,7 @@
 import { PageHeading } from "@/components/shared/ui";
 import { InviteForm } from "@/features/invites/components/dashboard/invite-form";
 import type { InviteFormValues } from "@/features/invites/schemas";
-import { getThemeChoices } from "@/features/invites/theme-access";
+import { getThemeChoices } from "@/features/invites/server/theme-access";
 import { DEFAULT_THEME_ID } from "@/features/invites/themes";
 import { requireUser } from "@/lib/auth/session";
 import { isUploadConfigured } from "@/lib/storage/r2";

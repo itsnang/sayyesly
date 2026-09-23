@@ -3,11 +3,10 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Badge, Button } from "@/components/shared/ui";
+import { formatUsd } from "@/lib/format";
 import { buyTheme } from "../actions";
 import type { CheckoutResult, ThemeForSale } from "../types";
 import { Checkout } from "./checkout";
-
-const price = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
 export function ThemeShop({ themes }: { themes: ThemeForSale[] }) {
   const [buying, setBuying] = useState<{ theme: ThemeForSale; ticket: CheckoutResult } | null>(null);
@@ -38,7 +37,7 @@ export function ThemeShop({ themes }: { themes: ThemeForSale[] }) {
               {theme.owned ? (
                 <Badge tone="green">{theme.priceCents === 0 ? "free" : "yours"}</Badge>
               ) : (
-                <Badge tone="pink">{price(theme.priceCents)}</Badge>
+                <Badge tone="pink">{formatUsd(theme.priceCents)}</Badge>
               )}
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -51,7 +50,7 @@ export function ThemeShop({ themes }: { themes: ThemeForSale[] }) {
               </Link>
               {!theme.owned && (
                 <Button onClick={() => start(theme)} disabled={busyId !== null}>
-                  {busyId === theme.id ? "starting…" : `buy for ${price(theme.priceCents)}`}
+                  {busyId === theme.id ? "starting…" : `buy for ${formatUsd(theme.priceCents)}`}
                 </Button>
               )}
             </div>

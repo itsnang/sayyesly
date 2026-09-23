@@ -3,15 +3,15 @@ import { asc, eq } from "drizzle-orm";
 import { connection } from "next/server";
 import { cache } from "react";
 import { db } from "@/lib/db";
-import { invites, inviteTimeSlots, type Response } from "@/lib/db/schema";
-import type { PublicAnswer, PublicInvite } from "./types";
-import { isExpired, parseQuestion } from "./utils";
+import { invites, inviteTimeSlots, type AnswerRow } from "@/lib/db/schema";
+import type { PublicAnswer, PublicInvite } from "../types";
+import { isExpired, parseQuestion } from "../utils";
 
-export function toPublicAnswer(response: Pick<Response, "answer" | "startsAt" | "note">): PublicAnswer {
+export function toPublicAnswer(answer: Pick<AnswerRow, "kind" | "startsAt" | "note">): PublicAnswer {
   return {
-    answer: response.answer,
-    startsAt: response.startsAt?.toISOString() ?? null,
-    note: response.note,
+    answer: answer.kind,
+    startsAt: answer.startsAt?.toISOString() ?? null,
+    note: answer.note,
   };
 }
 
@@ -21,7 +21,7 @@ export async function getInviteForAnswer(slug: string) {
     where: eq(invites.slug, slug),
     with: {
       timeSlots: { orderBy: asc(inviteTimeSlots.startsAt) },
-      response: true,
+      answer: true,
       creator: true,
     },
   });
@@ -34,7 +34,7 @@ export const getPublicInvite = cache(async (slug: string): Promise<PublicInvite 
 
   const invite = await db.query.invites.findFirst({
     where: eq(invites.slug, slug),
-    with: { timeSlots: { orderBy: asc(inviteTimeSlots.startsAt) }, response: true },
+    with: { timeSlots: { orderBy: asc(inviteTimeSlots.startsAt) }, answer: true },
   });
   if (!invite) return null;
 
@@ -59,8 +59,8 @@ export const getPublicInvite = cache(async (slug: string): Promise<PublicInvite 
       .filter((slot) => slot.startsAt.getTime() > now.getTime())
       .map((slot) => ({ id: slot.id, startsAt: slot.startsAt.toISOString() })),
     allowCustomTime: invite.allowCustomTime,
-    answer: invite.response ? toPublicAnswer(invite.response) : null,
-    expired: !invite.response && isExpired(invite, now),
+    answer: invite.answer ? toPublicAnswer(invite.answer) : null,
+    expired: !invite.answer && isExpired(invite, now),
   };
 });
 

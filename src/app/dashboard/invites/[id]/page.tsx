@@ -3,18 +3,19 @@ import { PageHeading } from "@/components/shared/ui";
 import { DeleteInviteButton } from "@/features/invites/components/dashboard/delete-invite-button";
 import { InviteForm } from "@/features/invites/components/dashboard/invite-form";
 import { SharePanel } from "@/features/invites/components/dashboard/share-panel";
-import { getMyInvite } from "@/features/invites/dashboard-data";
-import { getThemeChoices } from "@/features/invites/theme-access";
+import { getMyInvite } from "@/features/invites/server/dashboard-data";
+import { getThemeChoices } from "@/features/invites/server/theme-access";
 import { requireUser } from "@/lib/auth/session";
 import { SITE_URL } from "@/lib/site";
 import { isUploadConfigured } from "@/lib/storage/r2";
+import { isId } from "@/lib/validation";
 import { getBotUsername } from "@/lib/telegram";
 
 export default async function EditInvitePage({ params }: PageProps<"/dashboard/invites/[id]">) {
   const { id } = await params;
   const user = await requireUser(`/dashboard/invites/${id}`);
   // Ownership: getMyInvite only returns the Invite if this Creator made it.
-  const invite = /^[0-9a-f-]{36}$/i.test(id) ? await getMyInvite(id, user.id) : null;
+  const invite = isId(id) ? await getMyInvite(id, user.id) : null;
   if (!invite) notFound();
 
   const [themes, botUsername] = await Promise.all([getThemeChoices(user.id), getBotUsername().catch(() => null)]);

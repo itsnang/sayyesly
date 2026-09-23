@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { InviteView } from "@/features/invites/components/invite-view";
-import { inviteMetadata } from "@/features/invites/metadata";
+import { inviteMetadata } from "@/features/invites/server/metadata";
 
 export async function generateMetadata({ params }: PageProps<"/i/[slug]">): Promise<Metadata> {
   const { slug } = await params;

@@ -3,10 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/shared/ui";
+import { formatUsd } from "@/lib/format";
 import { getPurchaseStatus } from "../actions";
 import type { CheckoutResult } from "../types";
-
-const price = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
 function useCountdown(until: string) {
   const [left, setLeft] = useState(() => Math.max(0, new Date(until).getTime() - Date.now()));
@@ -75,7 +74,7 @@ export function Checkout({ ticket, themeName, onClose, onRetry }: {
         ) : (
           <>
             <p className="text-[15px] text-[var(--ink)]">
-              Scan with any KHQR banking app to pay <b>{price(ticket.amountCents)}</b>
+              Scan with any KHQR banking app to pay <b>{formatUsd(ticket.amountCents)}</b>
             </p>
             {/* eslint-disable-next-line @next/next/no-img-element -- SVG rendered by CutLuy */}
             <img src={ticket.qrImageUrl} alt="KHQR payment code" className="mx-auto mt-4 w-full max-w-[260px] rounded-xl bg-white" />

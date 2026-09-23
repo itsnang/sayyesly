@@ -1,6 +1,6 @@
 import { ButtonLink, PageHeading } from "@/components/shared/ui";
 import { InviteList } from "@/features/invites/components/dashboard/invite-list";
-import { listMyInvites } from "@/features/invites/dashboard-data";
+import { listMyInvites } from "@/features/invites/server/dashboard-data";
 import { requireUser } from "@/lib/auth/session";
 
 export default async function DashboardPage() {

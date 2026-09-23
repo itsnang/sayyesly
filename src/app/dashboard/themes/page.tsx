@@ -1,6 +1,6 @@
 import { PageHeading } from "@/components/shared/ui";
 import { ThemeShop } from "@/features/billing/components/theme-shop";
-import { listThemesForSale } from "@/features/billing/data";
+import { listThemesForSale } from "@/features/billing/server/data";
 import { hasTheme } from "@/features/invites/themes";
 import { requireUser } from "@/lib/auth/session";
 

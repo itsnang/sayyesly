@@ -4,8 +4,8 @@ import { env } from "@/env";
 import { db } from "@/lib/db";
 import { invites, linkedGroups, users } from "@/lib/db/schema";
 import { escapeHtml, getBotUsername, sendMessage } from "@/lib/telegram";
-import type { Chat, Update } from "./types";
-import { parseCommand, parseLinkCode } from "./utils/commands";
+import type { Chat, Update } from "../types";
+import { parseCommand, parseLinkCode } from "../utils/commands";
 
 const isGroup = (chat: Chat) => chat.type === "group" || chat.type === "supergroup";
 

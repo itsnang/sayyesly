@@ -27,7 +27,12 @@ function sweep(now: number, windowMs: number) {
   }
 }
 
-/** Best-effort client IP behind Railway's proxy. */
+/**
+ * Best-effort client IP behind Railway's proxy. Uses the right-most
+ * X-Forwarded-For entry, the one appended by the proxy in front of us;
+ * entries to its left come from the client and can be forged.
+ */
 export function clientIp(headers: Headers): string {
-  return headers.get("x-forwarded-for")?.split(",")[0]?.trim() || headers.get("x-real-ip") || "unknown";
+  const forwarded = headers.get("x-forwarded-for")?.split(",").map((s) => s.trim()).filter(Boolean);
+  return forwarded?.at(-1) || headers.get("x-real-ip") || "unknown";
 }

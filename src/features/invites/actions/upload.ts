@@ -30,11 +30,7 @@ export async function createImageUpload(input: { contentType: string; size: numb
   if (!parsed.success) return { error: "Use a JPG, PNG, WebP or GIF under 5 MB." };
 
   const key = `invites/${user.id}/${nanoid(16)}.${EXTENSIONS[parsed.data.contentType]}`;
-  const { uploadUrl, publicUrl } = await presignUpload(key, parsed.data.contentType);
+  const { uploadUrl, publicUrl } = await presignUpload(key, parsed.data.contentType, parsed.data.size);
   return { uploadUrl, publicUrl, contentType: parsed.data.contentType };
 }
 
-/** Whether the upload button should be shown at all. */
-export async function uploadsEnabled(): Promise<boolean> {
-  return isUploadConfigured();
-}

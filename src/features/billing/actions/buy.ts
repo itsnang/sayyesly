@@ -1,13 +1,28 @@
 "use server";
 
-import { and, desc, eq, gt } from "drizzle-orm";
+import { and, desc, eq, gt, sql } from "drizzle-orm";
+import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth/session";
-import { createPayment, CutluyError, khqrImageUrl } from "@/lib/cutluy/client";
+import { createPayment, khqrImageUrl } from "@/lib/cutluy/client";
 import { db } from "@/lib/db";
-import { purchases, themes } from "@/lib/db/schema";
+import { ownsTheme } from "@/lib/db/queries";
+import { purchases, themes, type Purchase } from "@/lib/db/schema";
 import { rateLimit } from "@/lib/rate-limit";
+import { idSchema } from "@/lib/validation";
 import type { CheckoutResult, PurchaseStatusResult } from "../types";
 import { centsToDollars } from "../utils/cutluy-webhook";
+
+const themeIdSchema = z.string().regex(/^[a-z0-9-]{1,64}$/);
+
+function ticket(p: Purchase): CheckoutResult {
+  return {
+    purchaseId: p.id,
+    qrImageUrl: khqrImageUrl(p.qrString!),
+    checkoutUrl: p.checkoutUrl,
+    expiresAt: p.expiresAt!.toISOString(),
+    amountCents: p.amountCents,
+  };
+}
 
 /**
  * Starts (or resumes) buying a Paid theme. The price always comes from the
@@ -17,85 +32,70 @@ import { centsToDollars } from "../utils/cutluy-webhook";
 export async function buyTheme(themeId: string): Promise<CheckoutResult> {
   const user = await getCurrentUser();
   if (!user) return { error: "Please log in again." };
-  if (typeof themeId !== "string" || themeId.length > 64) return { error: "Unknown theme." };
+  if (!themeIdSchema.safeParse(themeId).success) return { error: "Unknown theme." };
   if (!rateLimit(`buy:${user.id}`, 6, 60_000)) return { error: "Too many tries. Please wait a minute." };
 
   const theme = await db.query.themes.findFirst({ where: eq(themes.id, themeId) });
   if (!theme?.isActive) return { error: "That theme isn't available." };
-  if (theme.priceCents === 0) return { owned: true };
+  if (theme.priceCents === 0 || (await ownsTheme(user.id, themeId))) return { owned: true };
 
-  const owned = await db.query.purchases.findFirst({
-    where: and(eq(purchases.userId, user.id), eq(purchases.themeId, themeId), eq(purchases.status, "paid")),
-    columns: { id: true },
-  });
-  if (owned) return { owned: true };
+  // One checkout at a time per Creator and Theme: a second tap waits here, then
+  // finds the first tap's still-valid QR instead of creating another payment.
+  return db.transaction(async (tx): Promise<CheckoutResult> => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`buy:${user.id}:${themeId}`}))`);
 
-  // Tapping Buy again while the last QR is still valid shows that same QR.
-  const pending = await db.query.purchases.findFirst({
-    where: and(
-      eq(purchases.userId, user.id),
-      eq(purchases.themeId, themeId),
-      eq(purchases.status, "pending"),
-      gt(purchases.expiresAt, new Date(Date.now() + 30_000)),
-    ),
-    orderBy: desc(purchases.createdAt),
-  });
-  if (pending?.qrString && pending.expiresAt) {
-    return {
-      purchaseId: pending.id,
-      qrImageUrl: khqrImageUrl(pending.qrString),
-      checkoutUrl: pending.checkoutUrl,
-      expiresAt: pending.expiresAt.toISOString(),
-      amountCents: pending.amountCents,
-    };
-  }
+    const pending = await tx.query.purchases.findFirst({
+      where: and(
+        eq(purchases.userId, user.id),
+        eq(purchases.themeId, themeId),
+        eq(purchases.status, "pending"),
+        gt(purchases.expiresAt, new Date(Date.now() + 30_000)),
+      ),
+      orderBy: desc(purchases.createdAt),
+    });
+    if (pending?.qrString && pending.expiresAt) return ticket(pending);
 
-  const [purchase] = await db
-    .insert(purchases)
-    .values({ userId: user.id, themeId, amountCents: theme.priceCents })
-    .returning();
-  if (!purchase) return { error: "Couldn't start the payment. Please try again." };
+    const [purchase] = await tx
+      .insert(purchases)
+      .values({ userId: user.id, themeId, amountCents: theme.priceCents })
+      .returning();
+    if (!purchase) return { error: "Couldn't start the payment. Please try again." };
 
-  try {
     const payment = await createPayment({
       amount: centsToDollars(purchase.amountCents),
       referenceId: purchase.id,
       idempotencyKey: purchase.id,
       metadata: { theme_id: themeId },
+    }).catch((error: unknown) => {
+      console.error("CutLuy create payment failed", error);
+      return null;
     });
-    if (!payment.qr_string) throw new CutluyError(502, "no_qr", "CutLuy returned no QR");
 
-    const expiresAt = payment.expires_at ? new Date(payment.expires_at) : new Date(Date.now() + 5 * 60_000);
-    await db
+    if (!payment?.qr_string) {
+      await tx.update(purchases).set({ status: "failed", updatedAt: new Date() }).where(eq(purchases.id, purchase.id));
+      return { error: "The payment service didn't respond. Please try again in a moment." };
+    }
+
+    const [ready] = await tx
       .update(purchases)
       .set({
         cutluyPaymentId: payment.id,
         qrString: payment.qr_string,
         checkoutUrl: payment.checkout_url ?? null,
-        expiresAt,
+        expiresAt: payment.expires_at ? new Date(payment.expires_at) : new Date(Date.now() + 5 * 60_000),
         updatedAt: new Date(),
       })
-      .where(eq(purchases.id, purchase.id));
-
-    return {
-      purchaseId: purchase.id,
-      qrImageUrl: khqrImageUrl(payment.qr_string),
-      checkoutUrl: payment.checkout_url ?? null,
-      expiresAt: expiresAt.toISOString(),
-      amountCents: purchase.amountCents,
-    };
-  } catch (error) {
-    console.error("CutLuy create payment failed", error);
-    await db.update(purchases).set({ status: "failed", updatedAt: new Date() }).where(eq(purchases.id, purchase.id));
-    return { error: "The payment service didn't respond. Please try again in a moment." };
-  }
+      .where(eq(purchases.id, purchase.id))
+      .returning();
+    return ready ? ticket(ready) : { error: "Couldn't start the payment. Please try again." };
+  });
 }
 
 /** Polled by the checkout screen. Reads our database only; the webhook is what changes it. */
 export async function getPurchaseStatus(purchaseId: string): Promise<PurchaseStatusResult> {
   const user = await getCurrentUser();
   if (!user) return { error: "Please log in again." };
-  if (typeof purchaseId !== "string" || !/^[0-9a-f-]{36}$/i.test(purchaseId)) return { error: "Unknown payment." };
+  if (!idSchema.safeParse(purchaseId).success) return { error: "Unknown payment." };
 
   const purchase = await db.query.purchases.findFirst({
     where: and(eq(purchases.id, purchaseId), eq(purchases.userId, user.id)),

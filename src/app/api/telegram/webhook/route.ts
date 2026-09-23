@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/env";
-import { handleUpdate } from "@/features/telegram-bot/handle-update";
+import { handleUpdate } from "@/features/telegram-bot/server/handle-update";
 import { updateSchema } from "@/features/telegram-bot/types";
-import { isValidSecretToken } from "@/features/telegram-bot/verify";
+import { isValidSecretToken } from "@/features/telegram-bot/server/verify";
 
 // POST /api/telegram/webhook — registered with `bun run telegram:webhook`.
 export async function POST(req: NextRequest) {

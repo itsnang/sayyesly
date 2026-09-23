@@ -1,5 +1,5 @@
 {
-  "id": "cf3d7de2-362e-45ae-a4b5-d046816c6f40",
+  "id": "7c37ca3f-b12f-4271-bab1-7bb55a554d69",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -396,8 +396,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.responses": {
-      "name": "responses",
+    "public.answers": {
+      "name": "answers",
       "schema": "",
       "columns": {
         "id": {
@@ -413,9 +413,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "answer": {
-          "name": "answer",
-          "type": "answer",
+        "kind": {
+          "name": "kind",
+          "type": "answer_kind",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
@@ -455,9 +455,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "responses_invite_id_invites_id_fk": {
-          "name": "responses_invite_id_invites_id_fk",
-          "tableFrom": "responses",
+        "answers_invite_id_invites_id_fk": {
+          "name": "answers_invite_id_invites_id_fk",
+          "tableFrom": "answers",
           "tableTo": "invites",
           "columnsFrom": [
             "invite_id"
@@ -468,9 +468,9 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "responses_time_slot_id_invite_time_slots_id_fk": {
-          "name": "responses_time_slot_id_invite_time_slots_id_fk",
-          "tableFrom": "responses",
+        "answers_time_slot_id_invite_time_slots_id_fk": {
+          "name": "answers_time_slot_id_invite_time_slots_id_fk",
+          "tableFrom": "answers",
           "tableTo": "invite_time_slots",
           "columnsFrom": [
             "time_slot_id"
@@ -484,8 +484,8 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "responses_invite_id_unique": {
-          "name": "responses_invite_id_unique",
+        "answers_invite_id_unique": {
+          "name": "answers_invite_id_unique",
           "nullsNotDistinct": false,
           "columns": [
             "invite_id"
@@ -735,8 +735,8 @@
     }
   },
   "enums": {
-    "public.answer": {
-      "name": "answer",
+    "public.answer_kind": {
+      "name": "answer_kind",
       "schema": "public",
       "values": [
         "yes",
