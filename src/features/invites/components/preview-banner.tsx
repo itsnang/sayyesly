@@ -5,27 +5,11 @@ export function PreviewBanner() {
   return (
     <div
       role="status"
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        display: "flex",
-        gap: 12,
-        justifyContent: "center",
-        alignItems: "center",
-        flexWrap: "wrap",
-        padding: "8px 16px",
-        background: "var(--ink)",
-        color: "#fff",
-        fontSize: 13,
-        textAlign: "center",
-      }}
+      className="fixed inset-x-0 top-0 z-[100] flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-[#231b17] px-4 py-2 text-center font-[family-name:var(--font-instrument-sans)] text-[13px] text-[#fbf6ef]"
     >
-      <span>preview: this is your own invite, so answers aren&apos;t saved</span>
-      <Link href="/dashboard" style={{ color: "#ffd6e6", textDecoration: "underline" }}>
-        back to dashboard
+      <span>Preview · this is your own invite, so nothing you tap is saved.</span>
+      <Link href="/dashboard" className="underline underline-offset-4">
+        Back to dashboard
       </Link>
     </div>
   );

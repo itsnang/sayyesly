@@ -26,6 +26,10 @@ export const OG_IMAGE_SIZE = { width: 1200, height: 630 } as const;
 export type ThemeDefinition = {
   /** Matches `themes.id` in the database */
   id: string;
+  /** Display name in the dashboard (the database row has the sellable name) */
+  name: string;
+  /** Small preview image for pickers and lists */
+  thumbnail: string;
   /** Client component that renders the whole Recipient experience */
   Invite: ComponentType<InviteThemeProps>;
 };
