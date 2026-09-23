@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { buttonClass, inputClass } from "@/components/shared/ui";
 import { createImageUpload } from "../../actions";
+import { shrinkImage } from "./shrink-image";
 
 type ImageFieldProps = {
   value: string;
@@ -18,8 +19,10 @@ export function ImageField({ value, onChange, uploadsEnabled, disabled, placehol
   const [status, setStatus] = useState<string | null>(null);
   const [pasting, setPasting] = useState(!uploadsEnabled);
 
-  async function upload(file: File) {
+  async function upload(picked: File) {
     setStatus("Uploading…");
+    // Shrink first: phone photos are several MB, which would be slow to open on mobile data.
+    const file = await shrinkImage(picked);
     const ticket = await createImageUpload({ contentType: file.type, size: file.size });
     if (!ticket.uploadUrl || !ticket.publicUrl) {
       setStatus(ticket.error ?? "Upload failed.");

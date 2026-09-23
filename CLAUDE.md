@@ -15,6 +15,7 @@ bun run db:generate  # generate a migration from src/lib/db/schema
 bun run db:migrate   # apply migrations (Railway pre-deploy command)
 bun run db:seed      # seed themes + the original invite (idempotent)
 bun run telegram:webhook          # point the bot at NEXT_PUBLIC_APP_URL/api/telegram/webhook
+bun run r2:check                  # verify R2 uploads (CORS, signed PUT, public read); see docs/r2-setup.md
 bun test             # unit tests (bun's built-in runner, *.test.ts next to the code)
 ```
 
