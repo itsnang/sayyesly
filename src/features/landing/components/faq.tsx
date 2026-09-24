@@ -1,7 +1,7 @@
 const QUESTIONS = [
   {
     q: "Can they actually say no?",
-    a: "Not with the “no” button, that's the joke. After five tries a small, still “maybe another time?” link appears and records a gentle maybe-later. You get a kind message either way, and they never feel cornered.",
+    a: "Not with the \"no\" button, that's the joke. After five tries a small, still \"maybe another time?\" link appears and records a gentle maybe-later. You get a kind message either way, and they never feel cornered.",
   },
   {
     q: "Do they need an account or the app?",
@@ -9,7 +9,7 @@ const QUESTIONS = [
   },
   {
     q: "What if none of my times work for them?",
-    a: "Turn on “let them suggest a time” and they get a calendar and a time picker. Times always show in your invite's time zone, so nobody turns up an hour early.",
+    a: "Turn on \"let them suggest a time\" and they get a calendar and a time picker. Times always show in your invite's time zone, so nobody turns up an hour early.",
   },
   {
     q: "Who sees the link preview?",
@@ -17,7 +17,7 @@ const QUESTIONS = [
   },
   {
     q: "How do paid themes work?",
-    a: "You pay once per theme with any Cambodian banking app that scans KHQR. It unlocks as soon as the payment is confirmed, and it's yours for every invite after that.",
+    a: "You pay once per theme with any banking app that scans KHQR. It unlocks as soon as the payment is confirmed, and it's yours for every invite after that.",
   },
   {
     q: "Can I change the plan after they say yes?",

@@ -22,7 +22,7 @@ export function Scrapbook() {
 
         <div className="relative mx-auto max-w-6xl px-5 pt-14 pb-20 sm:px-8 sm:pt-16">
           <h2 id="scrapbook-title" className="mx-auto max-w-md text-center font-mono text-[13.5px] leading-relaxed text-ink">
-            One link. One question. One very shy “no” button.
+            One link. One question. One very shy &quot;no&quot; button.
             <br />
             And the answer, straight to your phone.
           </h2>
