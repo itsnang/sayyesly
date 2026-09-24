@@ -138,6 +138,8 @@ type InviteEditorProps = {
   shareOpen?: boolean | undefined;
   /** Shown at the very end of the settings, e.g. deleting the invite */
   footer?: ReactNode;
+  /** A one-off notice above the question, e.g. a duplicated Invite's Theme changing */
+  notice?: ReactNode;
   /**
    * Buy a locked Theme without leaving the form. Call `select` once it's
    * unlocked to switch the invite to it.
@@ -150,7 +152,7 @@ type InviteEditorProps = {
  * column of settings beside it. The question is always open; every optional
  * section is a single line with its current value until you open it.
  */
-export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnabled, share, shareOpen, footer, onUnlockTheme }: InviteEditorProps) {
+export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnabled, share, shareOpen, footer, notice, onUnlockTheme }: InviteEditorProps) {
   const router = useRouter();
   const isNew = inviteId === null;
   const [open, setOpen] = useState<Set<SectionId>>(() => new Set());
@@ -337,6 +339,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
           noValidate
           className="min-w-0 flex-1 pb-24 lg:order-first lg:w-[400px] lg:flex-none lg:overflow-y-auto lg:border-r lg:border-ink/10 lg:pb-0"
         >
+          {notice && <div className="px-5 pt-5">{notice}</div>}
           {answered && (
             <div className="px-5 pt-5">
               <Note>They&apos;ve answered, so the question, times and theme are locked. You can still change the plan.</Note>
