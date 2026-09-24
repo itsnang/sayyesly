@@ -31,6 +31,8 @@ function withEmphasis(text: string, index: number | null): string {
 }
 
 type QuestionFieldProps = {
+  label: string;
+  placeholder: string;
   value: string;
   onChange: (markup: string) => void;
   disabled?: boolean;
@@ -41,7 +43,7 @@ type QuestionFieldProps = {
  * The question as plain text, plus "tap a word to underline it". Stores the
  * `*word*` markup the themes understand, so nobody has to type asterisks.
  */
-export function QuestionField({ value, onChange, disabled, error }: QuestionFieldProps) {
+export function QuestionField({ label, placeholder, value, onChange, disabled, error }: QuestionFieldProps) {
   const text = plain(value);
   const current = emphasised(value);
   const words = text.split(/\s+/).filter(Boolean);
@@ -51,7 +53,7 @@ export function QuestionField({ value, onChange, disabled, error }: QuestionFiel
     <div>
       <div className="mb-1.5 flex items-center justify-between gap-3">
         <label htmlFor="question" className="text-[13.5px] font-medium text-ink">
-          Question
+          {label}
         </label>
         {!disabled && (
           <details className="relative">
@@ -86,7 +88,7 @@ export function QuestionField({ value, onChange, disabled, error }: QuestionFiel
         disabled={disabled}
         maxLength={140}
         aria-invalid={!!error || undefined}
-        placeholder="will you have dinner with me?"
+        placeholder={placeholder}
         onChange={(e) => {
           const next = e.target.value;
           // Keep the underline on the same word while they type around it.

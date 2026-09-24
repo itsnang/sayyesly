@@ -64,11 +64,11 @@ The Recipient's single, final reply to an Invite: either **Yes** (with a chosen 
 _Avoid_: response, reply, RSVP
 
 **Maybe later**:
-The polite way out, offered to the Recipient after enough Dodges.
+The polite way out. A Theme with a runaway "No" offers it after enough Dodges; a Theme without one offers it from the start.
 _Avoid_: no, decline, reject
 
 **Dodge**:
-One time the "No" button runs away from the Recipient's pointer or finger. The count is reported to the Creator with the Answer.
+One time the "No" button runs away from the Recipient's pointer or finger. The count is reported to the Creator with the Answer. Themes without a runaway "No" always report zero.
 
 **Note**:
 An optional short message the Recipient attaches to their Answer.

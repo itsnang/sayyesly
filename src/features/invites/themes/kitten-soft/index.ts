@@ -2,6 +2,7 @@ import type { ThemeContent, ThemeDefinition } from "../types";
 import { KittenSoftInvite } from "./kitten-soft-invite";
 
 export const kittenSoftContent: ThemeContent = {
+  question: { label: "Question", placeholder: "will you have dinner with me?" },
   picture: { label: "Picture at the top", whenEmpty: "the kitten with the bouquet" },
   note: true,
   planPhotos: true,

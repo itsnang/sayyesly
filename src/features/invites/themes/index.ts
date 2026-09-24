@@ -1,5 +1,6 @@
 import { kittenNight } from "./kitten-night";
 import { kittenSoft } from "./kitten-soft";
+import { loveLetter } from "./love-letter";
 import type { ThemeDefinition } from "./types";
 
 // Adding a Theme: build it under themes/<id>/ (component + `content`, which tells the
@@ -9,6 +10,7 @@ import type { ThemeDefinition } from "./types";
 const registry: Record<string, ThemeDefinition> = {
   [kittenSoft.id]: kittenSoft,
   [kittenNight.id]: kittenNight,
+  [loveLetter.id]: loveLetter,
 };
 
 export const DEFAULT_THEME_ID = kittenSoft.id;
