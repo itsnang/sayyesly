@@ -37,9 +37,9 @@ export default async function Image() {
           }}
         />
         <img src={`data:image/png;base64,${wordmark}`} alt="" width={620} height={244} />
-        <div style={{ display: "flex", marginTop: 28, fontSize: 30, color: INK }}>Ask them to dinner.</div>
+        <div style={{ display: "flex", marginTop: 28, fontSize: 30, color: INK }}>A date planning platform.</div>
         <div style={{ display: "flex", marginTop: 10, fontSize: 22, color: MUTED }}>
-          A tiny invite with a runaway &quot;no&quot; button.
+          Plan it, send it, and hear back in one place.
         </div>
       </div>
     ),
