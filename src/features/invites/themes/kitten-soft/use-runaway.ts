@@ -5,13 +5,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 const EDGE_PAD = 18;
 
 /**
- * The control that gets away. The first dodge pins it where it sits; every later
- * one sends it to a random spot that keeps it fully on screen, including after
- * the viewport is rotated or resized. Attach `ref` to the element, spread
- * `style` on it, and call `dodge` from its hover/tap handlers.
+ * The runaway "No": the first Dodge pins it where it sits, every later one sends
+ * it to a random spot fully on screen, and a resize or rotation never strands it.
  */
-export function useRunaway<T extends HTMLElement>(onDodge?: (count: number) => void) {
-  const ref = useRef<T>(null);
+export function useRunaway(onDodge: (count: number) => void) {
+  const ref = useRef<HTMLButtonElement>(null);
   const [dodges, setDodges] = useState(0);
   const [loose, setLoose] = useState(false);
   const [pos, setPos] = useState({ left: 0, top: 0 });
@@ -30,7 +28,7 @@ export function useRunaway<T extends HTMLElement>(onDodge?: (count: number) => v
   const dodge = useCallback(() => {
     const n = dodges + 1;
     setDodges(n);
-    onDodge?.(n);
+    onDodge(n);
     if (!loose && ref.current) {
       const r = ref.current.getBoundingClientRect();
       setPos({ left: r.left, top: r.top });

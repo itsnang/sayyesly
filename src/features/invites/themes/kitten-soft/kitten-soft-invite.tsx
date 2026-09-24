@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState } from "react";
 import type { InviteThemeProps } from "../types";
 import { useInviteAnswer } from "../shared/use-invite-answer";
 import { AskScreen } from "./ask-screen";
@@ -10,30 +11,32 @@ import { useRain } from "./shared";
 
 export function KittenSoftInvite(props: InviteThemeProps) {
   const { invite } = props;
-  const flow = useInviteAnswer(props);
+  const answering = useInviteAnswer(props);
+  const [stage, setStage] = useState<"ask" | "plan">("ask");
+  const dodges = useRef(0);
   const { celebrate, layer } = useRain();
 
   let screen;
-  if (flow.answer?.answer === "yes") {
-    screen = <DoneScreen answer={flow.answer} plan={invite.plan} timezone={invite.timezone} />;
-  } else if (flow.answer?.answer === "maybe_later") {
+  if (answering.answer?.answer === "yes") {
+    screen = <DoneScreen answer={answering.answer} plan={invite.plan} timezone={invite.timezone} />;
+  } else if (answering.answer?.answer === "maybe_later") {
     screen = <MaybeLaterScreen />;
-  } else if (flow.stage === "ask") {
+  } else if (stage === "ask") {
     screen = (
       <AskScreen
         question={invite.question}
         message={invite.message}
         imageUrl={invite.imageUrl}
-        busy={flow.busy}
-        error={flow.error}
-        onDodge={flow.recordDodges}
+        busy={answering.busy}
+        error={answering.error}
+        onDodge={(n) => (dodges.current = n)}
         onYes={() => {
           celebrate(1300);
-          flow.sayYes();
+          setStage("plan");
           window.scrollTo(0, 0);
         }}
         onMaybeLater={async () => {
-          if (await flow.sayMaybeLater()) window.scrollTo(0, 0);
+          if (await answering.sayMaybeLater(dodges.current)) window.scrollTo(0, 0);
         }}
       />
     );
@@ -41,10 +44,10 @@ export function KittenSoftInvite(props: InviteThemeProps) {
     screen = (
       <PlanScreen
         invite={invite}
-        busy={flow.busy}
-        error={flow.error}
+        busy={answering.busy}
+        error={answering.error}
         onConfirm={async (choice, note) => {
-          if (await flow.confirm(choice, note)) {
+          if (await answering.sayYes(choice, note, dodges.current)) {
             celebrate(5400);
             window.scrollTo(0, 0);
           }

@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import Image from "next/image";
 import type { QuestionSegment } from "../../types";
 import { MAYBE_LATER_AFTER_DODGES } from "../types";
-import { useRunaway } from "../shared/use-runaway";
+import { useRunaway } from "./use-runaway";
 import { isOptimizable } from "@/lib/media";
 import { KittenKeyframes, Squiggle, WobbleFilter, WobblyBorder } from "./shared";
 
@@ -51,7 +51,7 @@ export function AskScreen({ question, message, imageUrl, busy, error, onYes, onD
     },
     [onDodge],
   );
-  const { ref: noRef, dodges, loose: noLoose, dodge, style: noStyle } = useRunaway<HTMLButtonElement>(onNoDodge);
+  const { ref: noRef, dodges, loose: noLoose, dodge, style: noStyle } = useRunaway(onNoDodge);
 
   const yesScale = Math.min(1 + dodges * 0.13, 2.1);
   const noShrink = Math.max(1 - dodges * 0.06, 0.5);
