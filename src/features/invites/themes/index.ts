@@ -24,5 +24,10 @@ export function hasTheme(id: string): boolean {
   return id in registry;
 }
 
+/** Every Theme this build has code for, registered or not in the database. */
+export function listThemes(): ThemeDefinition[] {
+  return Object.values(registry);
+}
+
 export type { InviteThemeProps, OgImageInput, OgImageRenderer, ThemeContent, ThemeDefinition } from "./types";
 export { MAYBE_LATER_AFTER_DODGES, OG_IMAGE_SIZE } from "./types";
