@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, buttonClass, Eyebrow, Note } from "@/components/shared/ui";
+import { Button, buttonClass, Note } from "@/components/shared/ui";
 import { formatUsd } from "@/lib/format";
 import { buyTheme, getPurchaseStatus } from "../actions";
 import type { CheckoutResult } from "../types";
@@ -119,48 +119,49 @@ export function BuyThemeDialog({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/45 sm:items-center sm:p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/35 sm:items-center sm:p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="checkout-title"
-        className="w-full max-w-[380px] rounded-t-[10px] border-[1.5px] border-ink bg-card sm:rounded-[8px] sm:shadow-[6px_6px_0_var(--color-ink)]"
+        className="w-full max-w-[380px] rounded-t-[10px] border border-ink/10 bg-white shadow-[0_24px_60px_-20px_rgba(35,27,23,0.35)] sm:rounded-[10px]"
       >
-        {/* Receipt header */}
-        <div className="flex items-start justify-between gap-3 border-b-[1.5px] border-dashed border-ink/30 px-5 pt-5 pb-4">
-          <div>
-            <Eyebrow>Theme · pay once</Eyebrow>
-            <h2 id="checkout-title" className="mt-1 font-display text-[26px] leading-tight text-ink">
+        <div className="flex items-start justify-between gap-3 border-b border-ink/10 px-5 pt-5 pb-4">
+          <div className="min-w-0">
+            <p className="text-[12px] text-muted">Pay once to unlock</p>
+            <h2 id="checkout-title" className="mt-0.5 truncate text-[17px] font-semibold text-ink">
               {theme.name}
             </h2>
           </div>
-          <p className="pt-5 text-[18px] font-bold text-ink">{formatUsd(ticket?.amountCents ?? theme.priceCents)}</p>
+          <p className="pt-4 text-[17px] font-semibold text-ink">{formatUsd(ticket?.amountCents ?? theme.priceCents)}</p>
         </div>
 
         <div className="px-5 pt-5 pb-5 text-center">
           {shown === "starting" && (
             <div className="grid place-items-center py-12" aria-live="polite">
-              <span className="size-8 animate-spin rounded-[4px] border-[2.5px] border-ink border-t-rose" aria-hidden />
-              <p className="mt-4 text-[14px] text-muted">Making your KHQR code…</p>
+              <span className="size-6 animate-spin rounded-full border-2 border-ink/15 border-t-ink" aria-hidden />
+              <p className="mt-4 text-[13.5px] text-muted">Making your KHQR code…</p>
             </div>
           )}
 
           {shown === "waiting" && ticket && (
             <>
-              <p className="text-[14.5px] text-ink">Scan with any KHQR banking app (ABA, ACLEDA, Wing…)</p>
-              {/* CutLuy's branded KHQR card (merchant + amount read from the payload); never shown once the payment is over.
+              <p className="text-[13.5px] text-muted">Scan with any KHQR banking app (ABA, ACLEDA, Wing…)</p>
+              {/* CutLuy's own branded card (merchant + amount read from the payload); never shown once the payment is over.
                   It's an SVG from an external host, so it's unoptimized rather than added to remotePatterns (Next's own
                   guidance: don't run untrusted external SVGs through the image optimiser). */}
-              <Image
-                src={ticket.qrImageUrl}
-                alt={`KHQR code. Scan to pay ${formatUsd(ticket.amountCents)}`}
-                width={360}
-                height={360}
-                unoptimized
-                className="mx-auto mt-4 h-auto w-full max-w-[280px] drop-shadow-[3px_3px_0_var(--color-ink)]"
-              />
+              <div className="mx-auto mt-4 max-w-[260px] overflow-hidden rounded-[10px] border border-ink/10">
+                <Image
+                  src={ticket.qrImageUrl}
+                  alt={`KHQR code. Scan to pay ${formatUsd(ticket.amountCents)}`}
+                  width={360}
+                  height={360}
+                  unoptimized
+                  className="block h-auto w-full"
+                />
+              </div>
               <p className="mt-4 flex items-center justify-center gap-2 text-[12.5px] text-muted" aria-live="polite">
-                <span aria-hidden className="size-2 animate-pulse bg-rose" />
+                <span aria-hidden className="size-1.5 animate-pulse rounded-full bg-rose" />
                 Waiting for payment · {countdown.label}
               </p>
               {ticket.checkoutUrl && (
@@ -176,10 +177,13 @@ export function BuyThemeDialog({
 
           {shown === "paid" && (
             <div className="py-4">
-              <p className="inline-block -rotate-3 rounded-[4px] border-[2.5px] border-emerald-800 px-3 py-1 text-[20px] font-bold tracking-[0.1em] text-emerald-800 uppercase">
-                Paid ✓
-              </p>
-              <p className="mt-4 text-[15px] text-ink">{theme.name} is yours. Use it on any invite.</p>
+              <span className="mx-auto grid size-11 place-items-center rounded-full bg-emerald-50 text-emerald-800">
+                <svg viewBox="0 0 16 16" aria-hidden className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3.5 8.5l3 3 6-7" />
+                </svg>
+              </span>
+              <p className="mt-3 text-[15px] font-medium text-ink">Paid</p>
+              <p className="mt-1 text-[13.5px] text-muted">{theme.name} is yours. Use it on any invite.</p>
               <Button className="mt-6 w-full" onClick={onClose}>
                 Done
               </Button>

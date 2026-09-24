@@ -198,7 +198,7 @@ export function Note({ tone = "info", children, className }: { tone?: "info" | "
     ok: "border-emerald-800/40 bg-emerald-50 text-emerald-900",
   };
   return (
-    <div role={tone === "error" ? "alert" : undefined} className={cx("rounded-[6px] border-[1.5px] border-dashed px-4 py-3 text-[14px] leading-snug", tones[tone], className)}>
+    <div role={tone === "error" ? "alert" : undefined} className={cx("rounded-[8px] border px-4 py-3 text-[14px] leading-snug", tones[tone], className)}>
       {children}
     </div>
   );
