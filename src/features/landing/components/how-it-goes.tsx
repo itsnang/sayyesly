@@ -15,7 +15,7 @@ const STEPS = [
   },
   {
     title: "No runs away",
-    body: "“No” slips away from a mouse or a thumb and “yes” grows. After five tries, a small “maybe another time?” appears.",
+    body: "\"No\" slips away from a mouse or a thumb and \"yes\" grows. After five tries, a small \"maybe another time?\" appears.",
     src: "/landing/step-dodge.png",
     position: "50% 70%",
     note: "every try gets counted",
@@ -61,7 +61,7 @@ export function HowItGoes() {
           <h2 id="how-title" className="text-[15px] font-semibold tracking-[0.02em] text-ink uppercase">
             How it goes
           </h2>
-          <p className="mt-2 text-[15px] leading-snug text-ink">From “want to get dinner?” to a table for two, in four taps.</p>
+          <p className="mt-2 text-[15px] leading-snug text-ink">From &quot;want to get dinner?&quot; to a table for two, in four taps.</p>
 
           <p className="mt-10 font-serif text-[40px] leading-none text-ink" aria-live="polite">
             {pad(index + 1)}

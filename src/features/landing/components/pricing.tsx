@@ -28,7 +28,7 @@ function Receipt({ title, number, children, className }: { title: string; number
     <div className={`relative w-full max-w-[340px] bg-card px-6 pt-6 pb-8 font-mono text-[13.5px] text-ink shadow-[0_18px_30px_-18px_rgba(60,30,20,0.45)] ${className ?? ""}`}>
       <p className="text-center tracking-[0.18em] uppercase">{title}</p>
       <p className="mt-1 text-center text-[11.5px] text-muted">
-        no. {number} · phnom penh
+        no. {number}
       </p>
       <p aria-hidden="true" className="my-4 overflow-hidden text-ink/40 whitespace-nowrap">- - - - - - - - - - - - - - - - - - - - - - - -</p>
       {children}
@@ -53,7 +53,7 @@ export function Pricing() {
         <Receipt title="Everything you need" number="0001" className="-rotate-[1.5deg]">
           <ul className="space-y-2">
             <Line item="invites" price="unlimited" />
-            <Line item="the runaway “no” button" price="free" />
+            <Line item="the runaway &quot;no&quot; button" price="free" />
             <Line item="plan, photos, calendar" price="free" />
             <Line item="answers on telegram" price="free" />
             <Line item="group chat pings" price="free" />
@@ -83,7 +83,7 @@ export function Pricing() {
           <p className="text-[12px] leading-relaxed">
             PAID WITH: KHQR
             <br />
-            <span className="text-muted">scan with any cambodian banking app. the theme unlocks the moment it&apos;s paid.</span>
+            <span className="text-muted">scan with any KHQR banking app. the theme unlocks the moment it&apos;s paid.</span>
           </p>
           <Link
             href="/demo?theme=kitten-night"
