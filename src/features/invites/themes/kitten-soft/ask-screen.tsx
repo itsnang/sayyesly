@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef, useState } from "react";
 import Image from "next/image";
 import type { QuestionSegment } from "../../types";
 import { MAYBE_LATER_AFTER_DODGES } from "../types";
+import { useRunaway } from "./use-runaway";
 import { isOptimizable } from "@/lib/media";
 import { KittenKeyframes, Squiggle, WobbleFilter, WobblyBorder } from "./shared";
 
@@ -24,8 +25,6 @@ const NO_LINES = [
   "// my hopes need this",
 ];
 
-const EDGE_PAD = 18;
-
 type AskScreenProps = {
   question: QuestionSegment[];
   message: string | null;
@@ -39,70 +38,23 @@ type AskScreenProps = {
 
 export function AskScreen({ question, message, imageUrl, busy, error, onYes, onDodge, onMaybeLater }: AskScreenProps) {
   const [promptText, setPromptText] = useState("// awaiting your answer…");
-  const [noLoose, setNoLoose] = useState(false);
-  const [noPos, setNoPos] = useState({ left: 0, top: 0 });
-  const [noFontSize, setNoFontSize] = useState(21);
-  const [noPadding, setNoPadding] = useState({ x: 34, y: 15 });
-  const [yesScale, setYesScale] = useState(1);
-  const [dodges, setDodges] = useState(0);
-
   const lineIdx = useRef(0);
-  const noRef = useRef<HTMLButtonElement>(null);
 
-  /** A random spot for the No button that keeps it fully on screen. */
-  const randomSpot = useCallback(() => {
-    const btnW = noRef.current?.offsetWidth ?? 80;
-    const btnH = noRef.current?.offsetHeight ?? 50;
-    const maxX = window.innerWidth - btnW - EDGE_PAD;
-    const maxY = window.innerHeight - btnH - EDGE_PAD;
-    return {
-      left: EDGE_PAD + Math.random() * Math.max(maxX - EDGE_PAD, 0),
-      top: EDGE_PAD + Math.random() * Math.max(maxY - EDGE_PAD, 0),
-    };
-  }, []);
+  const onNoDodge = useCallback(
+    (n: number) => {
+      onDodge(n);
+      setPromptText("");
+      setTimeout(() => {
+        setPromptText(NO_LINES[lineIdx.current % NO_LINES.length] ?? "");
+        lineIdx.current++;
+      }, 120);
+    },
+    [onDodge],
+  );
+  const { ref: noRef, dodges, loose: noLoose, dodge, style: noStyle } = useRunaway(onNoDodge);
 
-  const dodge = useCallback(() => {
-    const n = dodges + 1;
-    setDodges(n);
-    onDodge(n);
-
-    setPromptText("");
-    setTimeout(() => {
-      setPromptText(NO_LINES[lineIdx.current % NO_LINES.length] ?? "");
-      lineIdx.current++;
-    }, 120);
-
-    setYesScale((prev) => Math.min(prev + 0.13, 2.1));
-
-    const s = Math.max(1 - n * 0.06, 0.5);
-    setNoFontSize(21 * s);
-    setNoPadding({ x: 34 * s, y: 15 * s });
-
-    if (!noLoose && noRef.current) {
-      // First dodge: pin the button where it is, then let it run on the next one.
-      const r = noRef.current.getBoundingClientRect();
-      setNoPos({ left: r.left, top: r.top });
-      setNoLoose(true);
-    } else {
-      setNoPos(randomSpot());
-    }
-  }, [dodges, noLoose, onDodge, randomSpot]);
-
-  // Rotating a phone or resizing a window must never strand the button off screen.
-  useEffect(() => {
-    if (!noLoose) return;
-    const keepInside = () =>
-      setNoPos((pos) => {
-        const btnW = noRef.current?.offsetWidth ?? 80;
-        const btnH = noRef.current?.offsetHeight ?? 50;
-        return {
-          left: Math.min(Math.max(pos.left, EDGE_PAD), Math.max(window.innerWidth - btnW - EDGE_PAD, EDGE_PAD)),
-          top: Math.min(Math.max(pos.top, EDGE_PAD), Math.max(window.innerHeight - btnH - EDGE_PAD, EDGE_PAD)),
-        };
-      });
-    window.addEventListener("resize", keepInside);
-    return () => window.removeEventListener("resize", keepInside);
-  }, [noLoose]);
+  const yesScale = Math.min(1 + dodges * 0.13, 2.1);
+  const noShrink = Math.max(1 - dodges * 0.06, 0.5);
 
   return (
     <>
@@ -251,12 +203,10 @@ export function AskScreen({ question, message, imageUrl, busy, error, onYes, onD
                 cursor: "pointer",
                 background: "var(--paper)",
                 border: "none",
-                fontSize: noFontSize,
-                padding: `${noPadding.y}px ${noPadding.x}px`,
+                fontSize: 21 * noShrink,
+                padding: `${15 * noShrink}px ${34 * noShrink}px`,
                 color: "var(--ink)",
-                position: noLoose ? "fixed" : "relative",
-                left: noLoose ? noPos.left : undefined,
-                top: noLoose ? noPos.top : undefined,
+                ...noStyle,
                 zIndex: 20,
                 touchAction: "none",
                 transition: noLoose
