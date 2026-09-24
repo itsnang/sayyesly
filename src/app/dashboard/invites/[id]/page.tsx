@@ -35,6 +35,7 @@ export default async function EditInvitePage({ params, searchParams }: PageProps
           botUsername={botUsername}
           recipientName={invite.values.recipientName}
           linkedGroups={invite.linkedGroups}
+          canDm={user.canDm}
           justCreated={query.created === "1"}
         />
       }
