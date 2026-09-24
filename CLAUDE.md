@@ -15,6 +15,7 @@ bun run db:generate  # generate a migration from src/lib/db/schema
 bun run db:migrate   # apply migrations (Railway pre-deploy command)
 bun run db:seed      # seed themes + the original invite (idempotent)
 bun run telegram:webhook          # point the bot at NEXT_PUBLIC_APP_URL/api/telegram/webhook
+bun run r2:check                  # verify R2 uploads (CORS, signed PUT, public read); see docs/r2-setup.md
 bun test             # unit tests (bun's built-in runner, *.test.ts next to the code)
 ```
 
@@ -61,7 +62,7 @@ A Paid theme unlocks **only** when `/api/cutluy/webhook` receives a signature-ve
 
 ### Themes
 
-Themes are code: `src/features/invites/themes/<id>/` exports a `ThemeDefinition` (the Recipient-facing client component and the link-preview image renderer), registered in `themes/index.ts`. Price and availability live in the `themes` table under the same id. Themes receive all data as props and never load or save data themselves. Adding a Theme must not touch invite logic.
+Themes are code: `src/features/invites/themes/<id>/` exports a `ThemeDefinition` (the Recipient-facing client component, its `content` description, and the link-preview image renderer), registered in `themes/index.ts`. `content` says which optional fields the Theme shows (picture, note, plan photos) and how to label them; the editor hides the rest and never names a particular Theme's look itself. Price and availability live in the `themes` table under the same id. Themes receive all data as props and never load or save data themselves. Adding a Theme must not touch invite logic.
 
 ### Rules
 

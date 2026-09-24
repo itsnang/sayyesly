@@ -12,7 +12,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "bun scripts/seed.ts",
     "db:studio": "drizzle-kit studio",
-    "telegram:webhook": "bun scripts/set-webhook.ts"
+    "telegram:webhook": "bun scripts/set-webhook.ts",
+    "r2:check": "bun scripts/check-r2.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

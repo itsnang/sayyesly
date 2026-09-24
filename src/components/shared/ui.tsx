@@ -97,7 +97,8 @@ export function FieldError({ children, className }: { children: ReactNode; class
 }
 
 export const inputClass =
-  "w-full rounded-[6px] border-[1.5px] border-ink/25 bg-card px-3.5 py-2.5 text-[16px] text-ink outline-none transition placeholder:text-faint hover:border-ink/45 focus:border-ink focus:shadow-[2px_2px_0_var(--color-rose)] aria-[invalid=true]:border-red-700 disabled:cursor-not-allowed disabled:bg-surface disabled:opacity-60";
+  // 16px on phones so iOS doesn't zoom into the field; a little smaller in the desktop editor.
+  "w-full rounded-[7px] border border-ink/20 bg-white px-3 py-2 text-[16px] text-ink outline-none transition placeholder:text-faint hover:border-ink/35 focus:border-ink/60 focus:ring-3 focus:ring-rose/15 aria-[invalid=true]:border-red-700 disabled:cursor-not-allowed disabled:bg-surface disabled:opacity-60 lg:text-[14.5px]";
 
 export function Input({ className, ...props }: ComponentProps<"input">) {
   return <input className={cx(inputClass, className)} {...props} />;
@@ -110,8 +111,8 @@ export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
 /** A small square toggle chip (days, times, words): ink when on. */
 export function chipClass(on: boolean, className?: string) {
   return cx(
-    "rounded-[5px] border-[1.5px] transition disabled:cursor-not-allowed disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose",
-    on ? "border-ink bg-ink text-canvas" : "border-ink/20 bg-card text-ink hover:border-ink",
+    "rounded-[6px] border transition disabled:cursor-not-allowed disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose",
+    on ? "border-ink bg-ink text-canvas" : "border-ink/15 bg-white text-ink hover:border-ink/40",
     className,
   );
 }
@@ -174,7 +175,7 @@ export function Checkbox({ label, description, ...props }: ComponentProps<"input
       <input type="checkbox" className="peer sr-only" {...props} />
       <span
         aria-hidden="true"
-        className="mt-px grid size-[22px] shrink-0 place-items-center rounded-[4px] border-[1.5px] border-ink bg-card text-transparent transition peer-checked:bg-ink peer-checked:text-canvas peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-rose"
+        className="mt-px grid size-5 shrink-0 place-items-center rounded-[5px] border border-ink/40 bg-white text-transparent transition peer-checked:bg-ink peer-checked:text-canvas peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-rose"
       >
         <svg viewBox="0 0 16 16" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
           <path d="M3.5 8.5l3 3 6-7" />

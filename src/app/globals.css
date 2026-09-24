@@ -25,6 +25,8 @@
   --color-muted: #7c7069;
   --color-faint: #b5a99f;
   --color-hairline: #e6ddd2;
+  /* The neutral stage behind the live preview in the invite editor */
+  --color-stage: #f3f1ee;
   --color-rose: #de4a80;
   --color-rose-deep: #b3305f;
   --color-rose-soft: #f7e1e8;

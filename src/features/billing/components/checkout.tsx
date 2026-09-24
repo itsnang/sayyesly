@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, buttonClass, Eyebrow, Note } from "@/components/shared/ui";
 import { formatUsd } from "@/lib/format";
@@ -147,12 +148,15 @@ export function BuyThemeDialog({
           {shown === "waiting" && ticket && (
             <>
               <p className="text-[14.5px] text-ink">Scan with any KHQR banking app (ABA, ACLEDA, Wing…)</p>
-              {/* CutLuy's branded KHQR card (merchant + amount read from the payload); never shown once the payment is over */}
-              {/* eslint-disable-next-line @next/next/no-img-element -- SVG rendered by CutLuy */}
-              <img
+              {/* CutLuy's branded KHQR card (merchant + amount read from the payload); never shown once the payment is over.
+                  It's an SVG from an external host, so it's unoptimized rather than added to remotePatterns (Next's own
+                  guidance: don't run untrusted external SVGs through the image optimiser). */}
+              <Image
                 src={ticket.qrImageUrl}
                 alt={`KHQR code. Scan to pay ${formatUsd(ticket.amountCents)}`}
                 width={360}
+                height={360}
+                unoptimized
                 className="mx-auto mt-4 h-auto w-full max-w-[280px] drop-shadow-[3px_3px_0_var(--color-ink)]"
               />
               <p className="mt-4 flex items-center justify-center gap-2 text-[12.5px] text-muted" aria-live="polite">
