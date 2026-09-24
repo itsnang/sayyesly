@@ -32,7 +32,12 @@ const SECTIONS: { id: SectionId; title: string; fields: FieldPath<InviteFormValu
 const MAIN_FIELDS: FieldPath<InviteFormValues>[] = ["question", "recipientName", "themeId"];
 
 // Used only if the selected Theme is missing from the list: show everything, name nothing theme-specific.
-const ALL_CONTENT: ThemeContent = { picture: { label: "Picture", whenEmpty: "the theme's own picture" }, note: true, planPhotos: true };
+const ALL_CONTENT: ThemeContent = {
+  question: { label: "Question", placeholder: "will you have dinner with me?" },
+  picture: { label: "Picture", whenEmpty: "the theme's own picture" },
+  note: true,
+  planPhotos: true,
+};
 
 /** The Extras section's name, after what the selected Theme actually shows (null: nothing to set). */
 function extrasTitle(content: ThemeContent): string | null {
@@ -351,7 +356,14 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
               control={control}
               name="question"
               render={({ field }) => (
-                <QuestionField value={field.value} onChange={field.onChange} disabled={answered} error={errors.question?.message ?? (answered ? lockNote : undefined)} />
+                <QuestionField
+                  label={content.question.label}
+                  placeholder={content.question.placeholder}
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={answered}
+                  error={errors.question?.message ?? (answered ? lockNote : undefined)}
+                />
               )}
             />
             <Field label="For" optional hint="Only you see this, in your list and Telegram messages." error={errors.recipientName?.message}>

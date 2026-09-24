@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { formatInZone as formatShared } from "../shared/format";
 
 /** SVG filter that gives borders and underlines their hand-drawn wobble. Render once per screen. */
 export function WobbleFilter() {
@@ -214,15 +215,9 @@ export function KittenKeyframes() {
   );
 }
 
-/** Formats an instant for display in the Invite's time zone, in kitten-soft's lowercase voice. */
+/** An instant in the Invite's time zone, in kitten-soft's lowercase voice. */
 export function formatInZone(iso: string, timeZone: string) {
-  const d = new Date(iso);
-  const fmt = (options: Intl.DateTimeFormatOptions) =>
-    new Intl.DateTimeFormat("en-US", { timeZone, ...options }).format(d).toLowerCase();
-  return {
-    date: fmt({ month: "long", day: "numeric" }),
-    weekday: fmt({ weekday: "short" }),
-    time: fmt({ hour: "numeric", minute: "2-digit" }),
-  };
+  const f = formatShared(iso, timeZone);
+  return { date: f.date.toLowerCase(), weekday: f.weekdayShort.toLowerCase(), time: f.time.toLowerCase() };
 }
 

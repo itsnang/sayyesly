@@ -13,10 +13,3 @@ export async function renderInviteOgImage(slug: string) {
   if (!render) throw new Error("Default theme has no link-preview renderer");
   return render({ question: invite?.question ?? FALLBACK_QUESTION });
 }
-
-/** The site-wide link-preview image, drawn by the default Theme. */
-export async function renderSiteOgImage(question: string) {
-  const render = getOgImageRenderer(DEFAULT_THEME_ID);
-  if (!render) throw new Error("Default theme has no link-preview renderer");
-  return render({ question: parseQuestion(question) });
-}

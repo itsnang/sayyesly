@@ -29,6 +29,8 @@ export const OG_IMAGE_SIZE = { width: 1200, height: 630 } as const;
  * labels from here, so it never assumes a particular Theme's look.
  */
 export type ThemeContent = {
+  /** What the editor calls the question, e.g. "Question" or "Invitation headline", and its example */
+  question: { label: string; placeholder: string };
   /** The picture on the ask screen; `false` when the Theme has none */
   picture: {
     /** Field label, e.g. "Picture at the top" */

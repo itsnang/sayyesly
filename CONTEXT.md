@@ -21,7 +21,7 @@ One date invitation from a Creator to a single Recipient, reachable through its 
 _Avoid_: page, card, date
 
 **Plan**:
-The details of the date (place, map link, activity, dress code, notes) that are revealed to the Recipient after they say Yes.
+The details of the date (place, map link, activity, dress code, notes). A Theme that asks first reveals them after the Recipient says Yes; a Theme that invites shows them up front.
 _Avoid_: details, itinerary
 
 **Time slot**:
@@ -64,11 +64,11 @@ The Recipient's single, final reply to an Invite: either **Yes** (with a chosen 
 _Avoid_: response, reply, RSVP
 
 **Maybe later**:
-The polite way out, offered to the Recipient after enough Dodges.
+The polite way out. A Theme with a runaway "No" offers it after enough Dodges; a Theme without one offers it from the start.
 _Avoid_: no, decline, reject
 
 **Dodge**:
-One time the "No" button runs away from the Recipient's pointer or finger. The count is reported to the Creator with the Answer.
+One time the "No" button runs away from the Recipient's pointer or finger. The count is reported to the Creator with the Answer. Themes without a runaway "No" always report zero.
 
 **Note**:
 An optional short message the Recipient attaches to their Answer.
