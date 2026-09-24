@@ -98,12 +98,14 @@ export function Tape({ className }: { className?: string }) {
   return <span aria-hidden="true" className={cx("absolute h-6 w-20 bg-[#f4e3a8]/75 shadow-sm backdrop-blur-[1px]", className)} />;
 }
 
-/** The wordmark: serif italic with a small ink heart. */
-export function Wordmark({ className }: { className?: string }) {
-  return (
-    <span className={cx("inline-flex items-center gap-1 font-serif text-[22px] leading-none text-ink italic", className)}>
-      ask her out
-      <Heart className="size-3.5 text-rose" strokeWidth={2.4} />
-    </span>
-  );
+/**
+ * The sayyesly wordmark (public/brand/wordmark.png): "say[yes]ly" with "yes"
+ * in a speech bubble. `className` sets its height (e.g. `h-5`); width follows
+ * the source image's own aspect ratio.
+ */
+export function Wordmark({ className = "h-11 w-auto" }: { className?: string }) {
+  // `className` fully replaces this default (not merged via `cx`): both set height, and
+  // mixing a default height utility with the caller's override is exactly the kind of
+  // same-property clash Tailwind doesn't reliably resolve by class order.
+  return <Image src="/brand/wordmark.png" alt="sayyesly" width={2240} height={880} className={className} />;
 }

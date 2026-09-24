@@ -28,7 +28,7 @@ export function LandingPage() {
           <h2 className="mt-4 font-display text-[clamp(32px,4.6vw,52px)] leading-[1.1] text-ink">
             Go on. Ask them.
           </h2>
-          <p className="mt-3 text-[15px] text-muted">It takes about a minute, and the kitten theme is free.</p>
+          <p className="mt-3 text-[15px] text-muted">It takes about a minute, and the default theme is free.</p>
           <div className="mt-7 flex justify-center">
             <InkButton href="/dashboard/invites/new">
               Make your invite <Heart className="size-3.5 text-rose" strokeWidth={2.4} />
@@ -39,9 +39,9 @@ export function LandingPage() {
 
       <footer className="mt-28 bg-surface">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-10 gap-y-4 px-5 py-9 sm:px-8">
-          <Wordmark className="text-[20px]" />
+          <Wordmark className="h-[38px] w-auto" />
           <p className="font-mono text-[12px] leading-relaxed text-muted">
-            made in phnom penh · 2026
+            made with love · 2026
             <br />
             answers arrive on telegram
           </p>

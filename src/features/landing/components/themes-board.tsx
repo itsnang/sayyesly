@@ -70,7 +70,7 @@ export function ThemesBoard() {
         <div className="relative w-[230px] rotate-[1.5deg] bg-[#fbe99a] p-5 pt-6 shadow-[0_14px_26px_-16px_rgba(60,30,20,0.45)] sm:mt-4">
           <p className="font-mono text-[12px] tracking-[0.06em] text-ink uppercase">every theme comes with</p>
           <ul className="mt-3 space-y-2 text-[14px] leading-snug text-ink">
-            {["your plan & up to 3 photos", "a calendar in your time zone", "the runaway “no” button", "the Telegram ping"].map((item) => (
+            {["your plan & up to 3 photos", "a calendar in your time zone", 'the runaway "no" button', "the Telegram ping"].map((item) => (
               <li key={item} className="flex gap-2">
                 <span aria-hidden="true" className="text-rose">✓</span>
                 {item}

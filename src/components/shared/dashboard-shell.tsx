@@ -25,7 +25,7 @@ export function DashboardShell({ userName, photoUrl, children }: { userName: str
       <header className="sticky top-0 z-30 border-b-[1.5px] border-ink bg-canvas/95 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-1.5 px-4 sm:gap-2 sm:px-8">
           <Link href="/dashboard" className="mr-0.5 shrink-0 sm:mr-6" aria-label="ask her out, your invites">
-            <Wordmark className="text-[20px] max-sm:text-[17px]" />
+            <Wordmark className="h-[38px] w-auto max-sm:h-8" />
           </Link>
           <nav aria-label="Dashboard" className="flex h-full">
             {NAV.map((item) => {
