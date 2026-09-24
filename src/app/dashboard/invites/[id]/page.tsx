@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { InviteStudio } from "../_components/invite-studio";
+import { Note } from "@/components/shared/ui";
 import { DeleteInviteButton } from "@/features/invites/components/dashboard/delete-invite-button";
 import { DuplicateInviteButton } from "@/features/invites/components/dashboard/duplicate-invite-button";
 import { SharePanel } from "@/features/invites/components/dashboard/share-panel";
@@ -20,6 +21,7 @@ export default async function EditInvitePage({ params, searchParams }: PageProps
 
   const [themes, botUsername] = await Promise.all([getThemeChoices(user.id), getBotUsername().catch(() => null)]);
   const shareUrl = new URL(`/i/${invite.slug}`, SITE_URL).toString();
+  const themeName = themes.find((t) => t.id === invite.values.themeId)?.name ?? "the free theme";
 
   return (
     <InviteStudio
@@ -29,6 +31,11 @@ export default async function EditInvitePage({ params, searchParams }: PageProps
       themes={themes}
       uploadsEnabled={isUploadConfigured()}
       shareOpen={query.created === "1"}
+      notice={
+        query.themeSwapped === "1" && (
+          <Note tone="warn">The theme this was copied from isn&apos;t available anymore, so this invite uses {themeName} instead.</Note>
+        )
+      }
       share={
         <SharePanel
           shareUrl={shareUrl}

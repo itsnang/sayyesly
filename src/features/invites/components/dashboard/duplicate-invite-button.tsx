@@ -39,7 +39,7 @@ export function DuplicateInviteButton({ inviteId, compact }: { inviteId: string;
       setBusy(false);
       return;
     }
-    router.push(`/dashboard/invites/${result.id}?created=1`);
+    router.push(`/dashboard/invites/${result.id}?created=1${result.themeSwapped ? "&themeSwapped=1" : ""}`);
   }
 
   if (compact) {
