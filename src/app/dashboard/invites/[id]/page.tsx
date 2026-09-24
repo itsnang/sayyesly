@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { InviteStudio } from "../_components/invite-studio";
 import { DeleteInviteButton } from "@/features/invites/components/dashboard/delete-invite-button";
+import { DuplicateInviteButton } from "@/features/invites/components/dashboard/duplicate-invite-button";
 import { SharePanel } from "@/features/invites/components/dashboard/share-panel";
 import { getMyInvite } from "@/features/invites/server/dashboard-data";
 import { getThemeChoices } from "@/features/invites/server/theme-access";
@@ -39,7 +40,12 @@ export default async function EditInvitePage({ params, searchParams }: PageProps
           justCreated={query.created === "1"}
         />
       }
-      footer={<DeleteInviteButton inviteId={invite.id} />}
+      footer={
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <DuplicateInviteButton inviteId={invite.id} />
+          <DeleteInviteButton inviteId={invite.id} />
+        </div>
+      }
     />
   );
 }
