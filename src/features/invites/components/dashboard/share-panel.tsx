@@ -1,10 +1,17 @@
-import { buttonClass, inputClass } from "@/components/shared/ui";
+import { buttonClass, inputClass, Note } from "@/components/shared/ui";
 import { CopyButton } from "./copy-button";
 import { RefreshOnFocus } from "./refresh-on-focus";
 
 /**
  * The Share drawer's content: the invite link, ready to send, and one tap to
  * tell a group chat. `justCreated` adds the "it's ready" line after creating.
+ *
+ * The send actions (copy / Send in Telegram) are gated on having *somewhere*
+ * for the Answer to go: the bot DM'ing the Creator, or at least one Linked
+ * group. Sending the link with neither set up means the Answer arrives with
+ * nowhere to go, silently. `RefreshOnFocus` re-reads both as soon as either
+ * changes, so pressing Start or linking a group unlocks this on return,
+ * without a manual reload.
  */
 export function SharePanel({
   shareUrl,
@@ -12,6 +19,7 @@ export function SharePanel({
   botUsername,
   recipientName,
   linkedGroups,
+  canDm,
   justCreated,
 }: {
   shareUrl: string;
@@ -19,9 +27,11 @@ export function SharePanel({
   botUsername: string | null;
   recipientName: string;
   linkedGroups: { id: string; title: string | null }[];
+  canDm: boolean;
   justCreated: boolean;
 }) {
   const who = recipientName.trim() || "them";
+  const hasChannel = canDm || linkedGroups.length > 0;
   const command = `/link ${linkCode}`;
   const telegramShare = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}`;
   // Telegram's group picker; the bot receives `/start <Link code>` in the chosen group and links it.
@@ -39,13 +49,37 @@ export function SharePanel({
         </h3>
         <p className="mt-0.5 text-[13px] text-muted">Send it to {who}. You&apos;ll hear the answer on Telegram.</p>
         <input readOnly value={shareUrl} aria-label="Invite link" className={`${inputClass} mt-3 text-muted`} />
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          <CopyButton text={shareUrl} variant="primary" size="md" />
-          <a href={telegramShare} target="_blank" rel="noopener noreferrer" className={buttonClass("secondary")}>
-            Send in Telegram
-          </a>
-        </div>
-        <p className="mt-2 text-[12.5px] text-muted">If you open it while logged in, you see a preview. Nothing you tap there is saved.</p>
+
+        {hasChannel ? (
+          <>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <CopyButton text={shareUrl} variant="primary" size="md" />
+              <a href={telegramShare} target="_blank" rel="noopener noreferrer" className={buttonClass("secondary")}>
+                Send in Telegram
+              </a>
+            </div>
+            <p className="mt-2 text-[12.5px] text-muted">If you open it while logged in, you see a preview. Nothing you tap there is saved.</p>
+          </>
+        ) : (
+          <Note tone="warn" className="mt-3">
+            <p>
+              <b className="font-semibold">Set up somewhere to hear the answer before sending this</b> — start the bot, or link a group chat
+              below.
+            </p>
+            {botUsername ? (
+              <a
+                href={`https://t.me/${botUsername}?start=hello`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonClass("telegram", "sm", "mt-2.5 w-full")}
+              >
+                Open @{botUsername}
+              </a>
+            ) : (
+              <p className="mt-1.5 text-[12.5px]">Open the bot in Telegram and press Start.</p>
+            )}
+          </Note>
+        )}
       </section>
 
       <section aria-labelledby="share-groups" className="border-t border-ink/10 pt-6">

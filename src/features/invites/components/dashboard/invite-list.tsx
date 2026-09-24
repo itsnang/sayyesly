@@ -7,6 +7,7 @@ import type { InviteStatus, InviteSummary } from "../../server/dashboard-data";
 import { getTheme } from "../../themes";
 import { inviteTitle } from "../../utils";
 import { CopyButton } from "./copy-button";
+import { DuplicateInviteButton } from "./duplicate-invite-button";
 
 const STATUS: Record<InviteStatus, { label: string; tone: "rose" | "green" | "amber" | "grey" }> = {
   yes: { label: "Said yes", tone: "green" },
@@ -32,9 +33,9 @@ function createdLabel(iso: string) {
 
 export function EmptyInvites() {
   return (
-    <div className="relative mx-auto max-w-md rounded-[8px] border-[1.5px] border-dashed border-ink/40 px-6 py-14 text-center">
+    <div className="relative mx-auto max-w-md rounded-[8px] border border-dashed border-ink/25 px-6 py-14 text-center">
       <Envelope aria-hidden className="mx-auto w-16 -rotate-6 text-ink" />
-      <h2 className="mt-5 font-display text-[26px] text-ink">No invites yet</h2>
+      <h2 className="mt-5 text-[19px] font-semibold text-ink">No invites yet</h2>
       <p className="mx-auto mt-2 max-w-xs text-[15px] text-muted">
         Write one in a couple of minutes, send the link, and the answer comes to your Telegram.
       </p>
@@ -50,21 +51,21 @@ export function InviteList({ invites, siteUrl }: { invites: InviteSummary[]; sit
   if (invites.length === 0) return <EmptyInvites />;
 
   return (
-    <ul className="overflow-hidden rounded-[8px] border-[1.5px] border-ink bg-card">
+    <ul className="overflow-hidden rounded-[8px] border border-ink/12 bg-card">
       {invites.map((invite) => {
         const status = STATUS[invite.status];
         const theme = getTheme(invite.themeId);
         const shareUrl = new URL(`/i/${invite.slug}`, siteUrl).toString();
         return (
           <li key={invite.id} className="group relative flex items-center gap-3.5 border-b border-ink/15 px-3.5 py-3.5 last:border-b-0 hover:bg-surface/60 sm:gap-5 sm:px-5">
-            <span className="relative block h-[68px] w-[44px] shrink-0 overflow-hidden rounded-[4px] border-[1.5px] border-ink bg-surface">
+            <span className="relative block h-[68px] w-[44px] shrink-0 overflow-hidden rounded-[4px] border border-ink/12 bg-surface">
               {theme && <Image src={theme.thumbnail} alt="" fill sizes="44px" className="object-cover object-[50%_35%]" />}
             </span>
 
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
                 <Link href={`/dashboard/invites/${invite.id}`} className="min-w-0 after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-rose">
-                  <span className="block truncate font-display text-[21px] leading-tight text-ink">{inviteTitle(invite.recipientName, invite.question)}</span>
+                  <span className="block truncate text-[18px] font-semibold leading-tight text-ink">{inviteTitle(invite.recipientName, invite.question)}</span>
                 </Link>
                 <Stamp tone={status.tone}>{status.label}</Stamp>
               </div>
@@ -83,6 +84,7 @@ export function InviteList({ invites, siteUrl }: { invites: InviteSummary[]; sit
             {/* Above the row's link overlay so it stays clickable */}
             <div className="relative z-10 flex shrink-0 items-center gap-1">
               <CopyButton text={shareUrl} label="Copy link" />
+              <DuplicateInviteButton inviteId={invite.id} compact />
               <span aria-hidden className="hidden px-1 text-[18px] text-faint transition group-hover:translate-x-0.5 group-hover:text-ink sm:inline">
                 →
               </span>
