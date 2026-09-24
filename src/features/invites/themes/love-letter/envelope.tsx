@@ -1,32 +1,41 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { PublicInvite } from "../../types";
+import { sizeForQuestion } from "./lettering";
 import { FIBRES, GRAIN } from "./ornaments";
 
-type Stage = "sealed" | "opening" | "open" | "leaving";
+type Stage = "sealed" | "opening" | "leaving";
+
+// Long enough after the card is out to read the question on it.
+const LEAVE_AFTER_MS = 2900;
+const FADE_MS = 520;
 
 /**
- * The first thing the Recipient sees: a handmade envelope. One tap lifts the flap
- * and slides the card up with the question on it; tapping the card opens the letter.
+ * The sealed envelope the Recipient opens first. One tap lifts the flap and slides
+ * the card out with the question; after a moment the letter itself opens.
  */
 export function Envelope({ invite, onRead }: { invite: PublicInvite; onRead: () => void }) {
   const [stage, setStage] = useState<Stage>("sealed");
   const lifted = stage !== "sealed";
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  function tap() {
-    if (stage === "sealed") {
-      setStage("opening");
-      setTimeout(() => setStage("open"), 1150);
-    } else if (stage === "open") {
-      setStage("leaving");
-      setTimeout(onRead, 520);
-    }
+  useEffect(() => {
+    const pending = timers.current;
+    return () => pending.forEach(clearTimeout);
+  }, []);
+
+  function open() {
+    if (stage !== "sealed") return;
+    setStage("opening");
+    timers.current.push(
+      setTimeout(() => setStage("leaving"), LEAVE_AFTER_MS),
+      setTimeout(onRead, LEAVE_AFTER_MS + FADE_MS),
+    );
   }
 
   const question = invite.question.map((s) => s.text).join("");
-  const questionSize = question.length > 34 ? 30 : question.length > 22 ? 36 : 44;
-  const details = [`for ${invite.recipientName}`, invite.plan.place, invite.plan.activity].filter(Boolean);
+  const details = [invite.plan.place, invite.plan.activity].filter(Boolean);
 
   return (
     <div
@@ -39,13 +48,14 @@ export function Envelope({ invite, onRead }: { invite: PublicInvite; onRead: () 
         padding: "120px 20px 48px",
         background: `${GRAIN}, var(--ll-table)`,
         opacity: stage === "leaving" ? 0 : 1,
-        transition: "opacity .5s ease",
+        transition: `opacity ${FADE_MS}ms ease`,
       }}
     >
       <button
         type="button"
-        onClick={tap}
-        aria-label={stage === "sealed" ? "Open the envelope" : "Read the letter"}
+        onClick={open}
+        aria-label="Open the envelope"
+        disabled={stage !== "sealed"}
         style={{
           position: "relative",
           width: "min(330px, 84vw)",
@@ -53,7 +63,7 @@ export function Envelope({ invite, onRead }: { invite: PublicInvite; onRead: () 
           border: "none",
           background: "none",
           padding: 0,
-          cursor: stage === "sealed" || stage === "open" ? "pointer" : "default",
+          cursor: stage === "sealed" ? "pointer" : "default",
           perspective: 1000,
           animation: "ll-rise .8s ease-out both",
         }}
@@ -117,7 +127,7 @@ export function Envelope({ invite, onRead }: { invite: PublicInvite; onRead: () 
                 height: "100%",
                 padding: "12% 10% 0",
                 fontFamily: "var(--ll-marker)",
-                fontSize: questionSize,
+                fontSize: sizeForQuestion(question, [30, 36, 44]),
                 lineHeight: 1.08,
                 color: "var(--ll-ink)",
                 textAlign: "center",
@@ -169,11 +179,11 @@ export function Envelope({ invite, onRead }: { invite: PublicInvite; onRead: () 
           fontSize: 24,
           color: "var(--ll-ink)",
           minHeight: 30,
-          opacity: stage === "sealed" || stage === "open" ? 1 : 0,
+          opacity: stage === "sealed" ? 1 : 0,
           transition: "opacity .3s ease",
         }}
       >
-        {stage === "sealed" ? "tap to open" : stage === "open" ? "tap the card to read it" : ""}
+        tap to open
       </p>
     </div>
   );

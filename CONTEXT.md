@@ -21,7 +21,7 @@ One date invitation from a Creator to a single Recipient, reachable through its 
 _Avoid_: page, card, date
 
 **Plan**:
-The details of the date (place, map link, activity, dress code, notes) that are revealed to the Recipient after they say Yes.
+The details of the date (place, map link, activity, dress code, notes). A Theme that asks first reveals them after the Recipient says Yes; a Theme that invites shows them up front.
 _Avoid_: details, itinerary
 
 **Time slot**:

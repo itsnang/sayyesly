@@ -3,39 +3,46 @@
 import { useState, type ReactNode } from "react";
 import type { PublicInvite } from "../../types";
 import { NOTE_MAX_LENGTH } from "../../utils/answer";
+import { formatInZone, MONTHS, timeLabel } from "../shared/format";
 import type { PlanChoice } from "../shared/use-invite-answer";
 import { isoDate, usePlanSelection } from "../shared/use-plan-selection";
-import { customLabel, formatWhen, MONTHS, timeLabel } from "./format";
+import { Label, MapLink, penStyle } from "./lettering";
 import { Arrow, FlowerRow, InkCircle, Leaf, PaperPlane, Photo, Star, Sun } from "./ornaments";
 
 const WEEKDAYS = ["s", "m", "t", "w", "t", "f", "s"];
 const TIMES = ["18:30", "19:00", "19:30", "20:00", "20:30"];
 const PHOTO_TILTS = [-2.2, 1.8, -1.2];
 
-type DiaryPageProps = {
+type LetterScreenProps = {
   invite: PublicInvite;
   busy: boolean;
   error: string | null;
-  onAccept: (choice: PlanChoice, note: string) => void;
-  onNotThisTime: () => void;
+  onYes: (choice: PlanChoice, note: string) => void;
+  onMaybeLater: () => void;
 };
 
-/** The letter itself, laid out like a page from a diary. */
-export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: DiaryPageProps) {
+/** A picked custom date and time, e.g. "Saturday, September 26 at 7:30 PM" (already in the Invite's time zone). */
+function customLabel(date: string, time: string) {
+  const [y = 0, m = 1, d = 1] = date.split("-").map(Number);
+  const weekday = new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", { weekday: "long", timeZone: "UTC" });
+  return `${weekday}, ${MONTHS[m - 1]} ${d} at ${timeLabel(time)}`;
+}
+
+/** The Invite, laid out like a page from a diary. */
+export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: LetterScreenProps) {
   const { plan } = invite;
-  const pick = usePlanSelection(invite);
-  const { calendar, choice } = pick;
+  const selection = usePlanSelection(invite);
+  const { calendar, choice } = selection;
   const [otherTime, setOtherTime] = useState("");
   const [note, setNote] = useState("");
-  const [openedAt] = useState(() => new Date());
 
-  const chosen = pick.slot
+  const chosen = selection.slot
     ? (() => {
-        const w = formatWhen(pick.slot.startsAt, invite.timezone);
-        return `${w.day} at ${w.time}`;
+        const w = formatInZone(selection.slot.startsAt, invite.timezone);
+        return `${w.weekday}, ${w.date} at ${w.time}`;
       })()
-    : pick.date && pick.time
-      ? customLabel(pick.date, pick.time)
+    : selection.date && selection.time
+      ? customLabel(selection.date, selection.time)
       : null;
 
   const hasPlan = Boolean(plan.place || plan.activity || plan.mapUrl);
@@ -43,7 +50,6 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
   return (
     <div style={{ background: "var(--ll-diary)", minHeight: "100svh" }}>
       <div style={{ position: "relative", maxWidth: 640, margin: "0 auto", padding: "22px 22px 80px", animation: "ll-rise .7s ease-out both" }}>
-        {/* Corner labels */}
         <header style={{ display: "flex", justifyContent: "space-between", gap: 16 }}>
           <Label>
             {plan.place}
@@ -51,13 +57,12 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
             {plan.activity}
           </Label>
           <Label align="right">
-            a letter for
+            a letter
             <br />
-            {invite.recipientName}
+            for you
           </Label>
         </header>
 
-        {/* The question */}
         <section style={{ position: "relative", textAlign: "center", padding: "84px 6px 10px" }}>
           <Sun size={52} style={{ position: "absolute", left: 2, top: 14 }} />
           <Star size={20} style={{ position: "absolute", right: "16%", top: 46, transform: "rotate(12deg)" }} />
@@ -87,29 +92,21 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
           </h1>
           <Leaf size={24} style={{ position: "absolute", right: 10, bottom: -26, transform: "rotate(18deg)" }} />
         </section>
+        <div style={{ textAlign: "center", marginTop: 30 }}>
+          <MaybeLater busy={busy} onConfirm={onMaybeLater} />
+        </div>
 
-        {/* Photo and letter */}
         {(invite.imageUrl || invite.message) && (
-          <section className="ll-split" style={{ marginTop: 48 }}>
+          <section className="ll-split" style={{ marginTop: 40 }}>
             {invite.imageUrl && (
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <Photo src={invite.imageUrl} alt="" width="min(300px, 88%)" tilt={-1.6} sizes="300px" priority />
               </div>
             )}
-            {invite.message && (
-              <div style={{ padding: "0 4px" }}>
-                <Label>
-                  opened {openedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" }).toLowerCase()} ·{" "}
-                  {openedAt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }).toLowerCase()}
-                </Label>
-                <p style={{ ...penText, marginTop: 10 }}>dear {invite.recipientName},</p>
-                <p style={{ ...penText, marginTop: 4, whiteSpace: "pre-line" }}>{invite.message}</p>
-              </div>
-            )}
+            {invite.message && <p style={{ ...penStyle, padding: "0 4px", whiteSpace: "pre-line" }}>{invite.message}</p>}
           </section>
         )}
 
-        {/* The plan */}
         {(hasPlan || plan.photos.length > 0) && (
           <section style={{ position: "relative", marginTop: 56, textAlign: "center" }}>
             <PaperPlane size={72} style={{ position: "absolute", left: 0, top: -22, transform: "rotate(10deg)" }} />
@@ -131,12 +128,8 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
                 </span>
               </p>
             )}
-            {plan.activity && <p style={{ ...penText, marginTop: plan.place ? 18 : 12 }}>{plan.activity}</p>}
-            {plan.mapUrl && (
-              <a href={plan.mapUrl} target="_blank" rel="noopener noreferrer" style={{ ...penText, display: "inline-block", marginTop: 6, textUnderlineOffset: 4 }}>
-                → find it on the map
-              </a>
-            )}
+            {plan.activity && <p style={{ ...penStyle, marginTop: plan.place ? 18 : 12 }}>{plan.activity}</p>}
+            {plan.mapUrl && <MapLink href={plan.mapUrl} />}
 
             {plan.photos.length > 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "30px 18px", marginTop: 34 }}>
@@ -146,7 +139,7 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
                     {p.caption && (
                       <figcaption style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", gap: 2, marginTop: 8 }}>
                         <Arrow width={26} style={{ transform: "rotate(-120deg) scaleY(-1)", marginTop: -2 }} />
-                        <span style={{ ...penText, fontSize: 22 }}>{p.caption}</span>
+                        <span style={{ ...penStyle, fontSize: 22 }}>{p.caption}</span>
                       </figcaption>
                     )}
                   </figure>
@@ -156,7 +149,6 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
           </section>
         )}
 
-        {/* NOTE! */}
         {(plan.dressCode || plan.notes) && (
           <section
             style={{
@@ -167,12 +159,9 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
               transform: "rotate(-.6deg)",
             }}
           >
-            <p style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-              <span style={{ fontFamily: "var(--ll-marker)", fontSize: 30, color: "var(--ll-ink)" }}>NOTE!</span>
-              <Label>(read me)</Label>
-            </p>
-            {plan.dressCode && <p style={{ ...penText, marginTop: 8 }}>★ wear: {plan.dressCode}</p>}
-            {plan.notes && <p style={{ ...penText, marginTop: 6, whiteSpace: "pre-line" }}>★ {plan.notes}</p>}
+            <p style={{ fontFamily: "var(--ll-marker)", fontSize: 30, color: "var(--ll-ink)" }}>NOTE!</p>
+            {plan.dressCode && <p style={{ ...penStyle, marginTop: 8 }}>★ wear: {plan.dressCode}</p>}
+            {plan.notes && <p style={{ ...penStyle, marginTop: 6, whiteSpace: "pre-line" }}>★ {plan.notes}</p>}
           </section>
         )}
 
@@ -180,18 +169,17 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
           <FlowerRow width={180} />
         </div>
 
-        {/* When */}
         <section style={{ textAlign: "center" }}>
           <h2 style={{ fontFamily: "var(--ll-marker)", fontWeight: 400, fontSize: 34, color: "var(--ll-ink)" }}>when works for you?</h2>
 
           {invite.timeSlots.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 18, marginTop: 22 }}>
               {invite.timeSlots.map((s) => {
-                const w = formatWhen(s.startsAt, invite.timezone);
+                const w = formatInZone(s.startsAt, invite.timezone);
                 return (
-                  <Option key={s.id} selected={pick.slotId === s.id} onClick={() => pick.pickSlot(s.id)}>
-                    {w.day} · {w.time}
-                  </Option>
+                  <CircledChoice key={s.id} selected={selection.slotId === s.id} onClick={() => selection.pickSlot(s.id)}>
+                    {w.weekday}, {w.date} · {w.time}
+                  </CircledChoice>
                 );
               })}
             </div>
@@ -199,12 +187,12 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
 
           {invite.allowCustomTime && (
             <>
-              {invite.timeSlots.length > 0 && <p style={{ ...penText, color: "var(--ll-graphite)", marginTop: 28 }}>or another day:</p>}
+              {invite.timeSlots.length > 0 && <p style={{ ...penStyle, color: "var(--ll-graphite)", marginTop: 28 }}>or another day:</p>}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginTop: 18 }}>
                 <MonthArrow label="previous month" enabled={calendar.canGoBack} onClick={() => calendar.page(-1)}>
                   ‹
                 </MonthArrow>
-                <span style={{ ...penText, fontSize: 28, minWidth: 170 }}>
+                <span style={{ ...penStyle, fontSize: 28, minWidth: 170 }}>
                   {MONTHS[calendar.month]?.toLowerCase()} {calendar.year}
                 </span>
                 <MonthArrow label="next month" enabled={calendar.canGoForward} onClick={() => calendar.page(1)}>
@@ -221,7 +209,7 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
                   if (day === null) return <span key={`e${i}`} />;
                   const iso = isoDate(calendar.year, calendar.month, day);
                   const past = iso < calendar.todayIso;
-                  const selected = pick.date === iso;
+                  const selected = selection.date === iso;
                   return (
                     <button
                       key={iso}
@@ -229,7 +217,7 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
                       disabled={past}
                       aria-pressed={selected}
                       aria-label={`${MONTHS[calendar.month]} ${day}`}
-                      onClick={() => pick.pickDate(iso)}
+                      onClick={() => selection.pickDate(iso)}
                       style={{
                         position: "relative",
                         height: 40,
@@ -252,26 +240,26 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
 
               <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "14px 24px", marginTop: 26 }}>
                 {TIMES.map((t) => (
-                  <Option
+                  <CircledChoice
                     key={t}
-                    selected={!pick.slotId && pick.time === t}
+                    selected={!selection.slotId && selection.time === t}
                     onClick={() => {
                       setOtherTime("");
-                      pick.pickTime(t);
+                      selection.pickTime(t);
                     }}
                   >
                     {timeLabel(t)}
-                  </Option>
+                  </CircledChoice>
                 ))}
               </div>
-              <label style={{ ...penText, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginTop: 18, color: "var(--ll-graphite)" }}>
+              <label style={{ ...penStyle, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginTop: 18, color: "var(--ll-graphite)" }}>
                 or another time
                 <input
                   type="time"
                   value={otherTime}
                   onChange={(e) => {
                     setOtherTime(e.target.value);
-                    pick.pickTime(e.target.value || null);
+                    selection.pickTime(e.target.value || null);
                   }}
                   style={{
                     fontFamily: "var(--ll-print)",
@@ -288,7 +276,6 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
           )}
         </section>
 
-        {/* Write back */}
         <section style={{ marginTop: 44 }}>
           <label htmlFor="ll-note">
             <Label align="center">write back (optional)</Label>
@@ -303,7 +290,7 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
               display: "block",
               width: "100%",
               marginTop: 10,
-              ...penText,
+              ...penStyle,
               lineHeight: "36px",
               background: "repeating-linear-gradient(transparent 0 35px, var(--ll-rule) 35px 36px)",
               border: "none",
@@ -314,14 +301,13 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
           />
         </section>
 
-        {/* Send */}
         <section style={{ marginTop: 40, textAlign: "center" }}>
-          <p aria-live="polite" style={{ ...penText, minHeight: 30, color: error ? "var(--ll-error)" : "var(--ll-ink)" }}>
-            {error ?? (chosen ? chosen.toLowerCase() : pick.date ? "and a time?" : pick.time ? "and a day?" : "")}
+          <p aria-live="polite" style={{ ...penStyle, minHeight: 30, color: error ? "var(--ll-error)" : "var(--ll-ink)" }}>
+            {error ?? (chosen ? chosen.toLowerCase() : selection.date ? "and a time?" : selection.time ? "and a day?" : "")}
           </p>
           <button
             type="button"
-            onClick={() => choice && onAccept(choice, note)}
+            onClick={() => choice && onYes(choice, note)}
             disabled={!choice || busy}
             style={{
               position: "relative",
@@ -340,26 +326,8 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
             <DrawnBox />
             {busy ? "sending…" : "count me in"}
           </button>
-          <div>
-            <button
-              type="button"
-              onClick={onNotThisTime}
-              disabled={busy}
-              style={{
-                ...penText,
-                fontSize: 22,
-                marginTop: 22,
-                background: "none",
-                border: "none",
-                color: "var(--ll-graphite)",
-                textDecoration: "underline",
-                textUnderlineOffset: 4,
-                cursor: "pointer",
-                padding: 6,
-              }}
-            >
-              i can&apos;t make it this time
-            </button>
+          <div style={{ marginTop: 22 }}>
+            <MaybeLater busy={busy} onConfirm={onMaybeLater} />
           </div>
         </section>
       </div>
@@ -367,40 +335,38 @@ export function DiaryPage({ invite, busy, error, onAccept, onNotThisTime }: Diar
   );
 }
 
-const penText = {
-  fontFamily: "var(--ll-pen)",
-  fontSize: 25,
-  lineHeight: 1.25,
-  color: "var(--ll-ink)",
-} as const;
+/** The quiet way out. An Answer can't be changed, so it asks once more before sending. */
+function MaybeLater({ busy, onConfirm }: { busy: boolean; onConfirm: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+  const link = { ...penStyle, fontSize: 22, background: "none", border: "none", textUnderlineOffset: 4, cursor: "pointer", padding: 6 } as const;
 
-function Label({ children, align = "left" }: { children: ReactNode; align?: "left" | "right" | "center" }) {
+  if (!confirming) {
+    return (
+      <button type="button" onClick={() => setConfirming(true)} disabled={busy} style={{ ...link, color: "var(--ll-graphite)", textDecoration: "underline" }}>
+        i can&apos;t make it this time
+      </button>
+    );
+  }
   return (
-    <span
-      style={{
-        display: "block",
-        fontFamily: "var(--ll-print)",
-        fontSize: 10,
-        fontWeight: 500,
-        lineHeight: 1.45,
-        letterSpacing: ".12em",
-        textTransform: "uppercase",
-        color: "var(--ll-graphite)",
-        textAlign: align,
-      }}
-    >
-      {children}
-    </span>
+    <p style={{ ...penStyle, fontSize: 22, color: "var(--ll-graphite)" }}>
+      let them know you can&apos;t make it?{" "}
+      <button type="button" onClick={onConfirm} disabled={busy} style={{ ...link, color: "var(--ll-ink)", textDecoration: "underline" }}>
+        {busy ? "sending…" : "send"}
+      </button>
+      <button type="button" onClick={() => setConfirming(false)} disabled={busy} style={{ ...link, color: "var(--ll-graphite)" }}>
+        never mind
+      </button>
+    </p>
   );
 }
 
-function Option({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: ReactNode }) {
+function CircledChoice({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: ReactNode }) {
   return (
     <button
       type="button"
       aria-pressed={selected}
       onClick={onClick}
-      style={{ ...penText, position: "relative", border: "none", background: "none", padding: "2px 6px", cursor: "pointer", textTransform: "lowercase" }}
+      style={{ ...penStyle, position: "relative", border: "none", background: "none", padding: "2px 6px", cursor: "pointer", textTransform: "lowercase" }}
     >
       {children}
       {selected && <InkCircle pad={7} />}
@@ -415,14 +381,14 @@ function MonthArrow({ label, enabled, onClick, children }: { label: string; enab
       aria-label={label}
       disabled={!enabled}
       onClick={onClick}
-      style={{ ...penText, fontSize: 30, border: "none", background: "none", cursor: "pointer", visibility: enabled ? "visible" : "hidden", padding: "0 8px" }}
+      style={{ ...penStyle, fontSize: 30, border: "none", background: "none", cursor: "pointer", visibility: enabled ? "visible" : "hidden", padding: "0 8px" }}
     >
       {children}
     </button>
   );
 }
 
-/** A box drawn around the send button in one quick pen stroke. */
+/** A box drawn around "count me in" in one quick pen stroke. */
 function DrawnBox() {
   return (
     <svg viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", overflow: "visible" }}>
