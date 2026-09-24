@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { useRef, useState, type ReactNode } from "react";
 import { buttonClass, cx, inputClass } from "@/components/shared/ui";
+import { isOptimizable } from "@/lib/media";
 import { ImageIcon, useDropTarget } from "../image-field";
 import { ACCEPTED_IMAGE_TYPES, imageFiles, uploadImage } from "../upload-image";
 
@@ -82,8 +84,14 @@ export function PhotosField({ photos, max, uploadsEnabled, disabled, onAdd, onRe
               <li key={photo.key} className="p-2.5">
                 <div className="flex items-center gap-3">
                   {photo.url && /^(https:\/\/|\/)/.test(photo.url) ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- any uploaded or linked URL
-                    <img src={photo.url} alt="" className="size-14 shrink-0 rounded-[6px] border border-ink/10 bg-surface object-cover" />
+                    <Image
+                      src={photo.url}
+                      alt=""
+                      width={56}
+                      height={56}
+                      unoptimized={!isOptimizable(photo.url)}
+                      className="size-14 shrink-0 rounded-[6px] border border-ink/10 bg-surface object-cover"
+                    />
                   ) : (
                     <span className="grid size-14 shrink-0 place-items-center rounded-[6px] border border-dashed border-ink/25 text-faint">
                       <ImageIcon />
@@ -117,8 +125,7 @@ export function PhotosField({ photos, max, uploadsEnabled, disabled, onAdd, onRe
           })}
           {pending.map((p) => (
             <li key={p.key} className="flex items-center gap-3 p-2.5">
-              {/* eslint-disable-next-line @next/next/no-img-element -- local preview */}
-              <img src={p.preview} alt="" className="size-14 shrink-0 rounded-[6px] object-cover opacity-60" />
+              <Image src={p.preview} alt="" width={56} height={56} unoptimized className="size-14 shrink-0 rounded-[6px] object-cover opacity-60" />
               <div className="min-w-0 flex-1">
                 <p className="text-[13px] text-muted">Uploading {Math.round(p.progress * 100)}%</p>
                 <div className="mt-1.5 h-1.5 overflow-hidden rounded-[3px] bg-surface">

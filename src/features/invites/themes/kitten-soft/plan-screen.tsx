@@ -4,7 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import type { PublicInvite } from "../../types";
 import { NOTE_MAX_LENGTH } from "../../utils/answer";
-import { formatInZone, isRemote, PillButton, Prompt, WobbleFilter, WobblyBorder } from "./shared";
+import { isOptimizable } from "@/lib/media";
+import { formatInZone, PillButton, Prompt, WobbleFilter, WobblyBorder } from "./shared";
 
 const DAYS_OF_WEEK = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 const MONTH_NAMES = [
@@ -160,7 +161,7 @@ export function PlanScreen({ invite, busy, error, onConfirm }: PlanScreenProps) 
               <div style={{ width: "100%", height: 230, overflow: "hidden", position: "relative" }}>
                 <Image
                   src={heroPhoto.url}
-                  unoptimized={isRemote(heroPhoto.url)}
+                  unoptimized={!isOptimizable(heroPhoto.url)}
                   alt={heroPhoto.alt}
                   fill
                   sizes="(max-width: 620px) 100vw, 620px"
@@ -173,7 +174,7 @@ export function PlanScreen({ invite, busy, error, onConfirm }: PlanScreenProps) 
                     <div key={url} style={{ flex: 1, height: 148, overflow: "hidden", position: "relative" }}>
                       <Image
                         src={url}
-                        unoptimized={isRemote(url)}
+                        unoptimized={!isOptimizable(url)}
                         alt={alt}
                         fill
                         sizes="(max-width: 620px) 50vw, 310px"

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -58,8 +59,9 @@ export function DashboardShell({ userName, photoUrl, children }: { userName: str
                 className="grid size-8 cursor-pointer list-none place-items-center overflow-hidden rounded-[6px] border-[1.5px] border-ink bg-rose-soft text-[13px] font-semibold text-rose-deep [&::-webkit-details-marker]:hidden"
               >
                 {photoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- Telegram-hosted avatar
-                  <img src={photoUrl} alt="" className="size-full object-cover" />
+                  // Telegram-hosted avatar on an arbitrary CDN host, so it's unoptimized rather than
+                  // added to remotePatterns.
+                  <Image src={photoUrl} alt="" width={32} height={32} unoptimized className="size-full object-cover" />
                 ) : (
                   userName.slice(0, 1).toUpperCase()
                 )}
