@@ -226,7 +226,3 @@ export function formatInZone(iso: string, timeZone: string) {
   };
 }
 
-/** Creator-supplied images from other sites skip Next's optimiser (it only proxies known hosts). */
-export function isRemote(src: string | null): boolean {
-  return !!src && !src.startsWith("/");
-}

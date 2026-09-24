@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { useRef, useState, type DragEvent } from "react";
 import { buttonClass, cx, inputClass } from "@/components/shared/ui";
+import { isOptimizable } from "@/lib/media";
 import { ACCEPTED_IMAGE_TYPES, imageFiles, uploadImage } from "./upload-image";
 
 type ImageFieldProps = {
@@ -113,9 +115,15 @@ export function ImageField({ value, onChange, uploadsEnabled, disabled }: ImageF
     <div>
       {shown ? (
         <div {...drop.props} className={cx("overflow-hidden rounded-[8px] border bg-surface", drop.over ? "border-ink" : "border-ink/10")}>
-          <div className="relative grid h-44 place-items-center">
-            {/* eslint-disable-next-line @next/next/no-img-element -- local preview or any uploaded URL */}
-            <img src={shown} alt="" className={cx("max-h-full max-w-full object-contain", busy && "opacity-60")} />
+          <div className="relative h-44">
+            <Image
+              src={shown}
+              alt=""
+              fill
+              sizes="(max-width: 640px) 100vw, 400px"
+              unoptimized={!!upload || !isOptimizable(shown)}
+              className={cx("object-contain transition-opacity", busy && "opacity-60")}
+            />
             {upload && (
               <div className="absolute inset-x-3 bottom-3">
                 <div className="h-1.5 overflow-hidden rounded-[3px] bg-white/80">
