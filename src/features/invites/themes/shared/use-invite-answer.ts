@@ -7,16 +7,14 @@ import type { InviteThemeProps } from "../types";
 export type PlanChoice = Extract<AnswerInput, { answer: "yes" }>["choice"];
 
 /**
- * The Recipient's path through an Invite (ask, then plan, then answered), whatever
- * the Theme looks like. `sayMaybeLater` and `confirm` resolve to true once the
- * Answer is saved, so the Theme can celebrate or scroll afterwards.
+ * Saving the Recipient's Answer, whatever the Theme looks like. `sayYes` and
+ * `sayMaybeLater` resolve to true once it's saved. Themes without a runaway
+ * "No" leave `noDodges` at 0.
  */
 export function useInviteAnswer({ invite, submitAnswer }: InviteThemeProps) {
   const [answer, setAnswer] = useState<PublicAnswer | null>(invite.answer);
-  const [stage, setStage] = useState<"ask" | "plan">("ask");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const dodges = useRef(0);
   const sending = useRef(false);
 
   async function send(input: AnswerInput): Promise<boolean> {
@@ -44,15 +42,10 @@ export function useInviteAnswer({ invite, submitAnswer }: InviteThemeProps) {
 
   return {
     answer,
-    stage,
     busy,
     error,
-    recordDodges: (count: number) => {
-      dodges.current = count;
-    },
-    sayYes: () => setStage("plan"),
-    sayMaybeLater: () => send({ answer: "maybe_later", note: null, noDodges: dodges.current }),
-    confirm: (choice: PlanChoice, note: string) =>
-      send({ answer: "yes", choice, note: note.trim() || null, noDodges: dodges.current }),
+    sayYes: (choice: PlanChoice, note: string, noDodges = 0) =>
+      send({ answer: "yes", choice, note: note.trim() || null, noDodges }),
+    sayMaybeLater: (noDodges = 0) => send({ answer: "maybe_later", note: null, noDodges }),
   };
 }
