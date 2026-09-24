@@ -39,7 +39,7 @@ export function LandingPage() {
 
       <footer className="mt-28 bg-surface">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-10 gap-y-4 px-5 py-9 sm:px-8">
-          <Wordmark className="text-[20px]" />
+          <Wordmark className="h-[38px] w-auto" />
           <p className="font-mono text-[12px] leading-relaxed text-muted">
             made in phnom penh · 2026
             <br />

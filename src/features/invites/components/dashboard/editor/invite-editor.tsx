@@ -289,7 +289,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
       {/* The only bar */}
       <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-ink/10 bg-white/95 px-4 backdrop-blur lg:static">
         <Link href="/dashboard" aria-label="All invites" className="shrink-0">
-          <Wordmark className="text-[19px] max-sm:hidden" />
+          <Wordmark className="h-9 w-auto max-sm:hidden" />
           <span className="text-[18px] text-ink sm:hidden">←</span>
         </Link>
         <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-2 text-[14px] sm:border-l sm:border-ink/10 sm:pl-3">
