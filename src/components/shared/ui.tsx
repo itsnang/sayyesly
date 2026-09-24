@@ -125,12 +125,12 @@ const stampTones = {
   amber: "border-amber-700 text-amber-800",
 };
 
-/** A rubber-stamp status label. */
+/** A small status badge (e.g. an Invite's Answer). */
 export function Stamp({ tone, children, className }: { tone: keyof typeof stampTones; children: ReactNode; className?: string }) {
   return (
     <span
       className={cx(
-        "inline-flex items-center gap-1 rounded-[3px] border-[1.5px] px-1.5 py-px text-[11px] leading-[1.35] font-bold tracking-[0.08em] uppercase",
+        "inline-flex items-center gap-1 rounded-[4px] border px-1.5 py-px text-[11px] leading-[1.35] font-semibold tracking-[0.06em] uppercase",
         stampTones[tone],
         className,
       )}
