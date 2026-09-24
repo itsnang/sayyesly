@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { LandingPage } from "@/features/landing/components/landing-page";
 
 export const metadata: Metadata = {
-  title: "ask her out · playful date invites",
-  description: "Make a date invite where the “no” button runs away, and get the answer on Telegram.",
+  title: "sayyesly · plan a date they'll say yes to",
+  description: "Send a sweet invite, plan the details, and get your answer on Telegram.",
 };
 
 export default function Home() {

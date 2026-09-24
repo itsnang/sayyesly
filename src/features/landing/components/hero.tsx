@@ -39,9 +39,9 @@ export function Hero() {
         <DoodleArc />
         <div className="relative mx-auto max-w-[560px] text-center">
           <h1 className="font-display text-[clamp(30px,4.1vw,46px)] leading-[1.14] tracking-[-0.01em] text-ink">
-            Ask them to dinner.
+            Plan a date they&apos;ll say yes to.
             <span className="mt-1 block text-muted">
-              A tiny invite with a &quot;no&quot; button that runs away, and the answer lands on your Telegram.
+              Send a sweet invite, and get your answer straight to Telegram.
             </span>
           </h1>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-x-4 gap-y-3">
