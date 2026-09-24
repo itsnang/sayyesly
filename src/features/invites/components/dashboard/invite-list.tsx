@@ -7,6 +7,7 @@ import type { InviteStatus, InviteSummary } from "../../server/dashboard-data";
 import { getTheme } from "../../themes";
 import { inviteTitle } from "../../utils";
 import { CopyButton } from "./copy-button";
+import { DuplicateInviteButton } from "./duplicate-invite-button";
 
 const STATUS: Record<InviteStatus, { label: string; tone: "rose" | "green" | "amber" | "grey" }> = {
   yes: { label: "Said yes", tone: "green" },
@@ -83,6 +84,7 @@ export function InviteList({ invites, siteUrl }: { invites: InviteSummary[]; sit
             {/* Above the row's link overlay so it stays clickable */}
             <div className="relative z-10 flex shrink-0 items-center gap-1">
               <CopyButton text={shareUrl} label="Copy link" />
+              <DuplicateInviteButton inviteId={invite.id} compact />
               <span aria-hidden className="hidden px-1 text-[18px] text-faint transition group-hover:translate-x-0.5 group-hover:text-ink sm:inline">
                 →
               </span>
