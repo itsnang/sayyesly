@@ -15,7 +15,8 @@ The person who opens an Invite link and gives the Answer. Referred to by their n
 _Avoid_: she, her, invitee, guest
 
 **Admin**:
-A person with an email-and-password account in the admin portal, a separate app from sayyesly itself. Not a Creator role; the two are unrelated.
+A person with an email-and-password account in the admin portal, separate from any Creator.
+_Avoid_: user, staff, owner
 
 ### Invites
 

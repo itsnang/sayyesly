@@ -53,6 +53,7 @@ export async function canUseTheme(userId: string, themeId: string): Promise<bool
   if (!hasTheme(themeId)) return false;
   const theme = await db.query.themes.findFirst({ where: eq(themes.id, themeId) });
   if (!theme) return false;
+  // `owned: false` here only checks the free-and-offered case; a real Purchase check follows.
   if (isThemeUsable(theme, false)) return true;
   return ownsTheme(userId, themeId);
 }
