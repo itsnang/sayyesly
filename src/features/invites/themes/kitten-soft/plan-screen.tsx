@@ -4,6 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import type { PublicInvite } from "../../types";
 import { NOTE_MAX_LENGTH } from "../../utils/answer";
+import type { PlanChoice } from "../shared/use-invite-answer";
+import { isoDate, usePlanSelection } from "../shared/use-plan-selection";
 import { isOptimizable } from "@/lib/media";
 import { formatInZone, PillButton, Prompt, WobbleFilter, WobblyBorder } from "./shared";
 
@@ -19,29 +21,7 @@ const TIME_CHIPS: [label: string, value: string][] = [
   ["8:00 pm", "20:00"],
   ["8:30 pm", "20:30"],
 ];
-/** How many months ahead the Recipient can page the calendar. */
-const MONTHS_AHEAD = 2;
-
-export type PlanChoice =
-  | { kind: "slot"; timeSlotId: string }
-  | { kind: "custom"; date: string; time: string };
-
-type Selection = { slotId: string | null; date: string | null; time: string | null };
-
-/** Today's year, month (0-based) and day in the Invite's time zone, not the viewer's. */
-function todayIn(timeZone: string) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-  }).formatToParts(new Date());
-  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
-  return { year: get("year"), month: get("month") - 1, day: get("day") };
-}
-
 const pad = (n: number) => String(n).padStart(2, "0");
-const isoDate = (y: number, m: number, d: number) => `${y}-${pad(m + 1)}-${pad(d)}`;
 
 function dateLabel(iso: string) {
   const [, m, d] = iso.split("-").map(Number) as [number, number, number];
@@ -63,46 +43,27 @@ type PlanScreenProps = {
 export function PlanScreen({ invite, busy, error, onConfirm }: PlanScreenProps) {
   const { plan } = invite;
   const [heroPhoto, ...otherPhotos] = plan.photos;
-  const [sel, setSel] = useState<Selection>({ slotId: null, date: null, time: null });
+  const pick = usePlanSelection(invite);
+  const { calendar, choice } = pick;
   const [otherTime, setOtherTime] = useState("");
   const [note, setNote] = useState("");
 
-  const today = todayIn(invite.timezone);
-  const [monthOffset, setMonthOffset] = useState(0);
-  const viewMonth = (today.month + monthOffset) % 12;
-  const viewYear = today.year + Math.floor((today.month + monthOffset) / 12);
-  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-  const firstWeekday = new Date(viewYear, viewMonth, 1).getDay();
-  const todayIso = isoDate(today.year, today.month, today.day);
-
-  const slot = invite.timeSlots.find((s) => s.id === sel.slotId);
-  const slotText = slot ? formatInZone(slot.startsAt, invite.timezone) : null;
-
-  const choice: PlanChoice | null = sel.slotId
-    ? { kind: "slot", timeSlotId: sel.slotId }
-    : sel.date && sel.time
-      ? { kind: "custom", date: sel.date, time: sel.time }
-      : null;
+  const slotText = pick.slot ? formatInZone(pick.slot.startsAt, invite.timezone) : null;
 
   const hint = (() => {
     if (error) return `// ${error}`;
     if (slotText) return `${slotText.date} at ${slotText.time}  —  can't wait! ✦`;
-    if (sel.date && sel.time) return `${dateLabel(sel.date)} at ${timeLabel(sel.time)}  —  can't wait! ✦`;
-    if (sel.date) return `${dateLabel(sel.date)} ✓  —  now pick a time ↓`;
-    if (sel.time) return `${timeLabel(sel.time)} ✓  —  now pick a date ↑`;
+    if (pick.date && pick.time) return `${dateLabel(pick.date)} at ${timeLabel(pick.time)}  —  can't wait! ✦`;
+    if (pick.date) return `${dateLabel(pick.date)} ✓  —  now pick a time ↓`;
+    if (pick.time) return `${timeLabel(pick.time)} ✓  —  now pick a date ↑`;
     return invite.timeSlots.length > 0 ? "pick a time above ↑" : "pick a date & time above ↑";
   })();
-
-  const calCells = [
-    ...Array.from({ length: firstWeekday }, () => null),
-    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
-  ];
 
   const navButton = (label: string, delta: number, enabled: boolean) => (
     <button
       type="button"
       aria-label={delta < 0 ? "previous month" : "next month"}
-      onClick={() => setMonthOffset((o) => o + delta)}
+      onClick={() => calendar.page(delta)}
       disabled={!enabled}
       style={{
         background: "none",
@@ -243,11 +204,7 @@ export function PlanScreen({ invite, busy, error, onConfirm }: PlanScreenProps) 
                   {invite.timeSlots.map((s) => {
                     const { date, time, weekday } = formatInZone(s.startsAt, invite.timezone);
                     return (
-                      <PillButton
-                        key={s.id}
-                        selected={sel.slotId === s.id}
-                        onClick={() => setSel({ slotId: s.id, date: null, time: null })}
-                      >
+                      <PillButton key={s.id} selected={pick.slotId === s.id} onClick={() => pick.pickSlot(s.id)}>
                         {weekday} {date} · {time}
                       </PillButton>
                     );
@@ -261,11 +218,11 @@ export function PlanScreen({ invite, busy, error, onConfirm }: PlanScreenProps) 
                 {/* Calendar */}
                 <Prompt>{invite.timeSlots.length > 0 ? "or another day?" : <>when you&apos;re free?</>}</Prompt>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
-                  {navButton("‹", -1, monthOffset > 0)}
+                  {navButton("‹", -1, calendar.canGoBack)}
                   <span style={{ fontFamily: "var(--hand)", fontSize: 20, color: "var(--ink)", minWidth: 150, textAlign: "center" }}>
-                    {MONTH_NAMES[viewMonth]} {viewYear}
+                    {MONTH_NAMES[calendar.month]} {calendar.year}
                   </span>
-                  {navButton("›", 1, monthOffset < MONTHS_AHEAD)}
+                  {navButton("›", 1, calendar.canGoForward)}
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 3 }}>
                   {DAYS_OF_WEEK.map((d) => (
@@ -284,12 +241,12 @@ export function PlanScreen({ invite, busy, error, onConfirm }: PlanScreenProps) 
                       {d}
                     </div>
                   ))}
-                  {calCells.map((day, i) => {
+                  {calendar.cells.map((day, i) => {
                     if (day === null) return <div key={`empty-${i}`} style={{ aspectRatio: "1" }} />;
-                    const iso = isoDate(viewYear, viewMonth, day);
-                    const isPast = iso < todayIso;
-                    const isToday = iso === todayIso;
-                    const isSelected = sel.date === iso;
+                    const iso = isoDate(calendar.year, calendar.month, day);
+                    const isPast = iso < calendar.todayIso;
+                    const isToday = iso === calendar.todayIso;
+                    const isSelected = pick.date === iso;
                     return (
                       <button
                         type="button"
@@ -297,7 +254,7 @@ export function PlanScreen({ invite, busy, error, onConfirm }: PlanScreenProps) 
                         disabled={isPast}
                         aria-pressed={isSelected}
                         aria-label={dateLabel(iso)}
-                        onClick={() => setSel((prev) => ({ slotId: null, date: iso, time: prev.slotId ? null : prev.time }))}
+                        onClick={() => pick.pickDate(iso)}
                         style={{
                           aspectRatio: "1",
                           display: "flex",
@@ -342,10 +299,10 @@ export function PlanScreen({ invite, busy, error, onConfirm }: PlanScreenProps) 
                   {TIME_CHIPS.map(([label, value]) => (
                     <PillButton
                       key={value}
-                      selected={!sel.slotId && sel.time === value}
+                      selected={!pick.slotId && pick.time === value}
                       onClick={() => {
                         setOtherTime("");
-                        setSel((prev) => ({ slotId: null, date: prev.slotId ? null : prev.date, time: value }));
+                        pick.pickTime(value);
                       }}
                     >
                       {label}
@@ -370,8 +327,7 @@ export function PlanScreen({ invite, busy, error, onConfirm }: PlanScreenProps) 
                     value={otherTime}
                     onChange={(e) => {
                       setOtherTime(e.target.value);
-                      const value = e.target.value;
-                      setSel((prev) => ({ slotId: null, date: prev.slotId ? null : prev.date, time: value || null }));
+                      pick.pickTime(e.target.value || null);
                     }}
                     style={{
                       fontFamily: "var(--marker)",
