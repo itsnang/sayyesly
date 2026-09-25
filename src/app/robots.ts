@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
       // Invites are private links between two people, not landing pages.
-      disallow: ["/i/", "/api/", "/dashboard"],
+      disallow: ["/invite/", "/i/", "/api/", "/dashboard"],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
   };

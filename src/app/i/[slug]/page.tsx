@@ -1,13 +1,8 @@
-import type { Metadata } from "next";
-import { InviteView } from "@/features/invites/components/invite-view";
-import { inviteMetadata } from "@/features/invites/server/metadata";
+import { permanentRedirect } from "next/navigation";
 
-export async function generateMetadata({ params }: PageProps<"/i/[slug]">): Promise<Metadata> {
+// The old share-link path. Kept so links already sent before the /invite/
+// rename (Telegram messages, past shares) keep working, forever.
+export default async function OldInvitePath({ params }: PageProps<"/i/[slug]">) {
   const { slug } = await params;
-  return inviteMetadata(slug, `/i/${slug}`);
-}
-
-export default async function InvitePage({ params }: PageProps<"/i/[slug]">) {
-  const { slug } = await params;
-  return <InviteView slug={slug} />;
+  permanentRedirect(`/invite/${slug}`);
 }
