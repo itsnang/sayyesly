@@ -136,7 +136,7 @@ export async function saveInvite(inviteId: string | null, input: InviteFormValue
   if (result.error) return result;
 
   revalidatePath("/dashboard");
-  revalidatePath(`/i/${existing.slug}`);
+  revalidatePath(`/invite/${existing.slug}`);
   return result;
 }
 
@@ -205,6 +205,6 @@ export async function deleteInvite(inviteId: string): Promise<{ error?: string }
   if (!deleted) return { error: "Invite not found." };
 
   revalidatePath("/dashboard");
-  revalidatePath(`/i/${deleted.slug}`);
+  revalidatePath(`/invite/${deleted.slug}`);
   return {};
 }

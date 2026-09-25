@@ -14,6 +14,10 @@ _Avoid_: user, sender, owner, "me"
 The person who opens an Invite link and gives the Answer. Referred to by their name, never by a gendered pronoun.
 _Avoid_: she, her, invitee, guest
 
+**Admin**:
+A person with an email-and-password account in the admin portal, separate from any Creator.
+_Avoid_: user, staff, owner
+
 ### Invites
 
 **Invite**:
@@ -52,6 +56,10 @@ _Avoid_: template, skin, design
 
 **Paid theme**:
 A Theme with a price; a Creator can only use it after a successful Purchase of it.
+
+**Published** / **Hidden**:
+Whether a Theme is currently offered. A Published Theme appears in the picker and can be bought; a Hidden one no longer does, but a Creator who already owns it keeps full use of it, and any Invite already using it is unaffected.
+_Avoid_: active/inactive, enabled/disabled, unpublished
 
 **Purchase**:
 One attempt by a Creator to buy a Paid theme with a single KHQR payment. It becomes paid, expired or failed; a Creator owns a Theme once one of their Purchases for it is paid.
