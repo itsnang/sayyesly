@@ -55,7 +55,7 @@ export function InviteList({ invites, siteUrl }: { invites: InviteSummary[]; sit
       {invites.map((invite) => {
         const status = STATUS[invite.status];
         const theme = getTheme(invite.themeId);
-        const shareUrl = new URL(`/i/${invite.slug}`, siteUrl).toString();
+        const shareUrl = new URL(`/invite/${invite.slug}`, siteUrl).toString();
         return (
           <li key={invite.id} className="group relative flex items-center gap-3.5 border-b border-ink/15 px-3.5 py-3.5 last:border-b-0 hover:bg-surface/60 sm:gap-5 sm:px-5">
             <span className="relative block h-[68px] w-[44px] shrink-0 overflow-hidden rounded-[4px] border border-ink/12 bg-surface">

@@ -12,7 +12,7 @@ export const invites = pgTable(
   "invites",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    // Public share link: /i/<slug>
+    // Public share link: /invite/<slug>
     slug: text("slug").notNull().unique(),
     // Secret code for attaching a Linked group with `/link <code>`
     linkCode: text("link_code").notNull().unique(),

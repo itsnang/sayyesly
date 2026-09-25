@@ -20,7 +20,7 @@ export default async function EditInvitePage({ params, searchParams }: PageProps
   if (!invite) notFound();
 
   const [themes, botUsername] = await Promise.all([getThemeChoices(user.id), getBotUsername().catch(() => null)]);
-  const shareUrl = new URL(`/i/${invite.slug}`, SITE_URL).toString();
+  const shareUrl = new URL(`/invite/${invite.slug}`, SITE_URL).toString();
   const themeName = themes.find((t) => t.id === invite.values.themeId)?.name ?? "the free theme";
 
   return (

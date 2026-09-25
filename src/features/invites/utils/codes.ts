@@ -1,6 +1,6 @@
 import { customAlphabet, nanoid } from "nanoid";
 
-/** Public share-link slug: /i/<slug> */
+/** Public share-link slug: /invite/<slug> */
 export function newInviteSlug(): string {
   return nanoid(10);
 }
