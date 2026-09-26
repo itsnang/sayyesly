@@ -84,7 +84,7 @@ export function NotifCard({ title, children, time = "now", className }: { title:
         <span className="grid size-4 place-items-center rounded-[4px] bg-ink text-rose">
           <Heart className="size-2.5" strokeWidth={3} />
         </span>
-        <span className="font-mono tracking-wide uppercase">Ask her out</span>
+        <span className="font-mono tracking-wide uppercase">sayyesly</span>
         <span className="ml-auto">{time}</span>
       </div>
       <p className="mt-1.5 text-[13px] leading-snug font-semibold text-ink">{title}</p>

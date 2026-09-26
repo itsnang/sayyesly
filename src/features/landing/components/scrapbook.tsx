@@ -22,31 +22,31 @@ export function Scrapbook() {
 
         <div className="relative mx-auto max-w-6xl px-5 pt-14 pb-20 sm:px-8 sm:pt-16">
           <h2 id="scrapbook-title" className="mx-auto max-w-md text-center font-mono text-[13.5px] leading-relaxed text-ink">
-            One link. One question. One very shy &quot;no&quot; button.
+            One link. One question. The whole plan inside.
             <br />
             And the answer, straight to your phone.
           </h2>
-          <div className="mt-5 flex justify-center gap-3">
-            <PaperButton href="/dashboard/invites/new">Make an invite</PaperButton>
-            <PaperButton href="/demo">Try the demo ▷</PaperButton>
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
+            <PaperButton href="/dashboard/invites/new" className="whitespace-nowrap">Make an invite</PaperButton>
+            <PaperButton href="/demo" className="whitespace-nowrap">Try the demo ▷</PaperButton>
           </div>
 
           {/* The collage */}
           <div className="relative mx-auto mt-12 h-[720px] max-w-[980px] lg:h-[640px]">
             <PaperCard
               src="/landing/step-plan.png"
-              alt="the date plan with restaurant photos"
+              alt="the plan with restaurant photos"
               position="50% 0%"
-              className="bottom-6 left-[calc(50%-235px)] h-[250px] w-[190px] -rotate-[7deg] max-sm:hidden"
+              className="bottom-6 left-[calc(50%-235px)] h-[250px] w-[190px] -rotate-[7deg] max-lg:hidden"
             />
             <PaperCard
-              src="/landing/step-done.png"
-              alt="see you then, with confetti"
-              position="50% 40%"
-              className="right-[calc(50%-240px)] bottom-2 h-[250px] w-[190px] rotate-[6deg] max-sm:hidden"
+              src="/landing/theme-love-letter-open.png"
+              alt="the Love Letter Theme, opened into a letter with the plan"
+              position="50% 0%"
+              className="right-[calc(50%-240px)] bottom-2 h-[250px] w-[190px] rotate-[6deg] max-lg:hidden"
             />
-            <Tape className="bottom-[252px] left-[calc(50%-200px)] -rotate-[20deg] max-sm:hidden" />
-            <Tape className="right-[calc(50%-210px)] bottom-[244px] rotate-[18deg] max-sm:hidden" />
+            <Tape className="bottom-[252px] left-[calc(50%-200px)] -rotate-[20deg] max-lg:hidden" />
+            <Tape className="right-[calc(50%-210px)] bottom-[244px] rotate-[18deg] max-lg:hidden" />
 
             <PhoneShot
               src="/landing/step-ask.png"
@@ -63,7 +63,6 @@ export function Scrapbook() {
               <br />
               📍 mauu steak
             </NotifCard>
-            <NotifCard title="(Sreyneang tried No 6 times 😂)" time="now" className="absolute top-[34%] left-[6%] rotate-1 max-lg:hidden" />
             <NotifCard title="💌 Dara said maybe another time." time="2d ago" className="absolute top-[4%] right-0 rotate-2 max-lg:hidden">
               Not a no, just not now. Be kind to yourself 🌷
             </NotifCard>
@@ -76,7 +75,9 @@ export function Scrapbook() {
               <NotifCard title="🎉 Sreyneang said YES!" className="-rotate-1">
                 Saturday, September 26 · 7:30 PM · mauu steak
               </NotifCard>
-              <NotifCard title="(Sreyneang tried No 6 times 😂)" className="rotate-1" />
+              <NotifCard title="💌 Dara said maybe another time." time="2d ago" className="rotate-1">
+                Not a no, just not now. Be kind to yourself 🌷
+              </NotifCard>
             </div>
 
             <Smiley className="absolute top-[2%] left-[28%] size-11 -rotate-12 max-sm:left-[4%]" />

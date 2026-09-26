@@ -5,7 +5,7 @@ import { OG_IMAGE_SIZE } from "@/features/invites/themes";
 import { SITE_TAGLINE } from "@/lib/site";
 
 export const alt =
-  "sayyesly: two date invites on phones, a kitten Theme and a love letter shown sealed and opened";
+  "sayyesly: two invites on phones, a kitten Theme and a love letter shown sealed and opened";
 export const size = OG_IMAGE_SIZE;
 export const contentType = "image/png";
 
@@ -105,9 +105,9 @@ export default async function Image() {
             {`${SITE_TAGLINE}.`}
           </div>
           <div
-            style={{ display: "flex", flexDirection: "column", marginTop: 20, fontSize: 26, lineHeight: 1.35, color: "rgba(42,29,36,0.66)" }}
+            style={{ display: "flex", flexDirection: "column", marginTop: 20, fontSize: 24, lineHeight: 1.4, color: "rgba(42,29,36,0.66)" }}
           >
-            <span>Ask them out with one link.</span>
+            <span>One link with your question and the plan.</span>
             <span>Their answer lands in your Telegram.</span>
           </div>
         </div>

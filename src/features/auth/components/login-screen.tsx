@@ -76,9 +76,9 @@ export function LoginScreen({ next, error, available }: { next: string; error: s
         </div>
 
         <div className="relative">
-          <p className="font-display text-[34px] leading-[1.15] text-ink">Plan a date they&apos;ll say yes to.</p>
+          <p className="font-display text-[34px] leading-[1.15] text-ink">Send an invite they&apos;ll say yes to.</p>
           <p className="mt-3 max-w-sm text-[16px] leading-snug text-ink/65">
-            Ask them out with one link. Their answer lands in your Telegram.
+            One link with your question and the plan. Their answer lands in your Telegram.
           </p>
         </div>
       </aside>

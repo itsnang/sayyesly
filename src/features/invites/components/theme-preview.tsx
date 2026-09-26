@@ -31,7 +31,7 @@ function toPreviewInvite(values: InviteFormValues): PublicInvite {
       notes: values.planNotes || null,
       photos: values.planPhotos
         .filter((p) => p.url)
-        .map((p) => ({ url: p.url, alt: p.alt || "date plan photo", ...(p.caption ? { caption: p.caption } : {}) })),
+        .map((p) => ({ url: p.url, alt: p.alt || "plan photo", ...(p.caption ? { caption: p.caption } : {}) })),
     },
     timezone: values.timezone || "UTC",
     timeSlots,

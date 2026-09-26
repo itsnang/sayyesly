@@ -14,11 +14,11 @@ const STEPS = [
     note: "your words, your picture",
   },
   {
-    title: "No runs away",
-    body: "\"No\" slips away from a mouse or a thumb and \"yes\" grows. After five tries, a small \"maybe another time?\" appears.",
-    src: "/landing/step-dodge.png",
-    position: "50% 70%",
-    note: "every try gets counted",
+    title: "Or it comes as a letter",
+    body: "With Love Letter, your question arrives in a sealed envelope that opens into a handwritten letter with the plan.",
+    src: "/landing/theme-love-letter.png",
+    position: "50% 35%",
+    note: "one of the Themes",
   },
   {
     title: "They pick a time",
@@ -61,7 +61,7 @@ export function HowItGoes() {
           <h2 id="how-title" className="text-[15px] font-semibold tracking-[0.02em] text-ink uppercase">
             How it goes
           </h2>
-          <p className="mt-2 text-[15px] leading-snug text-ink">From &quot;want to get dinner?&quot; to a table for two, in four taps.</p>
+          <p className="mt-2 text-[15px] leading-snug text-ink">From your question to their answer, in four taps.</p>
 
           <p className="mt-10 font-serif text-[40px] leading-none text-ink" aria-live="polite">
             {pad(index + 1)}
