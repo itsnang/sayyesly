@@ -5,17 +5,18 @@ export function SiteNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-ink/10 bg-canvas/85 backdrop-blur-md">
       <div className="mx-auto grid max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-5 py-4 text-[14px] sm:px-8">
-        <nav aria-label="Sections" className="hidden gap-6 text-muted md:flex">
+        <nav aria-label="Sections" className="hidden gap-6 whitespace-nowrap text-muted lg:flex">
           <a href="#how" className="hover:text-ink">How it goes</a>
+          <a href="#studio" className="hover:text-ink">Studio</a>
           <a href="#themes" className="hover:text-ink">Themes</a>
           <a href="#pricing" className="hover:text-ink">Pricing</a>
           <a href="#faq" className="hover:text-ink">FAQ</a>
         </nav>
-        <Link href="/" aria-label="ask her out, home" className="col-start-1 justify-self-start md:col-start-2 md:justify-self-center">
-          <Wordmark />
+        <Link href="/" aria-label="sayyesly, home" className="col-start-1 justify-self-start lg:col-start-2 lg:justify-self-center">
+          <Wordmark className="h-9 w-auto sm:h-11" />
         </Link>
-        <div className="col-start-3 flex items-center justify-end gap-4">
-          <Link href="/login" className="text-muted hover:text-ink">
+        <div className="col-start-3 flex items-center justify-end gap-3 whitespace-nowrap sm:gap-4">
+          <Link href="/login" className="inline-block py-2 text-muted hover:text-ink">
             Log in
           </Link>
           <Link

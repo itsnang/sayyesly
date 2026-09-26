@@ -10,8 +10,8 @@ export function Story() {
           for one dinner.
         </h2>
         <p className="mt-6 text-[15.5px] leading-[1.7] text-muted">
-          A calendar, a steakhouse, and a &quot;no&quot; button that wouldn&apos;t sit still. It was
-          made to ask one person out, and to make asking feel light instead of scary. Now anyone can make their own.
+          One question, a plan and a calendar, made for one person. It turned asking into something light
+          instead of scary. Now anyone can send their own.
         </p>
       </div>
 
