@@ -1,7 +1,7 @@
 const QUESTIONS = [
   {
-    q: "Can they actually say no?",
-    a: "Not with the \"no\" button, that's the joke. After five tries a small, still \"maybe another time?\" link appears and records a gentle maybe-later. You get a kind message either way, and they never feel cornered.",
+    q: "Can they say no?",
+    a: "Every Theme has a gentle way out: \"maybe another time\" in Kitten Soft, \"i can't make it this time\" in Love Letter. You get a kind message either way, and they never feel cornered.",
   },
   {
     q: "Do they need an account or the app?",

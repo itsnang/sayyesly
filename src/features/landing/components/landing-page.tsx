@@ -10,7 +10,8 @@ import { SiteNav } from "./site-nav";
 import { Story } from "./story";
 import { ThemesBoard } from "./themes-board";
 
-export function LandingPage() {
+/** `loveLetterPrice` is undefined while Love Letter isn't on sale; the page then leaves it out. */
+export function LandingPage({ loveLetterPrice }: { loveLetterPrice: number | undefined }) {
   return (
     <div className="studio w-full overflow-x-clip">
       <SiteNav />
@@ -18,8 +19,8 @@ export function LandingPage() {
         <Hero />
         <Scrapbook />
         <HowItGoes />
-        <ThemesBoard />
-        <Pricing />
+        <ThemesBoard loveLetterPrice={loveLetterPrice} />
+        <Pricing loveLetterPrice={loveLetterPrice} />
         <Story />
         <Faq />
 
@@ -28,7 +29,7 @@ export function LandingPage() {
           <h2 className="mt-4 font-display text-[clamp(32px,4.6vw,52px)] leading-[1.1] text-ink">
             Go on. Ask them.
           </h2>
-          <p className="mt-3 text-[15px] text-muted">It takes about a minute, and the default theme is free.</p>
+          <p className="mt-3 text-[15px] text-muted">It takes about a minute, and Kitten Soft is free.</p>
           <div className="mt-7 flex justify-center">
             <InkButton href="/dashboard/invites/new">
               Make your invite <Heart className="size-3.5 text-rose" strokeWidth={2.4} />

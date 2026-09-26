@@ -2,20 +2,27 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, Sparkle, Star } from "@/components/shared/doodles";
 import { Tape } from "@/components/shared/studio";
+import { formatUsd } from "@/lib/format";
 
 function Polaroid({
   src,
   alt,
   caption,
   price,
+  note,
   href,
+  stamp,
   className,
 }: {
   src: string;
   alt: string;
   caption: string;
   price: string;
+  /** One line on what the Theme looks like. */
+  note: string;
   href: string;
+  /** A rubber-stamp word in the photo's corner, e.g. "new". */
+  stamp?: string;
   className: string;
 }) {
   return (
@@ -26,17 +33,23 @@ function Polaroid({
       <Tape className="-top-3 left-1/2 -translate-x-1/2 -rotate-3" />
       <span className="relative block aspect-square overflow-hidden bg-surface">
         <Image src={src} alt={alt} fill sizes="250px" className="object-cover object-[50%_32%]" />
+        {stamp && (
+          <span className="absolute top-2.5 right-2.5 rotate-[-8deg] rounded-[4px] border-[1.5px] border-rose bg-card/85 px-1.5 py-0.5 font-mono text-[11px] tracking-[0.12em] text-rose uppercase">
+            {stamp}
+          </span>
+        )}
       </span>
       <span className="mt-3 flex items-baseline justify-between font-mono text-[13px] text-ink">
         {caption}
         <span className="text-muted">{price}</span>
       </span>
-      <span className="mt-1 block font-mono text-[11.5px] text-muted group-hover:text-ink">try it →</span>
+      <span className="mt-1 block text-[13px] leading-snug text-muted">{note}</span>
+      <span className="mt-2 block font-mono text-[11.5px] text-muted group-hover:text-ink">try it →</span>
     </Link>
   );
 }
 
-export function ThemesBoard() {
+export function ThemesBoard({ loveLetterPrice }: { loveLetterPrice: number | undefined }) {
   return (
     <section id="themes" aria-labelledby="themes-title" className="mx-auto mt-28 max-w-6xl scroll-mt-24 px-5 sm:mt-36 sm:px-8">
       <div className="text-center">
@@ -54,23 +67,39 @@ export function ThemesBoard() {
           alt="the Kitten Soft theme"
           caption="kitten soft"
           price="free"
+          note="Pink grid paper, a kitten with flowers and your words in marker."
           href="/demo"
           className="-rotate-3"
         />
-        <Polaroid
-          src="/landing/theme-night.png"
-          alt="the Kitten Night theme"
-          caption="kitten night"
-          price="$1.99"
-          href="/demo?theme=kitten-night"
-          className="mt-8 rotate-2"
-        />
+        {loveLetterPrice !== undefined && (
+          // The sealed envelope on top of a second photo of the opened letter, like a small stack.
+          <div className="relative mt-8 sm:mr-24">
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-0 top-0 translate-x-28 translate-y-6 rotate-[9deg] bg-card p-3 shadow-[0_16px_30px_-16px_rgba(60,30,20,0.45)] max-sm:translate-x-10"
+            >
+              <span className="relative block aspect-square overflow-hidden bg-surface">
+                <Image src="/landing/theme-love-letter-open.png" alt="" fill sizes="250px" className="object-cover object-top" />
+              </span>
+            </div>
+            <Polaroid
+              src="/landing/theme-love-letter.png"
+              alt="the Love Letter theme: a sealed envelope that opens into a letter"
+              caption="love letter"
+              price={formatUsd(loveLetterPrice)}
+              note="A sealed envelope that opens into a handwritten letter with your plan."
+              href="/demo?theme=love-letter"
+              stamp="new"
+              className="rotate-2"
+            />
+          </div>
+        )}
 
         {/* sticky note */}
         <div className="relative w-[230px] rotate-[1.5deg] bg-[#fbe99a] p-5 pt-6 shadow-[0_14px_26px_-16px_rgba(60,30,20,0.45)] sm:mt-4">
           <p className="font-mono text-[12px] tracking-[0.06em] text-ink uppercase">every theme comes with</p>
           <ul className="mt-3 space-y-2 text-[14px] leading-snug text-ink">
-            {["your plan & up to 3 photos", "a calendar in your time zone", 'the runaway "no" button', "the Telegram ping"].map((item) => (
+            {["your plan & up to 3 photos", "a calendar in your time zone", 'a kind way to say not now', "the Telegram ping"].map((item) => (
               <li key={item} className="flex gap-2">
                 <span aria-hidden="true" className="text-rose">✓</span>
                 {item}
