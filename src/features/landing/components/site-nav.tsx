@@ -7,6 +7,7 @@ export function SiteNav() {
       <div className="mx-auto grid max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-5 py-4 text-[14px] sm:px-8">
         <nav aria-label="Sections" className="hidden gap-6 text-muted md:flex">
           <a href="#how" className="hover:text-ink">How it goes</a>
+          <a href="#studio" className="hover:text-ink">Studio</a>
           <a href="#themes" className="hover:text-ink">Themes</a>
           <a href="#pricing" className="hover:text-ink">Pricing</a>
           <a href="#faq" className="hover:text-ink">FAQ</a>

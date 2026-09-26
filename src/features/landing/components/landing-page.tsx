@@ -8,6 +8,7 @@ import { Pricing } from "./pricing";
 import { Scrapbook } from "./scrapbook";
 import { SiteNav } from "./site-nav";
 import { Story } from "./story";
+import { StudioShowcase } from "./studio-showcase";
 import { ThemesBoard } from "./themes-board";
 
 /** `loveLetterPrice` is undefined while Love Letter isn't on sale; the page then leaves it out. */
@@ -19,6 +20,7 @@ export function LandingPage({ loveLetterPrice }: { loveLetterPrice: number | und
         <Hero />
         <Scrapbook />
         <HowItGoes />
+        <StudioShowcase loveLetterPrice={loveLetterPrice} />
         <ThemesBoard loveLetterPrice={loveLetterPrice} />
         <Pricing loveLetterPrice={loveLetterPrice} />
         <Story />
