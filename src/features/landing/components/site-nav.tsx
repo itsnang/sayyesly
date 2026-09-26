@@ -11,7 +11,7 @@ export function SiteNav() {
           <a href="#pricing" className="hover:text-ink">Pricing</a>
           <a href="#faq" className="hover:text-ink">FAQ</a>
         </nav>
-        <Link href="/" aria-label="ask her out, home" className="col-start-1 justify-self-start md:col-start-2 md:justify-self-center">
+        <Link href="/" aria-label="sayyesly, home" className="col-start-1 justify-self-start md:col-start-2 md:justify-self-center">
           <Wordmark />
         </Link>
         <div className="col-start-3 flex items-center justify-end gap-4">

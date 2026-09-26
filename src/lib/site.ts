@@ -8,12 +8,12 @@ export const SITE_URL = env.NEXT_PUBLIC_APP_URL;
 export const SITE_TITLE = "sayyesly";
 
 /** The landing page's headline, reused as the home page's search and link-preview title. */
-export const SITE_TAGLINE = "Plan a date they'll say yes to";
+export const SITE_TAGLINE = "Send an invite they'll say yes to";
 export const SITE_HOME_TITLE = `${SITE_TITLE} · ${SITE_TAGLINE}`;
 
 /** About 155 characters, so search results show it whole. */
 export const SITE_DESCRIPTION =
-  "Ask someone out with one link: your question, the plan and a time to pick, in a Theme you choose. They answer without an account, and you hear back on Telegram.";
+  "Send an invite as one link: your question, the plan and a time to pick, in a Theme you choose. They answer without an account, and you hear back on Telegram.";
 
 // Next replaces a parent's openGraph/twitter wholesale when a page sets its own,
 // so pages spread these and change only what differs.

@@ -16,7 +16,7 @@ function reply(chat: Chat, text: string) {
 function helpText(): string {
   const dashboard = new URL("/dashboard", env.NEXT_PUBLIC_APP_URL).toString();
   return [
-    "💌 <b>Hi! I'm the Ask Her Out bot.</b>",
+    "💌 <b>Hi! I'm the sayyesly bot.</b>",
     "",
     `Make an invite at ${dashboard}. When someone answers it, I'll message you right here.`,
     "",

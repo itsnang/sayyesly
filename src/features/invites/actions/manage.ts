@@ -62,7 +62,7 @@ export async function saveInvite(inviteId: string | null, input: InviteFormValue
     planNotes: emptyToNull(values.planNotes),
     planPhotos: values.planPhotos.map((p) => ({
       url: p.url,
-      alt: p.alt || "date plan photo",
+      alt: p.alt || "plan photo",
       ...(p.caption ? { caption: p.caption } : {}),
     })),
   } satisfies Partial<NewInvite>;

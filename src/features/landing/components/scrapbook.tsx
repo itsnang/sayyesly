@@ -35,7 +35,7 @@ export function Scrapbook() {
           <div className="relative mx-auto mt-12 h-[720px] max-w-[980px] lg:h-[640px]">
             <PaperCard
               src="/landing/step-plan.png"
-              alt="the date plan with restaurant photos"
+              alt="the plan with restaurant photos"
               position="50% 0%"
               className="bottom-6 left-[calc(50%-235px)] h-[250px] w-[190px] -rotate-[7deg] max-sm:hidden"
             />

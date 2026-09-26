@@ -38,10 +38,10 @@ export function Hero() {
       <div className="relative pt-24 pb-6 sm:pt-20">
         <DoodleArc />
         <div className="relative mx-auto max-w-[560px] text-center">
-          <h1 className="font-display text-[clamp(30px,4.1vw,46px)] leading-[1.14] tracking-[-0.01em] text-ink">
-            Plan a date they&apos;ll say yes to.
+          <h1 className="font-display text-[clamp(30px,4.1vw,46px)] leading-[1.14] tracking-[-0.01em] text-balance text-ink">
+            <span className="block">Send an invite they&apos;ll say yes to.</span>
             <span className="mt-1 block text-muted">
-              Ask them out with one link. Their answer lands in your Telegram.
+              One link with your question and the plan. Their answer lands in your Telegram.
             </span>
           </h1>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-x-4 gap-y-3">
