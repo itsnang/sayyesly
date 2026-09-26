@@ -49,13 +49,8 @@
   body {
     font-family: var(--marker);
     color: var(--ink);
-    background:
-      linear-gradient(var(--grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid) 1px, transparent 1px),
-      radial-gradient(130% 110% at 15% 0%, #fff0f6 0%, transparent 55%),
-      radial-gradient(130% 110% at 90% 100%, #ffe2ee 0%, transparent 55%),
-      var(--paper);
-    background-size: 26px 26px, 26px 26px, auto, auto, auto;
+    /* Plain white while anything loads. Every page and every Theme paints its own background. */
+    background: #fff;
     min-height: 100vh;
     overflow-x: hidden;
     overflow-y: auto;
@@ -63,13 +58,13 @@
   }
 }
 
-/* Wrapper for product pages: covers the kitten paper background with the studio canvas. */
+/* Wrapper for product pages: the warm studio canvas. */
 @utility studio {
   font-family: var(--font-sans);
   color: var(--color-ink);
   background: var(--color-canvas);
   min-height: 100vh;
-  /* body is a flex column; never shrink to one screen and let the kitten paper show below */
+  /* body is a flex column; never shrink to one screen and let the white body show below */
   flex-shrink: 0;
   -webkit-font-smoothing: antialiased;
 }

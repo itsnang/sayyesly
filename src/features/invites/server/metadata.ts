@@ -12,7 +12,8 @@ export async function inviteMetadata(slug: string, path: string): Promise<Metada
 
   const title = questionText(invite.question);
   return {
-    title,
+    // The Recipient's tab shows just the question, without the site's " · sayyesly" suffix.
+    title: { absolute: title },
     description: DESCRIPTION,
     alternates: { canonical: path },
     robots: { index: false, follow: false },
