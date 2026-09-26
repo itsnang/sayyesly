@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { OG_IMAGE_SIZE } from "@/features/invites/themes";
-import { SITE_TAGLINE, SITE_URL } from "@/lib/site";
+import { SITE_TAGLINE } from "@/lib/site";
 
 export const alt =
   "sayyesly: two date invites on phones, a kitten Theme and a love letter shown sealed and opened";
@@ -109,10 +109,6 @@ export default async function Image() {
           >
             <span>Ask them out with one link.</span>
             <span>Their answer lands in your Telegram.</span>
-          </div>
-
-          <div style={{ display: "flex", marginTop: 40, fontSize: 20, color: "rgba(42,29,36,0.5)", letterSpacing: 0.5 }}>
-            {new URL(SITE_URL).host}
           </div>
         </div>
 
