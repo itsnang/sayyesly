@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Architects_Daughter, Caveat, Courier_Prime, Fraunces, Instrument_Sans } from "next/font/google";
-import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "@/lib/site";
+import { BASE_OPEN_GRAPH, BASE_TWITTER, SITE_DESCRIPTION, SITE_HOME_TITLE, SITE_TITLE, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const caveat = Caveat({
@@ -35,22 +35,14 @@ const architectsDaughter = Architects_Daughter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: SITE_TITLE,
+  // Child pages read "log in · sayyesly"; the home page uses the default.
+  title: { default: SITE_HOME_TITLE, template: `%s · ${SITE_TITLE}` },
   description: SITE_DESCRIPTION,
-  alternates: { canonical: "/" },
-  openGraph: {
-    type: "website",
-    url: "/",
-    siteName: SITE_TITLE,
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
-    locale: "en_US",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
-  },
+  applicationName: SITE_TITLE,
+  // No canonical here: it would be inherited by every page and point them all at "/".
+  // Indexable pages set their own.
+  openGraph: BASE_OPEN_GRAPH,
+  twitter: BASE_TWITTER,
 };
 
 export default function RootLayout({

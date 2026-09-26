@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { LandingPage } from "@/features/landing/components/landing-page";
+import { BASE_OPEN_GRAPH } from "@/lib/site";
 
+// Title, description and link preview come from the root layout's defaults.
 export const metadata: Metadata = {
-  title: "sayyesly · plan a date they'll say yes to",
-  description: "Send a sweet invite, plan the details, and get your answer on Telegram.",
+  alternates: { canonical: "/" },
+  openGraph: { ...BASE_OPEN_GRAPH, url: "/" },
 };
 
 export default function Home() {

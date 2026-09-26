@@ -41,7 +41,7 @@ export function Hero() {
           <h1 className="font-display text-[clamp(30px,4.1vw,46px)] leading-[1.14] tracking-[-0.01em] text-ink">
             Plan a date they&apos;ll say yes to.
             <span className="mt-1 block text-muted">
-              Send a sweet invite, and get your answer straight to Telegram.
+              Ask them out with one link. Their answer lands in your Telegram.
             </span>
           </h1>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-x-4 gap-y-3">
