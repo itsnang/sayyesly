@@ -103,9 +103,9 @@ export function Tape({ className }: { className?: string }) {
  * in a speech bubble. `className` sets its height (e.g. `h-5`); width follows
  * the source image's own aspect ratio.
  */
-export function Wordmark({ className = "h-11 w-auto", priority = false }: { className?: string; priority?: boolean }) {
+export function Wordmark({ className = "h-11 w-auto" }: { className?: string }) {
   // `className` fully replaces this default (not merged via `cx`): both set height, and
   // mixing a default height utility with the caller's override is exactly the kind of
   // same-property clash Tailwind doesn't reliably resolve by class order.
-  return <Image src="/brand/wordmark.png" alt="sayyesly" width={2240} height={880} className={className} priority={priority} />;
+  return <Image src="/brand/wordmark.png" alt="sayyesly" width={2240} height={880} className={className} />;
 }
