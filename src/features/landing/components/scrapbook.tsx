@@ -26,9 +26,9 @@ export function Scrapbook() {
             <br />
             And the answer, straight to your phone.
           </h2>
-          <div className="mt-5 flex justify-center gap-3">
-            <PaperButton href="/dashboard/invites/new">Make an invite</PaperButton>
-            <PaperButton href="/demo">Try the demo ▷</PaperButton>
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
+            <PaperButton href="/dashboard/invites/new" className="whitespace-nowrap">Make an invite</PaperButton>
+            <PaperButton href="/demo" className="whitespace-nowrap">Try the demo ▷</PaperButton>
           </div>
 
           {/* The collage */}
@@ -37,16 +37,16 @@ export function Scrapbook() {
               src="/landing/step-plan.png"
               alt="the plan with restaurant photos"
               position="50% 0%"
-              className="bottom-6 left-[calc(50%-235px)] h-[250px] w-[190px] -rotate-[7deg] max-sm:hidden"
+              className="bottom-6 left-[calc(50%-235px)] h-[250px] w-[190px] -rotate-[7deg] max-lg:hidden"
             />
             <PaperCard
               src="/landing/theme-love-letter-open.png"
               alt="the Love Letter Theme, opened into a letter with the plan"
               position="50% 0%"
-              className="right-[calc(50%-240px)] bottom-2 h-[250px] w-[190px] rotate-[6deg] max-sm:hidden"
+              className="right-[calc(50%-240px)] bottom-2 h-[250px] w-[190px] rotate-[6deg] max-lg:hidden"
             />
-            <Tape className="bottom-[252px] left-[calc(50%-200px)] -rotate-[20deg] max-sm:hidden" />
-            <Tape className="right-[calc(50%-210px)] bottom-[244px] rotate-[18deg] max-sm:hidden" />
+            <Tape className="bottom-[252px] left-[calc(50%-200px)] -rotate-[20deg] max-lg:hidden" />
+            <Tape className="right-[calc(50%-210px)] bottom-[244px] rotate-[18deg] max-lg:hidden" />
 
             <PhoneShot
               src="/landing/step-ask.png"

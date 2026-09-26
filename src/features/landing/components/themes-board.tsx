@@ -76,7 +76,7 @@ export function ThemesBoard({ loveLetterPrice }: { loveLetterPrice: number | und
           <div className="relative mt-8 sm:mr-24">
             <div
               aria-hidden="true"
-              className="absolute inset-x-0 top-0 translate-x-28 translate-y-6 rotate-[9deg] bg-card p-3 shadow-[0_16px_30px_-16px_rgba(60,30,20,0.45)] max-sm:translate-x-10"
+              className="absolute inset-x-0 top-0 translate-x-28 translate-y-6 rotate-[9deg] bg-card p-3 shadow-[0_16px_30px_-16px_rgba(60,30,20,0.45)] max-sm:translate-x-3 max-sm:translate-y-10"
             >
               <span className="relative block aspect-square overflow-hidden bg-surface">
                 <Image src="/landing/theme-love-letter-open.png" alt="" fill sizes="250px" className="object-cover object-top" />

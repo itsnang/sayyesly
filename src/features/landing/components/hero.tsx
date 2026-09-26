@@ -14,8 +14,8 @@ function DoodleArc() {
       <Loop className="absolute top-[3%] right-[22%] w-16 -scale-x-100 text-ink sm:top-[5%] sm:right-[20%] sm:w-20" />
       <Cloud fill="var(--color-sky)" className="absolute top-[4%] right-[4%] w-12 -scale-x-100 text-ink sm:top-[42%] sm:right-[3%] sm:w-16" />
 
-      {/* wider screens: the rest of the arc */}
-      <div className="max-sm:hidden">
+      {/* wide screens: the rest of the arc (on tablets the headline runs into it) */}
+      <div className="max-lg:hidden">
         <Loop className="absolute top-[4%] left-[18%] w-16 text-ink" />
         <Cloud fill="var(--color-sky)" className="absolute top-[26%] left-[3%] w-14 text-ink" />
         <Spiral className="absolute top-[38%] left-[14%] size-9 text-ink" />
@@ -40,7 +40,7 @@ export function Hero() {
         <div className="relative mx-auto max-w-[560px] text-center">
           <h1 className="font-display text-[clamp(30px,4.1vw,46px)] leading-[1.14] tracking-[-0.01em] text-balance text-ink">
             <span className="block">Send an invite they&apos;ll say yes to.</span>
-            <span className="mt-1 block text-muted">
+            <span className="mt-1 block text-muted max-sm:mt-3 max-sm:text-[22px] max-sm:leading-snug">
               One link with your question and the plan. Their answer lands in your Telegram.
             </span>
           </h1>

@@ -18,7 +18,7 @@ export function StudioShowcase({ loveLetterPrice }: { loveLetterPrice: number | 
         <StudioMock loveLetterPrice={loveLetterPrice} />
 
         {/* Typewriter notes pointing into the studio, like the scrapbook's */}
-        <div aria-hidden="true" className="pointer-events-none max-lg:hidden">
+        <div aria-hidden="true" className="pointer-events-none max-xl:hidden">
           <div className="absolute top-[18%] -left-[150px]">
             <p className="w-32 font-mono text-[12px] leading-snug text-ink">tap a word to make it stand out</p>
             <Arrow className="mt-1 ml-16 w-20 text-ink" />

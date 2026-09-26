@@ -48,11 +48,11 @@ export function LandingPage({ loveLetterPrice }: { loveLetterPrice: number | und
             <br />
             answers arrive on telegram
           </p>
-          <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-2 text-[14px] text-muted sm:ml-auto">
-            <Link href="/demo" className="hover:text-ink">Demo</Link>
-            <Link href="/login" className="hover:text-ink">Log in</Link>
-            <Link href="/dashboard" className="hover:text-ink">Dashboard</Link>
-            <a href="#faq" className="hover:text-ink">FAQ</a>
+          <nav aria-label="Footer" className="flex flex-wrap gap-x-6 text-[14px] text-muted sm:ml-auto">
+            <Link href="/demo" className="py-2 hover:text-ink">Demo</Link>
+            <Link href="/login" className="py-2 hover:text-ink">Log in</Link>
+            <Link href="/dashboard" className="py-2 hover:text-ink">Dashboard</Link>
+            <a href="#faq" className="py-2 hover:text-ink">FAQ</a>
           </nav>
         </div>
       </footer>
