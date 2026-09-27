@@ -79,11 +79,11 @@ export function ThemesBoard({ envelopePrice }: { envelopePrice: number | undefin
               className="absolute inset-x-0 top-0 translate-x-28 translate-y-6 rotate-[9deg] bg-card p-3 shadow-[0_16px_30px_-16px_rgba(60,30,20,0.45)] max-sm:translate-x-3 max-sm:translate-y-10"
             >
               <span className="relative block aspect-square overflow-hidden bg-surface">
-                <Image src="/landing/theme-envelope-open.png" alt="" fill sizes="250px" className="object-cover object-top" />
+                <Image src="/landing/envelope-letter.png" alt="" fill sizes="250px" className="object-cover object-top" />
               </span>
             </div>
             <Polaroid
-              src="/landing/theme-envelope.png"
+              src="/landing/envelope-card.png"
               alt="the Envelope theme: a sealed envelope that opens into a letter"
               caption="envelope"
               price={formatUsd(envelopePrice)}

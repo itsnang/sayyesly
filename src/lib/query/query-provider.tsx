@@ -4,8 +4,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 
 /**
- * TanStack Query for the dashboard only (see docs/adr/0002): mutation state and
- * polling. Page data stays server-rendered, so there's no read cache to tune.
+ * TanStack Query for every call the browser makes to our server (see
+ * docs/adr/0002): mutations, uploads, the Recipient's Answer, polling and
+ * refetch-on-focus. Pages still arrive server-rendered; their data seeds queries.
  */
 export function QueryProvider({ children }: { children: ReactNode }) {
   const [client] = useState(

@@ -2,7 +2,7 @@
 
 import { useState, type CSSProperties } from "react";
 import type { InviteThemeProps } from "../types";
-import { useInviteAnswer } from "../shared/use-invite-answer";
+import { useInviteAnswer } from "../../hooks/use-invite-answer";
 import { MaybeLaterScreen, YesScreen } from "./answered-screens";
 import { SealedEnvelope } from "./sealed-envelope";
 import { markerFont, penFont, printFont } from "./fonts";

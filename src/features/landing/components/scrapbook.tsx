@@ -34,14 +34,14 @@ export function Scrapbook() {
           {/* The collage */}
           <div className="relative mx-auto mt-12 h-[720px] max-w-[980px] lg:h-[640px]">
             <PaperCard
-              src="/landing/step-plan.png"
-              alt="the plan with restaurant photos"
+              src="/landing/kitten-plan.png"
+              alt="the plan, with a calendar to pick a day"
               position="50% 0%"
               className="bottom-6 left-[calc(50%-235px)] h-[250px] w-[190px] -rotate-[7deg] max-lg:hidden"
             />
             <PaperCard
-              src="/landing/theme-envelope-open.png"
-              alt="the Envelope Theme, opened into a letter with the plan"
+              src="/landing/envelope-letter.png"
+              alt="the Envelope Theme, opened into a handwritten letter"
               position="50% 0%"
               className="right-[calc(50%-240px)] bottom-2 h-[250px] w-[190px] rotate-[6deg] max-lg:hidden"
             />
@@ -61,7 +61,7 @@ export function Scrapbook() {
             <NotifCard title="🎉 Sreyneang said YES!" time="now" className="absolute top-[6%] left-0 -rotate-2 max-lg:hidden">
               Saturday, September 26 · 7:30 PM
               <br />
-              📍 mauu steak
+              💬 “can’t wait :)”
             </NotifCard>
             <NotifCard title="💌 Dara said maybe another time." time="2d ago" className="absolute top-[4%] right-0 rotate-2 max-lg:hidden">
               Not a no, just not now. Be kind to yourself 🌷
@@ -73,7 +73,7 @@ export function Scrapbook() {
             {/* On phones: two messages under the phone instead of around it */}
             <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 lg:hidden">
               <NotifCard title="🎉 Sreyneang said YES!" className="-rotate-1">
-                Saturday, September 26 · 7:30 PM · mauu steak
+                Saturday, September 26 · 7:30 PM
               </NotifCard>
               <NotifCard title="💌 Dara said maybe another time." time="2d ago" className="rotate-1">
                 Not a no, just not now. Be kind to yourself 🌷

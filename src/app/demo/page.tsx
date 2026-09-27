@@ -26,8 +26,9 @@ const DEMO: InviteFormValues = {
   question: "",
   message: "",
   imageUrl: "",
-  planPlace: "mauu steak",
-  planActivity: "steakhouse",
+  // No real place or photos: the demo shouldn't look like it's promoting a venue.
+  planPlace: "",
+  planActivity: "dinner, then a walk",
   planMapUrl: "",
   planDressCode: "",
   planNotes: "",
@@ -43,6 +44,7 @@ export default async function DemoPage({ searchParams }: PageProps<"/demo">) {
   const { theme: requested } = await searchParams;
   const theme = getTheme(typeof requested === "string" && hasTheme(requested) ? requested : DEFAULT_THEME_ID);
   if (!theme) notFound();
-  const { values } = withExample({ ...DEMO, themeId: theme.id }, theme.content);
+  const example = { ...theme.content.example, picture: null, planPhotos: [] };
+  const { values } = withExample({ ...DEMO, themeId: theme.id }, { ...theme.content, example });
   return <ThemePreview fixedValues={values} />;
 }
