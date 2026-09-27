@@ -20,6 +20,22 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_R2_PUBLIC_URL: process.env.R2_PUBLIC_URL,
   },
+  // Sent with every response, pages and files alike. The Content-Security-Policy
+  // needs a fresh nonce per page, so it's set in proxy.ts instead.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          // Only our own pages may frame us (the studio frames /preview/theme): no clickjacking.
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       // The old single-page site's date picker; its links were already shared.

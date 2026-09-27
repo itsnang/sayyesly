@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Architects_Daughter, Caveat, Courier_Prime, Fraunces, Instrument_Sans } from "next/font/google";
+import { connection } from "next/server";
 import { BASE_OPEN_GRAPH, BASE_TWITTER, SITE_DESCRIPTION, SITE_HOME_TITLE, SITE_TITLE, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -45,11 +46,15 @@ export const metadata: Metadata = {
   twitter: BASE_TWITTER,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Every page renders per request, so Next.js can put this request's CSP nonce
+  // (set in proxy.ts) on its scripts. A page prerendered at build time would
+  // have no nonce, and the policy would block its scripts.
+  await connection();
   return (
     <html
       lang="en"
