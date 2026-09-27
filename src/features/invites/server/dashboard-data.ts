@@ -63,6 +63,8 @@ export async function getMyInvite(inviteId: string, userId: string): Promise<Edi
     },
   });
   if (!row) return null;
+  const now = Date.now();
+  const hasFutureSlot = row.timeSlots.some((s) => s.startsAt.getTime() > now);
   return {
     id: row.id,
     slug: row.slug,
@@ -81,7 +83,12 @@ export async function getMyInvite(inviteId: string, userId: string): Promise<Edi
       planNotes: row.planNotes ?? "",
       planPhotos: row.planPhotos.map((p) => ({ url: p.url, alt: p.alt, caption: p.caption ?? "" })),
       timezone: row.timezone,
-      allowCustomTime: row.allowCustomTime,
+      // Older Invites could offer times and a calendar at once; they open as
+      // "I'll pick the times" (and keep both for Recipients until saved again).
+      // Only upcoming times count: if they've all passed, the calendar is what
+      // keeps the Invite answerable, so it opens as "Let them pick".
+      allowCustomTime: row.allowCustomTime && !hasFutureSlot,
+      timeOfDay: row.timeOfDay,
       timeSlots: row.timeSlots.map((s) => utcToZonedParts(s.startsAt, row.timezone)),
       themeId: row.themeId,
     },

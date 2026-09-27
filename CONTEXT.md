@@ -33,7 +33,10 @@ A specific future date and time the Creator offers on an Invite, which the Recip
 _Avoid_: time, option, availability
 
 **Custom time**:
-A specific date and time proposed by the Recipient instead of one of the Time slots; only possible when the Invite allows it.
+A specific date and time proposed by the Recipient instead of one of the Time slots; only possible when the Invite allows it. An Invite either offers Time slots or lets the Recipient pick a Custom time, not both (older Invites may still have both).
+
+**Part of the day**:
+Morning, Lunch, Afternoon or Evening, chosen by the Creator. It decides which times the Recipient can tap when picking a Custom time, and which times the studio offers for Time slots.
 
 **Expired**:
 An unanswered Invite whose Time slots have all passed and that does not allow a Custom time; it can no longer be answered.

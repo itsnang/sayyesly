@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import type { PublicInvite } from "../../types";
 import { NOTE_MAX_LENGTH } from "../../utils/answer";
+import { timesFor } from "../../utils/time-of-day";
 import { MONTHS, timeLabel as sharedTimeLabel } from "../shared/format";
 import type { PlanChoice } from "../shared/use-invite-answer";
 import { isoDate, usePlanSelection } from "../shared/use-plan-selection";
@@ -11,7 +12,6 @@ import { isOptimizable } from "@/lib/media";
 import { formatInZone, PillButton, Prompt, WobbleFilter, WobblyBorder } from "./shared";
 
 const DAYS_OF_WEEK = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-const TIME_CHIPS = ["18:30", "19:00", "19:30", "20:00", "20:30"];
 
 const monthName = (m: number) => MONTHS[m]?.toLowerCase() ?? "";
 const timeLabel = (value: string) => sharedTimeLabel(value).toLowerCase();
@@ -284,7 +284,7 @@ export function PlanScreen({ invite, busy, error, onConfirm }: PlanScreenProps) 
                 {/* Times */}
                 <Prompt>what time?</Prompt>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
-                  {TIME_CHIPS.map((value) => (
+                  {timesFor(invite.timeOfDay).map((value) => (
                     <PillButton
                       key={value}
                       selected={!selection.slotId && selection.time === value}

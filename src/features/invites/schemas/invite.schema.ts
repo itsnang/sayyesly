@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isValidTimeZone } from "@/lib/time";
+import { TIMES_OF_DAY } from "@/lib/time/time-of-day";
 
 // Form values are plain strings/booleans (empty string = not set) so the same
 // schema drives React Hook Form in the browser and validation on the server.
@@ -47,7 +48,11 @@ export const inviteFormSchema = z
       )
       .max(MAX_PLAN_PHOTOS),
     timezone: z.string().refine(isValidTimeZone, "Pick a real time zone, e.g. Asia/Phnom_Penh"),
+    // The When section's mode: true is "Let them pick" (a calendar, no Time slots),
+    // false is "I'll pick the times" (only the Time slots below).
     allowCustomTime: z.boolean(),
+    // A form from before this field existed (a tab left open across a deploy) still saves, as Evening.
+    timeOfDay: z.enum(TIMES_OF_DAY).catch("evening"),
     timeSlots: z
       .array(
         z.object({
@@ -59,7 +64,7 @@ export const inviteFormSchema = z
     themeId: z.string().min(1, "Pick a theme"),
   })
   .refine((v) => v.timeSlots.length > 0 || v.allowCustomTime, {
-    message: "Offer at least one time, or let them suggest their own",
+    message: "Add at least one time, or choose Let them pick",
     path: ["timeSlots"],
   });
 
