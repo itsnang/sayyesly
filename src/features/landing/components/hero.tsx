@@ -1,4 +1,4 @@
-import { Cat, Cloud, Envelope, Flower, Heart, Leaf, Loop, Petal, Sparkle, Spiral, Squiggle, Star } from "@/components/shared/doodles";
+import { Cloud, Envelope, Flower, Heart, Leaf, Loop, Petal, Sparkle, Spiral, Squiggle, Star } from "@/components/shared/doodles";
 import { InkButton } from "@/components/shared/studio";
 
 /**
@@ -54,9 +54,13 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Baseline with the cat and a sealed invite, like a doodle along the bottom of a notebook */}
+      {/* Baseline with a few flowers and a sealed invite, like a doodle along the bottom of a notebook */}
       <div className="relative mt-10 flex items-end justify-between px-[8%]" aria-hidden="true">
-        <Cat className="w-24 text-ink sm:w-28" />
+        <div className="flex items-end gap-1.5">
+          <Flower fill="var(--color-sun)" className="w-9 text-ink sm:w-10" />
+          <Leaf fill="var(--color-sage)" className="mb-1 w-6 -rotate-12 text-ink sm:w-7" />
+          <Flower fill="var(--color-sky)" className="w-7 text-ink sm:w-8" />
+        </div>
         <div className="mb-1 flex items-end gap-2">
           <Heart className="mb-5 size-4 -rotate-12 text-rose" />
           <Envelope className="w-14 rotate-[-8deg] text-ink sm:w-16" />

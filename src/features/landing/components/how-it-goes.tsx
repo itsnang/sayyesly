@@ -99,7 +99,7 @@ export function HowItGoes() {
         </div>
 
         {/* A thick-framed stage, like a game screen, with the real invite on it */}
-        <div className="grid-paper relative overflow-hidden rounded-[22px] border-[3px] border-ink">
+        <div className="diary-paper relative overflow-hidden rounded-[22px] border-[3px] border-ink">
           <div className="relative mx-auto flex h-[440px] max-w-[520px] items-end justify-center pt-8 sm:h-[480px]">
             {STEPS.map((s, i) => (
               <span
