@@ -19,7 +19,7 @@ bun run r2:check                  # verify R2 uploads (CORS, signed PUT, public 
 bun test             # unit tests (bun's built-in runner, *.test.ts next to the code)
 ```
 
-Quality gate: `bun run typecheck && bun run lint && bun test && bun run build`. Unit tests cover the agreed seams only: answer rules (`features/invites/utils/answer.ts`), Telegram message text and command parsing, the CutLuy webhook signature/amount check, the Server Action → TanStack Query adapter (`lib/query/action.ts`), and when the Theme purchase poll stops (`features/billing/utils/purchase-phase.ts`).
+Quality gate: `bun run typecheck && bun run lint && bun test && bun run build`. Unit tests cover the agreed seams only: answer rules (`features/invites/utils/answer.ts`), Telegram message text and command parsing, the CutLuy webhook signature/amount check, the Server Action → TanStack Query adapter (`lib/query/action.ts`), when the Theme purchase poll stops (`features/billing/utils/purchase-phase.ts`), the post-login redirect check (`lib/auth/next-path.ts`) and the same-origin (CSRF) check (`lib/auth/same-origin.ts`).
 
 Copy `.env.example` to `.env.local`. Locally, point `DATABASE_URL` at a separate dev database, never production.
 
@@ -76,6 +76,8 @@ Themes are code: `src/features/invites/themes/<id>/` exports a `ThemeDefinition`
 - Actions return `{ error?: string }` on failure instead of throwing
 - Absolute URLs and redirects are built from `NEXT_PUBLIC_APP_URL`; secrets never go in `NEXT_PUBLIC_*`
 - Escape user text with `escapeHtml()` before sending it in Telegram HTML messages
+- Security headers live in `next.config.ts`; the Content-Security-Policy (per-request script nonce) lives in `src/proxy.ts`. Every page renders per request so it gets the nonce. Adding a third-party script, iframe or upload host means updating that policy
+- Links a Creator typed that end up in an `href` go through `safeHttpUrl()`. Route handlers that change state from a form check `isSameOriginRequest()` (Server Actions get this from Next.js)
 - Files are kebab-case (`ask-screen.tsx`); exported components stay PascalCase
 - Mobile-first; check layouts at 375px width
 
