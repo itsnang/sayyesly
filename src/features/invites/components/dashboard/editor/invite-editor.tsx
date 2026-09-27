@@ -17,7 +17,7 @@ import { kittenSoftContent } from "../../../themes/kitten-soft";
 import { timeLabel } from "../../../themes/shared/format";
 import { inviteTitle } from "../../../utils";
 import { withExample } from "../../../utils/example";
-import { TIME_OF_DAY_LABELS, TIMES_OF_DAY, timesFor } from "../../../utils/time-of-day";
+import { DEFAULT_TIME_OF_DAY, TIME_OF_DAY_LABELS, TIMES_OF_DAY, timesFor } from "../../../utils/time-of-day";
 import { ImageField } from "../image-field";
 import { DesktopMock, DeviceToggle, PhoneMock, PreviewSheet, type Device } from "./live-preview";
 import { QuestionField } from "./question-field";
@@ -76,7 +76,7 @@ function summarise(id: SectionId, v: InviteFormValues, content: ThemeContent): s
       return extras ? count(extras, "detail", "details") : "A surprise";
     }
     case "when": {
-      if (v.allowCustomTime) return `They pick · ${TIME_OF_DAY_LABELS[v.timeOfDay]}`;
+      if (v.allowCustomTime) return `They pick · ${TIME_OF_DAY_LABELS[v.timeOfDay ?? DEFAULT_TIME_OF_DAY]}`;
       const n = v.timeSlots?.length ?? 0;
       return n === 0 ? "Needs a time" : count(n, "time", "times");
     }
