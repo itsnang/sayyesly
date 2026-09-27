@@ -19,7 +19,7 @@ bun run r2:check                  # verify R2 uploads (CORS, signed PUT, public 
 bun test             # unit tests (bun's built-in runner, *.test.ts next to the code)
 ```
 
-Quality gate: `bun run typecheck && bun run lint && bun test && bun run build`. Unit tests cover the agreed seams only: answer rules (`features/invites/utils/answer.ts`), Telegram message text and command parsing, and the CutLuy webhook signature/amount check.
+Quality gate: `bun run typecheck && bun run lint && bun test && bun run build`. Unit tests cover the agreed seams only: answer rules (`features/invites/utils/answer.ts`), Telegram message text and command parsing, the CutLuy webhook signature/amount check, the Server Action → TanStack Query adapter (`lib/query/action.ts`), and when the Theme purchase poll stops (`features/billing/utils/purchase-phase.ts`).
 
 Copy `.env.example` to `.env.local`. Locally, point `DATABASE_URL` at a separate dev database, never production.
 
@@ -44,13 +44,15 @@ src/
   features/<slice>/
     actions/           'use server' files (+ index.ts barrel without 'use server')
     components/        UI
+    hooks/             client server state: TanStack Query mutations and polls (docs/adr/0002)
     schemas/           zod form schemas shared by React Hook Form and the actions
     server/            server-only modules: queries, integrations, webhook handlers ('server-only' import)
     themes/            (invites) the theme registry
     utils/             pure, domain-aware helpers; unit tests live next to them (*.test.ts)
     types.ts
   lib/                 shared code: db/ (+ db/queries for cross-slice reads), auth/, telegram/,
-                       cutluy/, storage/, time/, format/, validation.ts, rate-limit.ts, site.ts
+                       cutluy/, storage/, time/, format/, query/ (TanStack Query provider + runAction),
+                       validation.ts, rate-limit.ts, site.ts, theme-ids.ts
   env.ts               server-only, zod-validated env; use requireEnv() for optional vars
 ```
 

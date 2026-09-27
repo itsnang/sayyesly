@@ -9,7 +9,8 @@ import { Controller, useFieldArray, useForm, useWatch, type FieldErrors, type Fi
 import { Wordmark } from "@/components/shared/studio";
 import { Button, buttonClass, chipClass, cx, Field, FieldError, Input, Note, Textarea } from "@/components/shared/ui";
 import { formatUsd } from "@/lib/format";
-import { saveInvite } from "../../../actions";
+import { errorMessage } from "@/lib/query/action";
+import { useSaveInvite } from "../../../hooks/use-invite-mutations";
 import { inviteFormSchema, MAX_PLAN_PHOTOS, MAX_TIME_SLOTS, type InviteFormValues } from "../../../schemas";
 import type { ThemeChoice } from "../../../server/theme-access";
 import type { ThemeContent } from "../../../themes";
@@ -179,6 +180,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
   const [sharing, setSharing] = useState(!!shareOpen);
   const [editingZone, setEditingZone] = useState(false);
   const isClient = useIsClient();
+  const save = useSaveInvite(inviteId);
 
   const {
     register,
@@ -247,13 +249,21 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
       else setServerError(`Unlock ${selectedTheme.name} on the Themes page first.`);
       return;
     }
-    const result = await saveInvite(inviteId, data);
-    if (result.error || !result.id) {
-      setServerError(result.error ?? "Couldn't save. Please try again.");
+    let result;
+    try {
+      result = await save.mutateAsync(data);
+    } catch (error) {
+      setServerError(errorMessage(error));
       return;
     }
     if (isNew) {
       router.push(`/dashboard/invites/${result.id}?created=1`);
+      return;
+    }
+    if (result.answered && !answered) {
+      // They answered while this was open: only the Plan was saved. Reload the
+      // page (it remounts the form with the locked fields) and say why.
+      router.replace(`/dashboard/invites/${result.id}?answeredWhileEditing=1`);
       return;
     }
     reset(data);

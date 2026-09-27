@@ -1,41 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { Button, buttonClass, Note } from "@/components/shared/ui";
 import { formatUsd } from "@/lib/format";
-import { buyTheme, getPurchaseStatus } from "../actions";
-import type { CheckoutResult } from "../types";
-
-type Ticket = { purchaseId: string; qrImageUrl: string; checkoutUrl: string | null; expiresAt: string; amountCents: number };
-
-function toTicket(result: CheckoutResult): Ticket | null {
-  const { purchaseId, qrImageUrl, expiresAt, amountCents } = result;
-  if (!purchaseId || !qrImageUrl || !expiresAt || amountCents === undefined) return null;
-  return { purchaseId, qrImageUrl, expiresAt, amountCents, checkoutUrl: result.checkoutUrl ?? null };
-}
-
-function useCountdown(until: string | null) {
-  const left = () => (until ? Math.max(0, new Date(until).getTime() - Date.now()) : 0);
-  const [ms, setMs] = useState(left);
-  useEffect(() => {
-    if (!until) return;
-    const tick = () => setMs(Math.max(0, new Date(until).getTime() - Date.now()));
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [until]);
-  const s = Math.ceil(ms / 1000);
-  return { expired: !!until && ms === 0, label: `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}` };
-}
-
-type Phase = "starting" | "waiting" | "paid" | "lapsed" | "failed" | "error";
+import { useThemePurchase } from "../hooks/use-theme-purchase";
 
 /**
- * Buying one Paid theme, start to finish: creates (or resumes) the CutLuy
- * payment, shows the KHQR code, and waits for the verified webhook to mark
- * it paid. The browser only ever asks our server for the status.
+ * Buying one Paid theme: shows the KHQR code from `useThemePurchase` and each
+ * step after it. The browser only ever asks our server for the status.
  */
 export function BuyThemeDialog({
   theme,
@@ -47,70 +20,7 @@ export function BuyThemeDialog({
   /** Called once the Purchase is paid (or the Theme turned out to be owned already) */
   onPaid?: () => void;
 }) {
-  const router = useRouter();
-  const [phase, setPhase] = useState<Phase>("starting");
-  const [ticket, setTicket] = useState<Ticket | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const countdown = useCountdown(ticket?.expiresAt ?? null);
-  const paidOnce = useRef(false);
-
-  const markPaid = useCallback(() => {
-    setPhase("paid");
-    if (paidOnce.current) return;
-    paidOnce.current = true;
-    onPaid?.();
-    router.refresh();
-  }, [onPaid, router]);
-
-  const applyResult = useCallback(
-    (result: CheckoutResult) => {
-      if (result.owned) return markPaid();
-      const next = result.error ? null : toTicket(result);
-      if (!next) {
-        setError(result.error ?? "Couldn't start the payment. Please try again.");
-        setPhase("error");
-        return;
-      }
-      setTicket(next);
-      setPhase("waiting");
-    },
-    [markPaid],
-  );
-
-  const requestPayment = useCallback(
-    () => buyTheme(theme.id).catch((): CheckoutResult => ({ error: "Couldn't reach the server. Check your connection." })),
-    [theme.id],
-  );
-
-  // Ask once per dialog. Without the guard, React's dev double-run of effects
-  // sends two requests that queue behind each other on the server's lock.
-  const requested = useRef(false);
-  useEffect(() => {
-    if (requested.current) return;
-    requested.current = true;
-    void requestPayment().then(applyResult);
-  }, [requestPayment, applyResult]);
-
-  function retry() {
-    setPhase("starting");
-    setError(null);
-    void requestPayment().then(applyResult);
-  }
-
-  // The QR stops being payable at its expiry, even before the webhook says so.
-  const shown: Phase = phase === "waiting" && countdown.expired ? "lapsed" : phase;
-
-  // Poll our own database; only CutLuy's signed webhook changes it.
-  useEffect(() => {
-    if (shown !== "waiting" || !ticket) return;
-    const id = setInterval(async () => {
-      const result = await getPurchaseStatus(ticket.purchaseId).catch(() => null);
-      if (result?.status === "paid") markPaid();
-      else if (result?.status === "failed") setPhase("failed");
-      else if (result?.status === "expired") setPhase("lapsed");
-    }, 2500);
-    return () => clearInterval(id);
-  }, [shown, ticket, markPaid]);
+  const { phase: shown, ticket, countdown, error, retry } = useThemePurchase(theme.id, onPaid);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -162,7 +72,7 @@ export function BuyThemeDialog({
               </div>
               <p className="mt-4 flex items-center justify-center gap-2 text-[12.5px] text-muted" aria-live="polite">
                 <span aria-hidden className="size-1.5 animate-pulse rounded-full bg-rose" />
-                Waiting for payment · {countdown.label}
+                Waiting for payment · {countdown}
               </p>
               {ticket.checkoutUrl && (
                 <a href={ticket.checkoutUrl} target="_blank" rel="noopener noreferrer" className={buttonClass("secondary", "md", "mt-5 w-full")}>

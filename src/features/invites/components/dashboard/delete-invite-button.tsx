@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/shared/ui";
 import {
@@ -13,26 +12,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { deleteInvite } from "../../actions";
+import { errorMessage } from "@/lib/query/action";
+import { useDeleteInvite } from "../../hooks/use-invite-mutations";
 
 /** Deletes the Invite for good, after asking once in a dialog. A failure keeps the dialog open with the reason. */
 export function DeleteInviteButton({ inviteId }: { inviteId: string }) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function run() {
-    setBusy(true);
-    setError(null);
-    const result = await deleteInvite(inviteId);
-    if (result.error) {
-      setError(result.error);
-      setBusy(false);
-      return;
-    }
-    router.push("/dashboard");
-  }
+  const mutation = useDeleteInvite();
+  const busy = mutation.isPending || mutation.isSuccess;
+  const error = errorMessage(mutation.error);
 
   return (
     <AlertDialog
@@ -40,7 +28,7 @@ export function DeleteInviteButton({ inviteId }: { inviteId: string }) {
       onOpenChange={(next) => {
         if (busy) return;
         setOpen(next);
-        if (next) setError(null);
+        if (next) mutation.reset();
       }}
     >
       <AlertDialogTrigger asChild>
@@ -62,7 +50,7 @@ export function DeleteInviteButton({ inviteId }: { inviteId: string }) {
         )}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={busy}>Keep it</AlertDialogCancel>
-          <Button type="button" variant="danger" disabled={busy} onClick={run}>
+          <Button type="button" variant="danger" disabled={busy} onClick={() => mutation.mutate(inviteId)}>
             {busy ? "Deleting…" : "Delete invite"}
           </Button>
         </AlertDialogFooter>

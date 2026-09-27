@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, buttonClass } from "@/components/shared/ui";
 import {
@@ -13,7 +12,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { duplicateInvite } from "../../actions";
+import { errorMessage } from "@/lib/query/action";
+import { useDuplicateInvite } from "../../hooks/use-invite-mutations";
 
 function DuplicateIcon({ className }: { className?: string }) {
   return (
@@ -31,22 +31,10 @@ function DuplicateIcon({ className }: { className?: string }) {
  * scratch. A failure keeps the dialog open with the reason.
  */
 export function DuplicateInviteButton({ inviteId, compact }: { inviteId: string; compact?: boolean }) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function run() {
-    setBusy(true);
-    setError(null);
-    const result = await duplicateInvite(inviteId);
-    if (result.error || !result.id) {
-      setError(result.error ?? "Couldn't duplicate. Please try again.");
-      setBusy(false);
-      return;
-    }
-    router.push(`/dashboard/invites/${result.id}?created=1${result.themeSwapped ? "&themeSwapped=1" : ""}`);
-  }
+  const mutation = useDuplicateInvite();
+  const busy = mutation.isPending || mutation.isSuccess;
+  const error = errorMessage(mutation.error);
 
   return (
     <AlertDialog
@@ -54,7 +42,7 @@ export function DuplicateInviteButton({ inviteId, compact }: { inviteId: string;
       onOpenChange={(next) => {
         if (busy) return;
         setOpen(next);
-        if (next) setError(null);
+        if (next) mutation.reset();
       }}
     >
       <AlertDialogTrigger asChild>
@@ -84,7 +72,7 @@ export function DuplicateInviteButton({ inviteId, compact }: { inviteId: string;
         )}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
-          <Button type="button" disabled={busy} onClick={run}>
+          <Button type="button" disabled={busy} onClick={() => mutation.mutate(inviteId)}>
             {busy ? "Duplicating…" : "Duplicate"}
           </Button>
         </AlertDialogFooter>

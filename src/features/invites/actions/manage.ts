@@ -12,7 +12,12 @@ import { canUseTheme } from "../server/theme-access";
 import { DEFAULT_THEME_ID } from "../themes";
 import { newInviteSlug, newLinkCode } from "../utils";
 
-type SaveResult = { error?: string; id?: string };
+type SaveResult = {
+  error?: string;
+  id?: string;
+  /** The Invite has an Answer, so only the Plan and the wording around it were saved */
+  answered?: boolean;
+};
 type DuplicateResult = { error?: string; id?: string; /** The copy uses the free Theme; the original one is no longer usable */ themeSwapped?: boolean };
 
 const emptyToNull = (v: string) => (v === "" ? null : v);
@@ -134,7 +139,8 @@ export async function saveInvite(inviteId: string | null, input: InviteFormValue
       .update(invites)
       .set({ ...editable, ...(answered ? {} : lockable), updatedAt: new Date() })
       .where(eq(invites.id, existing.id));
-    return { id: existing.id };
+    // Tell the editor, which may not know yet: they can answer while it's open.
+    return answered ? { id: existing.id, answered: true } : { id: existing.id };
   });
   if (result.error) return result;
 

@@ -25,6 +25,8 @@ export default async function EditInvitePage({ params, searchParams }: PageProps
 
   return (
     <InviteStudio
+      // A new Answer locks fields; remount so the form starts from the saved Invite.
+      key={invite.answered ? "answered" : "open"}
       inviteId={invite.id}
       defaults={invite.values}
       answered={invite.answered}
@@ -32,8 +34,13 @@ export default async function EditInvitePage({ params, searchParams }: PageProps
       uploadsEnabled={isUploadConfigured()}
       shareOpen={query.created === "1"}
       notice={
-        query.themeSwapped === "1" && (
+        query.themeSwapped === "1" ? (
           <Note tone="warn">The theme this was copied from isn&apos;t available anymore, so this invite uses {themeName} instead.</Note>
+        ) : (
+          query.answeredWhileEditing === "1" &&
+          invite.answered && (
+            <Note tone="warn">They answered while you were editing, so only the plan was saved. The question, times and theme stay as they answered them.</Note>
+          )
         )
       }
       share={
