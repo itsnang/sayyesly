@@ -8,6 +8,18 @@ const QUESTIONS = [
     a: "No. They just open the link in any browser; most people tap it straight from Telegram. Only you log in, with your Telegram account.",
   },
   {
+    q: "Do I need Telegram?",
+    a: "Yes. You log in with your Telegram account, and that's where answers reach you: the sayyesly bot messages you, or a group chat you've linked. The person you invite doesn't need Telegram, just the link.",
+  },
+  {
+    q: "What if their answer doesn't reach me on Telegram?",
+    a: "If you didn't let the bot message you when you logged in, open it in Telegram and press Start once. The Share screen warns you before you send a link that has nowhere to deliver the answer. And every answer shows in your list of invites too, so nothing gets lost.",
+  },
+  {
+    q: "Can I invite a group, or only one person?",
+    a: "One invite is for one person and takes one answer, the first one sent. To ask several people, make one invite each; Duplicate copies an invite in a tap. You can still link a group chat so your friends hear the answer as it comes in.",
+  },
+  {
     q: "What if none of my times work for them?",
     a: "Choose \"Let them pick\" when you make it. They get a calendar, a few times around the part of the day you chose, and a box for any other time. Times always show in your invite's time zone, so nobody turns up an hour early.",
   },
@@ -22,6 +34,10 @@ const QUESTIONS = [
   {
     q: "Can I change the plan after they say yes?",
     a: "Yes. Place, map link, dress code, notes and photos stay editable. The question, the times and the Theme lock once they've answered, since that's what they said yes to.",
+  },
+  {
+    q: "Can I delete an invite?",
+    a: "Yes, from the invite's page in your dashboard. It's deleted for good, with its answer and linked groups, and the link stops working.",
   },
 ];
 
