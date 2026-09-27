@@ -5,7 +5,7 @@ import { EnvelopeInvite } from "./envelope-invite";
 export const envelope: ThemeDefinition = {
   id: "envelope",
   name: "Envelope",
-  thumbnail: "/landing/theme-envelope.png",
+  thumbnail: "/landing/envelope-card.png",
   content: {
     question: { label: "Invitation headline" },
     picture: { label: "Photo next to your letter", whenEmpty: "just the letter" },

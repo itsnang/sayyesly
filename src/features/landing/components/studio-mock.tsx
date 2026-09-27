@@ -81,13 +81,13 @@ export function StudioMock({ envelopePrice, className }: { envelopePrice: number
             <div className="mt-3 flex gap-3">
               <ThemeCard src="/landing/step-ask.png" name="Kitten Soft" price="Free" selected />
               {envelopePrice !== undefined && (
-                <ThemeCard src="/landing/theme-envelope.png" name="Envelope" price={formatUsd(envelopePrice)} />
+                <ThemeCard src="/landing/envelope-card.png" name="Envelope" price={formatUsd(envelopePrice)} />
               )}
             </div>
           </div>
 
           {[
-            ["Plan", "mauu steak · steakhouse"],
+            ["Plan", "dinner, then a walk"],
             ["When", "They pick"],
           ].map(([label, value]) => (
             <div key={label} className="flex items-center justify-between gap-3 border-t border-hairline px-4 py-3 text-[12.5px]">

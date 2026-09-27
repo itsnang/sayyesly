@@ -46,8 +46,8 @@ export default async function Image() {
     readFile(join(process.cwd(), "assets/Geist-Regular.ttf")),
     readFile(join(process.cwd(), "public/brand/wordmark.png"), "base64").then(dataUrl),
     readFile(join(process.cwd(), "public/landing/step-ask.png"), "base64").then(dataUrl),
-    readFile(join(process.cwd(), "public/landing/theme-envelope.png"), "base64").then(dataUrl),
-    readFile(join(process.cwd(), "public/landing/theme-envelope-open.png"), "base64").then(dataUrl),
+    readFile(join(process.cwd(), "public/landing/envelope-card.png"), "base64").then(dataUrl),
+    readFile(join(process.cwd(), "public/landing/envelope-letter.png"), "base64").then(dataUrl),
   ]);
 
   // The wordmark image has wide transparent margins; this box crops to the lettering
