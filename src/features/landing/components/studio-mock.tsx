@@ -34,6 +34,8 @@ function ThemeCard({ src, name, price, selected }: { src: string; name: string; 
  */
 export function StudioMock({ envelopePrice, className }: { envelopePrice: number | undefined; className?: string }) {
   const words = ["will", "you", "have", "dinner", "with", "me?"];
+  // Envelope leads while it's on sale; otherwise the free Theme stands in.
+  const showEnvelope = envelopePrice !== undefined;
   return (
     <div
       role="img"
@@ -79,15 +81,13 @@ export function StudioMock({ envelopePrice, className }: { envelopePrice: number
               <p className="text-[11px] text-muted">Tap to try one on</p>
             </div>
             <div className="mt-3 flex gap-3">
-              <ThemeCard src="/landing/step-ask.png" name="Kitten Soft" price="Free" selected />
-              {envelopePrice !== undefined && (
-                <ThemeCard src="/landing/envelope-card.png" name="Envelope" price={formatUsd(envelopePrice)} />
-              )}
+              <ThemeCard src="/landing/step-ask.png" name="Kitten Soft" price="Free" selected={!showEnvelope} />
+              {showEnvelope && <ThemeCard src="/landing/envelope-card.png" name="Envelope" price={formatUsd(envelopePrice)} selected />}
             </div>
           </div>
 
           {[
-            ["Plan", "dinner, then a walk"],
+            ["Plan", showEnvelope ? "Papa Wong's" : "dinner, then a walk"],
             ["When", "They pick"],
           ].map(([label, value]) => (
             <div key={label} className="flex items-center justify-between gap-3 border-t border-hairline px-4 py-3 text-[12.5px]">
@@ -104,7 +104,12 @@ export function StudioMock({ envelopePrice, className }: { envelopePrice: number
             <span className="rounded-[6px] bg-ink px-2.5 py-1 text-canvas">Phone</span>
             <span className="px-2.5 py-1 text-muted">Desktop</span>
           </div>
-          <PhoneFrame src="/landing/step-ask.png" alt="" sizes="220px" className="mt-5 -mb-16 w-[210px] sm:w-[220px]" />
+          <PhoneFrame
+            src={showEnvelope ? "/landing/envelope-letter.png" : "/landing/step-ask.png"}
+            alt=""
+            sizes="220px"
+            className="mt-5 -mb-16 w-[210px] sm:w-[220px]"
+          />
         </div>
       </div>
     </div>

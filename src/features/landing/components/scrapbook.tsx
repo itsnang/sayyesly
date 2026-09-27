@@ -17,8 +17,8 @@ function PaperCard({ src, alt, position, className }: { src: string; alt: string
 export function Scrapbook() {
   return (
     <section id="how" aria-labelledby="scrapbook-title" className="relative mt-24 scroll-mt-24">
-      <div className="grid-paper relative">
-        <TornEdge position="top" className="text-grid-pink" seed={3} />
+      <div className="diary-paper relative">
+        <TornEdge position="top" className="text-diary" seed={3} />
 
         <div className="relative mx-auto max-w-6xl px-5 pt-14 pb-20 sm:px-8 sm:pt-16">
           <h2 id="scrapbook-title" className="mx-auto max-w-md text-center font-mono text-[13.5px] leading-relaxed text-ink">
@@ -34,24 +34,24 @@ export function Scrapbook() {
           {/* The collage */}
           <div className="relative mx-auto mt-12 h-[720px] max-w-[980px] lg:h-[640px]">
             <PaperCard
-              src="/landing/kitten-plan.png"
-              alt="the plan, with a calendar to pick a day"
-              position="50% 0%"
+              src="/landing/envelope-card.png"
+              alt="the envelope, with the question on the card inside"
+              position="50% 30%"
               className="bottom-6 left-[calc(50%-235px)] h-[250px] w-[190px] -rotate-[7deg] max-lg:hidden"
             />
             <PaperCard
-              src="/landing/envelope-letter.png"
-              alt="the Envelope Theme, opened into a handwritten letter"
-              position="50% 0%"
+              src="/landing/envelope-yes.png"
+              alt="their answer: see ya there!"
+              position="50% 30%"
               className="right-[calc(50%-240px)] bottom-2 h-[250px] w-[190px] rotate-[6deg] max-lg:hidden"
             />
             <Tape className="bottom-[252px] left-[calc(50%-200px)] -rotate-[20deg] max-lg:hidden" />
             <Tape className="right-[calc(50%-210px)] bottom-[244px] rotate-[18deg] max-lg:hidden" />
 
             <PhoneShot
-              src="/landing/step-ask.png"
-              alt="the invite: will you have dinner with me?"
-              position="50% 40%"
+              src="/landing/envelope-letter.png"
+              alt="an Envelope invite, opened into a handwritten letter: will you have dinner with me?"
+              position="50% 0%"
               priority
               sizes="260px"
               className="absolute top-0 left-1/2 w-[250px] -translate-x-1/2 sm:w-[270px]"
@@ -92,7 +92,7 @@ export function Scrapbook() {
           </div>
         </div>
 
-        <TornEdge position="bottom" className="text-grid-pink" seed={7} />
+        <TornEdge position="bottom" className="text-diary" seed={7} />
       </div>
 
       <p className="mt-16 text-center text-[20px] text-ink sm:text-[22px]">Say it nicely. Hear it instantly.</p>
