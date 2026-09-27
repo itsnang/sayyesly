@@ -61,6 +61,14 @@ export function LoveLetterInvite(props: InviteThemeProps) {
         .ll-split { display: grid; gap: 30px; align-items: start; }
         @media (min-width: 620px) { .ll-split { grid-template-columns: 1.1fr 1fr; } }
         @keyframes ll-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+        .ll-dialog {
+          width: min(380px, calc(100% - 40px)); max-width: none; margin: auto; padding: 0; border: none;
+          background: var(--ll-diary); color: var(--ll-ink);
+          box-shadow: 0 24px 60px -24px rgba(38,55,196,.45);
+          rotate: -.8deg;
+        }
+        .ll-dialog[open] { animation: ll-rise .25s ease-out both; }
+        .ll-dialog::backdrop { background: rgba(38,55,196,.16); backdrop-filter: blur(2px); }
         @keyframes ll-draw { to { stroke-dashoffset: 0; } }
         @keyframes ll-fly {
           0%   { transform: translate(-120px, 80vh) rotate(8deg); opacity: 1; }
