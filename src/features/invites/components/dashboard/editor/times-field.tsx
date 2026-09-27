@@ -40,8 +40,10 @@ type TimesFieldProps = {
 /** Offer a time on several days in one tap each, or add a specific date and time. */
 export function TimesField({ slots, quickTimes, timezone, onAdd, onRemove, disabled, max }: TimesFieldProps) {
   const [picked, setPicked] = useState<string | null>(null);
+  // Any exact time typed in instead of a chip, e.g. "06:00"; empty while a chip is chosen.
+  const [ownTime, setOwnTime] = useState("");
   // Switching the part of the day swaps the list; fall back to its second time (e.g. 12:00 for lunch).
-  const time = picked && quickTimes.includes(picked) ? picked : (quickTimes[1] ?? quickTimes[0] ?? "19:00");
+  const time = ownTime || (picked && quickTimes.includes(picked) ? picked : (quickTimes[1] ?? quickTimes[0] ?? "19:00"));
   const [customDate, setCustomDate] = useState("");
   const [customTime, setCustomTime] = useState<string | null>(null);
   const customTimeValue = customTime ?? time;
@@ -67,11 +69,33 @@ export function TimesField({ slots, quickTimes, timezone, onAdd, onRemove, disab
         <span className="mr-1.5 text-[12px] text-muted">1</span>Pick a time
       </p>
       <div className="flex flex-wrap gap-1.5">
-        {quickTimes.map((value) => (
-          <button key={value} type="button" onClick={() => setPicked(value)} aria-pressed={time === value} className={chipClass(time === value, "px-3 py-1.5 text-[13.5px]")}>
-            {timeLabel(value)}
-          </button>
-        ))}
+        {quickTimes.map((value) => {
+          const on = !ownTime && time === value;
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => {
+                setOwnTime("");
+                setPicked(value);
+              }}
+              aria-pressed={on}
+              className={chipClass(on, "px-3 py-1.5 text-[13.5px]")}
+            >
+              {timeLabel(value)}
+            </button>
+          );
+        })}
+        <label className={cx(chipClass(false, "flex items-center gap-2 py-0.5 pr-1.5 pl-3 text-[13.5px]"), ownTime && "border-ink ring-1 ring-ink")}>
+          Other
+          <input
+            type="time"
+            value={ownTime}
+            onChange={(e) => setOwnTime(e.target.value)}
+            aria-label="Another time"
+            className="min-w-0 rounded-[4px] bg-transparent py-1 text-[13.5px] text-ink outline-none focus-visible:bg-surface"
+          />
+        </label>
       </div>
 
       <p className="mt-5 mb-2 text-[14px] font-medium text-ink">

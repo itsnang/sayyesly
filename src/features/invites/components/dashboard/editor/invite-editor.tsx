@@ -24,6 +24,7 @@ import { QuestionField } from "./question-field";
 import { isThemeLocked, ThemeField } from "./theme-field";
 import { PhotosField } from "./photos-field";
 import { TimesField } from "./times-field";
+import { TimeZoneSelect } from "./time-zone-select";
 
 type SectionId = "plan" | "when" | "extras";
 
@@ -202,19 +203,11 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
     if (timesError) void trigger("timeSlots");
   }, [slotCount, values.allowCustomTime, timesError, trigger]);
 
-  const timeZones = useMemo(() => {
-    try {
-      return Intl.supportedValuesOf("timeZone");
-    } catch {
-      return ["Asia/Phnom_Penh"];
-    }
-  }, []);
-
   // The selected Theme decides which optional fields are worth asking for.
   const content = themes.find((t) => t.id === values.themeId)?.content ?? ALL_CONTENT;
   const extras = extrasTitle(content);
   // The preview fills what's still empty from the Theme's example, so the Creator sees what it can hold.
-  const preview = withExample(values, content);
+  const preview = useMemo(() => withExample(values, content), [values, content]);
   const exampleTag = preview.filled.length > 0 && <ExampleTag filled={preview.filled} />;
   // A paid Theme can be tried on the preview before buying; it has to be unlocked to save.
   const selectedTheme = themes.find((t) => t.id === values.themeId);
@@ -564,13 +557,8 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
                   )}
                 </div>
                 {editingZone && (
-                  <Field label="Time zone" error={errors.timezone?.message}>
-                    <Input {...register("timezone")} list="time-zones" />
-                    <datalist id="time-zones">
-                      {timeZones.map((tz) => (
-                        <option key={tz} value={tz} />
-                      ))}
-                    </datalist>
+                  <Field label="Time zone" hint="Every time on this invite is in this zone, for you and for them." error={errors.timezone?.message}>
+                    <TimeZoneSelect {...register("timezone")} current={values.timezone} />
                   </Field>
                 )}
               </div>
