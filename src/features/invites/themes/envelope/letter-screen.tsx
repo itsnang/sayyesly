@@ -48,8 +48,8 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
   const hasPlan = Boolean(plan.place || plan.activity || plan.mapUrl);
 
   return (
-    <div style={{ background: "var(--ll-diary)", minHeight: "100svh" }}>
-      <div style={{ position: "relative", maxWidth: 640, margin: "0 auto", padding: "22px 22px 80px", animation: "ll-rise .7s ease-out both" }}>
+    <div style={{ background: "var(--env-diary)", minHeight: "100svh" }}>
+      <div style={{ position: "relative", maxWidth: 640, margin: "0 auto", padding: "22px 22px 80px", animation: "env-rise .7s ease-out both" }}>
         <header style={{ display: "flex", justifyContent: "space-between", gap: 16 }}>
           <Label>
             {plan.place}
@@ -69,11 +69,11 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
           <h1
             style={{
               position: "relative",
-              fontFamily: "var(--ll-marker)",
+              fontFamily: "var(--env-marker)",
               fontWeight: 400,
               fontSize: "clamp(40px, 11vw, 58px)",
               lineHeight: 1.12,
-              color: "var(--ll-ink)",
+              color: "var(--env-ink)",
               maxWidth: 480,
               margin: "0 auto",
               textWrap: "balance",
@@ -94,7 +94,7 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
         </section>
 
         {(invite.imageUrl || invite.message) && (
-          <section className="ll-split" style={{ marginTop: 40 }}>
+          <section className="env-split" style={{ marginTop: 40 }}>
             {invite.imageUrl && (
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <Photo src={invite.imageUrl} alt="" width="min(300px, 88%)" tilt={-1.6} sizes="300px" priority />
@@ -114,10 +114,10 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
                   style={{
                     position: "relative",
                     display: "inline-block",
-                    fontFamily: "var(--ll-marker)",
+                    fontFamily: "var(--env-marker)",
                     fontSize: "clamp(34px, 9vw, 46px)",
                     lineHeight: 1.1,
-                    color: "var(--ll-ink)",
+                    color: "var(--env-ink)",
                   }}
                 >
                   {plan.place}
@@ -156,7 +156,7 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
               transform: "rotate(-.6deg)",
             }}
           >
-            <p style={{ fontFamily: "var(--ll-marker)", fontSize: 30, color: "var(--ll-ink)" }}>NOTE!</p>
+            <p style={{ fontFamily: "var(--env-marker)", fontSize: 30, color: "var(--env-ink)" }}>NOTE!</p>
             {plan.dressCode && <p style={{ ...penStyle, marginTop: 8 }}>★ wear: {plan.dressCode}</p>}
             {plan.notes && <p style={{ ...penStyle, marginTop: 6, whiteSpace: "pre-line" }}>★ {plan.notes}</p>}
           </section>
@@ -167,7 +167,7 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
         </div>
 
         <section style={{ textAlign: "center" }}>
-          <h2 style={{ fontFamily: "var(--ll-marker)", fontWeight: 400, fontSize: 34, color: "var(--ll-ink)" }}>when works for you?</h2>
+          <h2 style={{ fontFamily: "var(--env-marker)", fontWeight: 400, fontSize: 34, color: "var(--env-ink)" }}>when works for you?</h2>
 
           {invite.timeSlots.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 18, marginTop: 22 }}>
@@ -184,7 +184,7 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
 
           {invite.allowCustomTime && (
             <>
-              {invite.timeSlots.length > 0 && <p style={{ ...penStyle, color: "var(--ll-graphite)", marginTop: 28 }}>or another day:</p>}
+              {invite.timeSlots.length > 0 && <p style={{ ...penStyle, color: "var(--env-graphite)", marginTop: 28 }}>or another day:</p>}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginTop: 18 }}>
                 <MonthArrow label="previous month" enabled={calendar.canGoBack} onClick={() => calendar.page(-1)}>
                   ‹
@@ -220,9 +220,9 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
                         height: 40,
                         border: "none",
                         background: "none",
-                        fontFamily: "var(--ll-pen)",
+                        fontFamily: "var(--env-pen)",
                         fontSize: 25,
-                        color: past ? "var(--ll-faint)" : "var(--ll-ink)",
+                        color: past ? "var(--env-faint)" : "var(--env-ink)",
                         cursor: past ? "default" : "pointer",
                         textDecoration: iso === calendar.todayIso ? "underline" : undefined,
                         textUnderlineOffset: 4,
@@ -249,7 +249,7 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
                   </CircledChoice>
                 ))}
               </div>
-              <label style={{ ...penStyle, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginTop: 18, color: "var(--ll-graphite)" }}>
+              <label style={{ ...penStyle, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginTop: 18, color: "var(--env-graphite)" }}>
                 or another time
                 <input
                   type="time"
@@ -259,12 +259,12 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
                     selection.pickTime(e.target.value || null);
                   }}
                   style={{
-                    fontFamily: "var(--ll-print)",
+                    fontFamily: "var(--env-print)",
                     fontSize: 14,
-                    color: "var(--ll-ink)",
+                    color: "var(--env-ink)",
                     background: "transparent",
                     border: "none",
-                    borderBottom: "1.5px solid var(--ll-ink)",
+                    borderBottom: "1.5px solid var(--env-ink)",
                     padding: "2px 4px",
                   }}
                 />
@@ -274,11 +274,11 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
         </section>
 
         <section style={{ marginTop: 44 }}>
-          <label htmlFor="ll-note">
+          <label htmlFor="env-note">
             <Label align="center">write back (optional)</Label>
           </label>
           <textarea
-            id="ll-note"
+            id="env-note"
             value={note}
             onChange={(e) => setNote(e.target.value)}
             maxLength={NOTE_MAX_LENGTH}
@@ -289,7 +289,7 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
               marginTop: 10,
               ...penStyle,
               lineHeight: "36px",
-              background: "repeating-linear-gradient(transparent 0 35px, var(--ll-rule) 35px 36px)",
+              background: "repeating-linear-gradient(transparent 0 35px, var(--env-rule) 35px 36px)",
               border: "none",
               outline: "none",
               resize: "none",
@@ -299,7 +299,7 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
         </section>
 
         <section style={{ marginTop: 40, textAlign: "center" }}>
-          <p aria-live="polite" style={{ ...penStyle, minHeight: 30, color: error ? "var(--ll-error)" : "var(--ll-ink)" }}>
+          <p aria-live="polite" style={{ ...penStyle, minHeight: 30, color: error ? "var(--env-error)" : "var(--env-ink)" }}>
             {error ?? (chosen ? chosen.toLowerCase() : selection.date ? "and a time?" : selection.time ? "and a day?" : "")}
           </p>
           <button
@@ -312,9 +312,9 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
               padding: "12px 34px 10px",
               border: "none",
               background: "none",
-              fontFamily: "var(--ll-marker)",
+              fontFamily: "var(--env-marker)",
               fontSize: 30,
-              color: "var(--ll-ink)",
+              color: "var(--env-ink)",
               cursor: choice && !busy ? "pointer" : "not-allowed",
               opacity: choice && !busy ? 1 : 0.35,
               transition: "opacity .2s",
@@ -355,32 +355,32 @@ function MaybeLater({ busy, error, onConfirm }: { busy: boolean; error: string |
           dialog.current?.showModal();
         }}
         disabled={busy}
-        style={{ ...link, color: "var(--ll-graphite)", textDecoration: "underline" }}
+        style={{ ...link, color: "var(--env-graphite)", textDecoration: "underline" }}
       >
         i can&apos;t make it this time
       </button>
 
       <dialog
         ref={dialog}
-        className="ll-dialog"
-        aria-labelledby="ll-decline-title"
+        className="env-dialog"
+        aria-labelledby="env-decline-title"
         onCancel={(e) => busy && e.preventDefault()}
         onClick={(e) => e.target === e.currentTarget && close()}
       >
         <div style={{ padding: "30px 24px 20px", textAlign: "center" }}>
-          <p id="ll-decline-title" style={{ fontFamily: "var(--ll-marker)", fontSize: 32, lineHeight: 1.1, color: "var(--ll-ink)" }}>
+          <p id="env-decline-title" style={{ fontFamily: "var(--env-marker)", fontSize: 32, lineHeight: 1.1, color: "var(--env-ink)" }}>
             can&apos;t make it this time?
           </p>
-          <p style={{ ...penStyle, fontSize: 22, marginTop: 12, color: "var(--ll-graphite)" }}>
+          <p style={{ ...penStyle, fontSize: 22, marginTop: 12, color: "var(--env-graphite)" }}>
             we&apos;ll let them know, gently. once it&apos;s sent, it can&apos;t be changed.
           </p>
           {sent && error && (
-            <p role="alert" style={{ ...penStyle, fontSize: 20, marginTop: 10, color: "var(--ll-error)" }}>
+            <p role="alert" style={{ ...penStyle, fontSize: 20, marginTop: 10, color: "var(--env-error)" }}>
               {error}
             </p>
           )}
           <div style={{ display: "flex", flexWrap: "wrap-reverse", justifyContent: "center", alignItems: "center", gap: "6px 22px", marginTop: 22 }}>
-            <button type="button" onClick={close} disabled={busy} style={{ ...link, color: "var(--ll-graphite)" }}>
+            <button type="button" onClick={close} disabled={busy} style={{ ...link, color: "var(--env-graphite)" }}>
               never mind
             </button>
             <button
@@ -395,9 +395,9 @@ function MaybeLater({ busy, error, onConfirm }: { busy: boolean; error: string |
                 padding: "10px 26px 8px",
                 border: "none",
                 background: "none",
-                fontFamily: "var(--ll-marker)",
+                fontFamily: "var(--env-marker)",
                 fontSize: 26,
-                color: "var(--ll-ink)",
+                color: "var(--env-ink)",
                 cursor: busy ? "not-allowed" : "pointer",
               }}
             >
@@ -446,11 +446,11 @@ function DrawnBox() {
       <path
         d="M6 8C60 4 140 3 194 6c2 16 2 32 0 48-54 3-130 3-188 0C4 40 3 22 7 5"
         fill="none"
-        stroke="var(--ll-ink)"
+        stroke="var(--env-ink)"
         strokeWidth="1.8"
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
-        filter="url(#ll-ink)"
+        filter="url(#env-ink)"
       />
     </svg>
   );

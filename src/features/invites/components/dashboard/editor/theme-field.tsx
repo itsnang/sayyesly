@@ -58,8 +58,10 @@ export function ThemeField({ themes, value, savedThemeId, onChange, onUnlock, di
               >
                 <span
                   className={cx(
-                    "relative block aspect-[4/5] overflow-hidden rounded-[8px] border bg-surface transition",
-                    on ? "border-ink ring-2 ring-ink/80 ring-offset-2" : "border-ink/10 group-hover:border-ink/35",
+                    // One 2px border that darkens when selected; a ring would stack a second outline
+                    // and get clipped by the scrolling strip.
+                    "relative block aspect-[4/5] overflow-hidden rounded-[8px] border-2 bg-surface transition-colors",
+                    on ? "border-ink" : "border-ink/10 group-hover:border-ink/35",
                   )}
                 >
                   {theme.thumbnail && <Image src={theme.thumbnail} alt="" fill sizes="104px" className="object-cover object-[50%_30%]" />}

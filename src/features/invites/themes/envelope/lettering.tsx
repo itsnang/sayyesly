@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-export const penStyle = { fontFamily: "var(--ll-pen)", fontSize: 25, lineHeight: 1.25, color: "var(--ll-ink)" } as const;
+export const penStyle = { fontFamily: "var(--env-pen)", fontSize: 25, lineHeight: 1.25, color: "var(--env-ink)" } as const;
 
 /** Small grey printed caps, like the corner labels of a diary page. */
 export function Label({ children, align = "left" }: { children: ReactNode; align?: "left" | "right" | "center" }) {
@@ -8,13 +8,13 @@ export function Label({ children, align = "left" }: { children: ReactNode; align
     <span
       style={{
         display: "block",
-        fontFamily: "var(--ll-print)",
+        fontFamily: "var(--env-print)",
         fontSize: 10,
         fontWeight: 500,
         lineHeight: 1.45,
         letterSpacing: ".12em",
         textTransform: "uppercase",
-        color: "var(--ll-graphite)",
+        color: "var(--env-graphite)",
         textAlign: align,
       }}
     >

@@ -1,6 +1,7 @@
+import { currentThemeId } from "@/lib/theme-ids";
+import { envelope } from "./envelope";
 import { kittenNight } from "./kitten-night";
 import { kittenSoft } from "./kitten-soft";
-import { loveLetter } from "./love-letter";
 import type { ThemeDefinition } from "./types";
 
 // Adding a Theme: build it under themes/<id>/ (component + `content`, which tells the
@@ -10,18 +11,21 @@ import type { ThemeDefinition } from "./types";
 const registry: Record<string, ThemeDefinition> = {
   [kittenSoft.id]: kittenSoft,
   [kittenNight.id]: kittenNight,
-  [loveLetter.id]: loveLetter,
+  [envelope.id]: envelope,
 };
 
 export const DEFAULT_THEME_ID = kittenSoft.id;
 
-/** The Theme's code, or null when the database names a Theme this build doesn't have. */
+/**
+ * The Theme's code, or null when the database names a Theme this build doesn't
+ * have. A renamed Theme's old id (e.g. "love-letter") still finds it.
+ */
 export function getTheme(id: string): ThemeDefinition | null {
-  return registry[id] ?? null;
+  return registry[currentThemeId(id)] ?? null;
 }
 
 export function hasTheme(id: string): boolean {
-  return id in registry;
+  return currentThemeId(id) in registry;
 }
 
 /** Every Theme this build has code for, registered or not in the database. */

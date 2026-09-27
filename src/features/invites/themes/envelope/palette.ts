@@ -1,4 +1,4 @@
-/** Love Letter's colours, shared by the page (as `--ll-*` CSS variables) and its link-preview image. */
+/** Envelope's colours, shared by the page (as `--env-*` CSS variables) and its link-preview image. */
 export const COLORS = {
   table: "#eeebe6",
   diary: "#f8f6f0",
@@ -20,4 +20,4 @@ export const COLORS = {
   sky: "#b8d0f0",
 } as const;
 
-export const CSS_VARIABLES = Object.fromEntries(Object.entries(COLORS).map(([name, value]) => [`--ll-${name}`, value]));
+export const CSS_VARIABLES = Object.fromEntries(Object.entries(COLORS).map(([name, value]) => [`--env-${name}`, value]));

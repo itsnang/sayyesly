@@ -49,7 +49,7 @@ function Polaroid({
   );
 }
 
-export function ThemesBoard({ loveLetterPrice }: { loveLetterPrice: number | undefined }) {
+export function ThemesBoard({ envelopePrice }: { envelopePrice: number | undefined }) {
   return (
     <section id="themes" aria-labelledby="themes-title" className="mx-auto mt-28 max-w-6xl scroll-mt-24 px-5 sm:mt-36 sm:px-8">
       <div className="text-center">
@@ -71,7 +71,7 @@ export function ThemesBoard({ loveLetterPrice }: { loveLetterPrice: number | und
           href="/demo"
           className="-rotate-3"
         />
-        {loveLetterPrice !== undefined && (
+        {envelopePrice !== undefined && (
           // The sealed envelope on top of a second photo of the opened letter, like a small stack.
           <div className="relative mt-8 sm:mr-24">
             <div
@@ -79,16 +79,16 @@ export function ThemesBoard({ loveLetterPrice }: { loveLetterPrice: number | und
               className="absolute inset-x-0 top-0 translate-x-28 translate-y-6 rotate-[9deg] bg-card p-3 shadow-[0_16px_30px_-16px_rgba(60,30,20,0.45)] max-sm:translate-x-3 max-sm:translate-y-10"
             >
               <span className="relative block aspect-square overflow-hidden bg-surface">
-                <Image src="/landing/theme-love-letter-open.png" alt="" fill sizes="250px" className="object-cover object-top" />
+                <Image src="/landing/theme-envelope-open.png" alt="" fill sizes="250px" className="object-cover object-top" />
               </span>
             </div>
             <Polaroid
-              src="/landing/theme-love-letter.png"
-              alt="the Love Letter theme: a sealed envelope that opens into a letter"
-              caption="love letter"
-              price={formatUsd(loveLetterPrice)}
+              src="/landing/theme-envelope.png"
+              alt="the Envelope theme: a sealed envelope that opens into a letter"
+              caption="envelope"
+              price={formatUsd(envelopePrice)}
               note="A sealed envelope that opens into a handwritten letter with your plan."
-              href="/demo?theme=love-letter"
+              href="/demo?theme=envelope"
               stamp="new"
               className="rotate-2"
             />

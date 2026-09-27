@@ -5,7 +5,7 @@ import { OG_IMAGE_SIZE } from "@/features/invites/themes";
 import { SITE_TAGLINE } from "@/lib/site";
 
 export const alt =
-  "sayyesly: two invites on phones, a kitten Theme and a love letter shown sealed and opened";
+  "sayyesly: two invites on phones, a kitten Theme and an envelope invite shown sealed and opened";
 export const size = OG_IMAGE_SIZE;
 export const contentType = "image/png";
 
@@ -46,8 +46,8 @@ export default async function Image() {
     readFile(join(process.cwd(), "assets/Geist-Regular.ttf")),
     readFile(join(process.cwd(), "public/brand/wordmark.png"), "base64").then(dataUrl),
     readFile(join(process.cwd(), "public/landing/step-ask.png"), "base64").then(dataUrl),
-    readFile(join(process.cwd(), "public/landing/theme-love-letter.png"), "base64").then(dataUrl),
-    readFile(join(process.cwd(), "public/landing/theme-love-letter-open.png"), "base64").then(dataUrl),
+    readFile(join(process.cwd(), "public/landing/theme-envelope.png"), "base64").then(dataUrl),
+    readFile(join(process.cwd(), "public/landing/theme-envelope-open.png"), "base64").then(dataUrl),
   ]);
 
   // The wordmark image has wide transparent margins; this box crops to the lettering
@@ -112,7 +112,7 @@ export default async function Image() {
           </div>
         </div>
 
-        {/* Love Letter, sealed behind and opened in front, then Kitten Soft in front of both. */}
+        {/* Envelope, sealed behind and opened in front, then Kitten Soft in front of both. */}
         <Phone src={envelope} left={958} top={92} rotate={9} />
         <Phone src={letter} left={806} top={66} rotate={2} />
         <Phone src={kitten} left={626} top={104} rotate={-7} scale={FRONT_SCALE} />

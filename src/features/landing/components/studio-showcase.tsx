@@ -2,7 +2,7 @@ import { Arrow, Sparkle } from "@/components/shared/doodles";
 import { InkButton } from "@/components/shared/studio";
 import { StudioMock } from "./studio-mock";
 
-export function StudioShowcase({ loveLetterPrice }: { loveLetterPrice: number | undefined }) {
+export function StudioShowcase({ envelopePrice }: { envelopePrice: number | undefined }) {
   return (
     <section id="studio" aria-labelledby="studio-title" className="relative mx-auto mt-28 max-w-6xl scroll-mt-24 px-5 sm:mt-36 sm:px-8">
       <div className="text-center">
@@ -15,7 +15,7 @@ export function StudioShowcase({ loveLetterPrice }: { loveLetterPrice: number | 
       </div>
 
       <div className="relative mx-auto mt-14 max-w-[860px]">
-        <StudioMock loveLetterPrice={loveLetterPrice} />
+        <StudioMock envelopePrice={envelopePrice} />
 
         {/* Typewriter notes pointing into the studio, like the scrapbook's */}
         <div aria-hidden="true" className="pointer-events-none max-xl:hidden">
