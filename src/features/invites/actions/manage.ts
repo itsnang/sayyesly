@@ -12,7 +12,12 @@ import { canUseTheme } from "../server/theme-access";
 import { DEFAULT_THEME_ID } from "../themes";
 import { newInviteSlug, newLinkCode } from "../utils";
 
-type SaveResult = { error?: string; id?: string };
+type SaveResult = {
+  error?: string;
+  id?: string;
+  /** The Invite has an Answer, so only the Plan and the wording around it were saved */
+  answered?: boolean;
+};
 type DuplicateResult = { error?: string; id?: string; /** The copy uses the free Theme; the original one is no longer usable */ themeSwapped?: boolean };
 
 const emptyToNull = (v: string) => (v === "" ? null : v);
@@ -44,8 +49,10 @@ export async function saveInvite(inviteId: string | null, input: InviteFormValue
     return { error: "That theme isn't unlocked yet." };
   }
 
+  // "Let them pick" means a calendar and no Time slots: any times still in the
+  // form (from before switching modes) aren't saved.
   const wanted: Date[] = [];
-  for (const slot of values.timeSlots) {
+  for (const slot of values.allowCustomTime ? [] : values.timeSlots) {
     const at = zonedTimeToUtc(slot.date, slot.time, values.timezone);
     if (!at) return { error: "One of the times isn't a real date." };
     wanted.push(at);
@@ -71,6 +78,7 @@ export async function saveInvite(inviteId: string | null, input: InviteFormValue
     question: values.question,
     timezone: values.timezone,
     allowCustomTime: values.allowCustomTime,
+    timeOfDay: values.timeOfDay,
     themeId: values.themeId,
   } satisfies Partial<NewInvite>;
 
@@ -131,7 +139,8 @@ export async function saveInvite(inviteId: string | null, input: InviteFormValue
       .update(invites)
       .set({ ...editable, ...(answered ? {} : lockable), updatedAt: new Date() })
       .where(eq(invites.id, existing.id));
-    return { id: existing.id };
+    // Tell the editor, which may not know yet: they can answer while it's open.
+    return answered ? { id: existing.id, answered: true } : { id: existing.id };
   });
   if (result.error) return result;
 
@@ -184,6 +193,7 @@ export async function duplicateInvite(inviteId: string): Promise<DuplicateResult
       // Old Time slots would already be in the past, so this Invite starts with
       // none; always lets them suggest a time, so it's still sendable as is.
       allowCustomTime: true,
+      timeOfDay: source.timeOfDay,
     })
     .returning({ id: invites.id });
   if (!created) return { error: "Couldn't duplicate. Please try again." };

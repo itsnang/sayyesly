@@ -2,12 +2,14 @@ import { InviteStudio } from "../_components/invite-studio";
 import type { InviteFormValues } from "@/features/invites/schemas";
 import { getThemeChoices } from "@/features/invites/server/theme-access";
 import { DEFAULT_THEME_ID } from "@/features/invites/themes";
+import { DEFAULT_TIME_OF_DAY } from "@/features/invites/utils/time-of-day";
 import { requireUser } from "@/lib/auth/session";
 import { isUploadConfigured } from "@/lib/storage/r2";
 
 const NEW_INVITE: InviteFormValues = {
   recipientName: "",
-  question: "will you have *dinner* with me?",
+  // Empty: the preview shows the selected Theme's example headline until they write their own.
+  question: "",
   message: "",
   imageUrl: "",
   planPlace: "",
@@ -18,6 +20,7 @@ const NEW_INVITE: InviteFormValues = {
   planPhotos: [],
   timezone: "Asia/Phnom_Penh",
   allowCustomTime: true,
+  timeOfDay: DEFAULT_TIME_OF_DAY,
   timeSlots: [],
   themeId: DEFAULT_THEME_ID,
 };

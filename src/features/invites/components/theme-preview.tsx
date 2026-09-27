@@ -6,11 +6,14 @@ import type { InviteFormValues } from "../schemas";
 import { DEFAULT_THEME_ID, getTheme } from "../themes";
 import type { AnswerInput, PublicInvite, SubmitAnswerResult } from "../types";
 import { parseQuestion } from "../utils/question";
+import { DEFAULT_TIME_OF_DAY } from "../utils/time-of-day";
 import { PREVIEW_MESSAGE, PREVIEW_READY } from "./theme-preview-protocol";
 
-function toPreviewInvite(values: InviteFormValues): PublicInvite {
+/** `exampleQuestion` stands in for an empty question, so the Theme never renders blank. */
+function toPreviewInvite(values: InviteFormValues, exampleQuestion: string): PublicInvite {
   const now = Date.now();
-  const timeSlots = values.timeSlots
+  // Same as saving: "Let them pick" shows the calendar and none of the times still in the form.
+  const timeSlots = (values.allowCustomTime ? [] : values.timeSlots)
     .map((slot, i) => ({ id: `preview-${i}`, at: zonedTimeToUtc(slot.date, slot.time, values.timezone || "UTC") }))
     .filter((s): s is { id: string; at: Date } => !!s.at && s.at.getTime() > now)
     .sort((a, b) => a.at.getTime() - b.at.getTime())
@@ -20,7 +23,7 @@ function toPreviewInvite(values: InviteFormValues): PublicInvite {
     slug: "preview",
     themeId: values.themeId,
     recipientName: values.recipientName || "them",
-    question: parseQuestion(values.question || "will you have *dinner* with me?"),
+    question: parseQuestion(values.question || exampleQuestion),
     message: values.message || null,
     imageUrl: values.imageUrl || null,
     plan: {
@@ -35,8 +38,8 @@ function toPreviewInvite(values: InviteFormValues): PublicInvite {
     },
     timezone: values.timezone || "UTC",
     timeSlots,
-    // With nothing chosen yet, still let the preview show the calendar.
-    allowCustomTime: values.allowCustomTime || timeSlots.length === 0,
+    allowCustomTime: values.allowCustomTime,
+    timeOfDay: values.timeOfDay ?? DEFAULT_TIME_OF_DAY,
     answer: null,
     expired: false,
   };
@@ -61,9 +64,9 @@ export function ThemePreview({ fixedValues }: { fixedValues?: InviteFormValues }
   }, [fixedValues]);
 
   if (!values) return null;
-  const invite = toPreviewInvite(values);
-  const theme = getTheme(invite.themeId) ?? getTheme(DEFAULT_THEME_ID);
+  const theme = getTheme(values.themeId) ?? getTheme(DEFAULT_THEME_ID);
   if (!theme) return null;
+  const invite = toPreviewInvite(values, theme.content.example.question);
 
   async function submitAnswer(input: AnswerInput): Promise<SubmitAnswerResult> {
     if (input.answer === "maybe_later") return { preview: true, answer: { answer: "maybe_later", startsAt: null, note: null } };

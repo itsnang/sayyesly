@@ -59,6 +59,7 @@ export const getPublicInvite = cache(async (slug: string): Promise<PublicInvite 
       .filter((slot) => slot.startsAt.getTime() > now.getTime())
       .map((slot) => ({ id: slot.id, startsAt: slot.startsAt.toISOString() })),
     allowCustomTime: invite.allowCustomTime,
+    timeOfDay: invite.timeOfDay,
     answer: invite.answer ? toPublicAnswer(invite.answer) : null,
     expired: !invite.answer && isExpired(invite, now),
   };

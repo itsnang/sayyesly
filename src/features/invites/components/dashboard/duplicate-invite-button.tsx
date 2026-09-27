@@ -1,9 +1,19 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button, buttonClass, cx } from "@/components/shared/ui";
-import { duplicateInvite } from "../../actions";
+import { Button, buttonClass } from "@/components/shared/ui";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { errorMessage } from "@/lib/query/action";
+import { useDuplicateInvite } from "../../hooks/use-invite-mutations";
 
 function DuplicateIcon({ className }: { className?: string }) {
   return (
@@ -15,55 +25,58 @@ function DuplicateIcon({ className }: { className?: string }) {
 }
 
 /**
- * Makes a new Invite from this one: same question, Plan and Theme, a fresh
- * link, no old Time slots and no Answer. Goes straight to the new Invite's
- * Share step, same as creating one from scratch.
+ * Makes a new Invite from this one, after saying what gets copied: same
+ * question, Plan and Theme, a fresh link, no old Time slots and no Answer.
+ * Goes straight to the new Invite's Share step, same as creating one from
+ * scratch. A failure keeps the dialog open with the reason.
  */
 export function DuplicateInviteButton({ inviteId, compact }: { inviteId: string; compact?: boolean }) {
-  const router = useRouter();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function run(e: React.MouseEvent) {
-    e.preventDefault(); // sits inside a row that's otherwise a link to the invite
-    e.stopPropagation();
-    setBusy(true);
-    setError(null);
-    const result = await duplicateInvite(inviteId);
-    if (result.error || !result.id) {
-      const message = result.error ?? "Couldn't duplicate. Please try again.";
-      // The compact (list row) button has no room for inline text, so it falls
-      // back the same way CopyButton does when its own action can't complete.
-      if (compact) window.alert(message);
-      else setError(message);
-      setBusy(false);
-      return;
-    }
-    router.push(`/dashboard/invites/${result.id}?created=1${result.themeSwapped ? "&themeSwapped=1" : ""}`);
-  }
-
-  if (compact) {
-    return (
-      <button
-        type="button"
-        onClick={run}
-        disabled={busy}
-        aria-label="Duplicate this invite"
-        title="Duplicate"
-        className={cx(buttonClass("secondary", "sm", "!px-2"), busy && "animate-pulse")}
-      >
-        <DuplicateIcon />
-      </button>
-    );
-  }
+  const [open, setOpen] = useState(false);
+  const mutation = useDuplicateInvite();
+  const busy = mutation.isPending || mutation.isSuccess;
+  const error = errorMessage(mutation.error);
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Button type="button" variant="secondary" disabled={busy} onClick={run}>
-        <DuplicateIcon />
-        {busy ? "Duplicating…" : "Duplicate as a new invite"}
-      </Button>
-      {error && <span className="text-sm text-red-700">{error}</span>}
-    </div>
+    <AlertDialog
+      open={open}
+      onOpenChange={(next) => {
+        if (busy) return;
+        setOpen(next);
+        if (next) mutation.reset();
+      }}
+    >
+      <AlertDialogTrigger asChild>
+        {compact ? (
+          <button type="button" aria-label="Duplicate this invite" title="Duplicate" className={buttonClass("secondary", "sm", "!px-2")}>
+            <DuplicateIcon />
+          </button>
+        ) : (
+          <Button type="button" variant="secondary">
+            <DuplicateIcon />
+            Duplicate as a new invite
+          </Button>
+        )}
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Duplicate this invite?</AlertDialogTitle>
+          <AlertDialogDescription>
+            You get a new invite with the same question, plan and theme, and a new link to send. Times and the answer aren&apos;t copied, so
+            they pick the time. This one stays as it is.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        {error && (
+          <p role="alert" className="text-[13.5px] font-medium text-red-700">
+            {error}
+          </p>
+        )}
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
+          <Button type="button" disabled={busy} onClick={() => mutation.mutate(inviteId)}>
+            {busy ? "Duplicating…" : "Duplicate"}
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

@@ -3,16 +3,9 @@
 import { useMemo, useState } from "react";
 import { Button, chipClass, cx, Input } from "@/components/shared/ui";
 import { zonedTimeToUtc } from "@/lib/time";
+import { timeLabel } from "../../../themes/shared/format";
 
 export type SlotValue = { date: string; time: string };
-
-const QUICK_TIMES: [string, string][] = [
-  ["12:00", "Noon"],
-  ["18:30", "6:30 PM"],
-  ["19:00", "7:00 PM"],
-  ["19:30", "7:30 PM"],
-  ["20:00", "8:00 PM"],
-];
 
 /** The next `days` calendar days in `timeZone`, as YYYY-MM-DD plus labels. */
 function upcomingDays(timeZone: string, days: number, now: number) {
@@ -35,6 +28,8 @@ function slotLabel(slot: SlotValue, timeZone: string): string {
 
 type TimesFieldProps = {
   slots: SlotValue[];
+  /** HH:mm times to offer in one tap, from the Invite's part of the day */
+  quickTimes: readonly string[];
   timezone: string;
   onAdd: (slot: SlotValue) => void;
   onRemove: (index: number) => void;
@@ -42,11 +37,16 @@ type TimesFieldProps = {
   max: number;
 };
 
-/** Offer evenings in one tap each, or add a specific date and time. */
-export function TimesField({ slots, timezone, onAdd, onRemove, disabled, max }: TimesFieldProps) {
-  const [time, setTime] = useState("19:00");
+/** Offer a time on several days in one tap each, or add a specific date and time. */
+export function TimesField({ slots, quickTimes, timezone, onAdd, onRemove, disabled, max }: TimesFieldProps) {
+  const [picked, setPicked] = useState<string | null>(null);
+  // Any exact time typed in instead of a chip, e.g. "06:00"; empty while a chip is chosen.
+  const [ownTime, setOwnTime] = useState("");
+  // Switching the part of the day swaps the list; fall back to its second time (e.g. 12:00 for lunch).
+  const time = ownTime || (picked && quickTimes.includes(picked) ? picked : (quickTimes[1] ?? quickTimes[0] ?? "19:00"));
   const [customDate, setCustomDate] = useState("");
-  const [customTime, setCustomTime] = useState("19:00");
+  const [customTime, setCustomTime] = useState<string | null>(null);
+  const customTimeValue = customTime ?? time;
   // "Now" is fixed per mount so rendering stays pure.
   const [now] = useState(() => Date.now());
   const days = useMemo(() => upcomingDays(timezone, 10, now), [timezone, now]);
@@ -69,11 +69,33 @@ export function TimesField({ slots, timezone, onAdd, onRemove, disabled, max }: 
         <span className="mr-1.5 text-[12px] text-muted">1</span>Pick a time
       </p>
       <div className="flex flex-wrap gap-1.5">
-        {QUICK_TIMES.map(([value, label]) => (
-          <button key={value} type="button" onClick={() => setTime(value)} aria-pressed={time === value} className={chipClass(time === value, "px-3 py-1.5 text-[13.5px]")}>
-            {label}
-          </button>
-        ))}
+        {quickTimes.map((value) => {
+          const on = !ownTime && time === value;
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => {
+                setOwnTime("");
+                setPicked(value);
+              }}
+              aria-pressed={on}
+              className={chipClass(on, "px-3 py-1.5 text-[13.5px]")}
+            >
+              {timeLabel(value)}
+            </button>
+          );
+        })}
+        <label className={cx(chipClass(false, "flex items-center gap-2 py-0.5 pr-1.5 pl-3 text-[13.5px]"), ownTime && "border-ink ring-1 ring-ink")}>
+          Other
+          <input
+            type="time"
+            value={ownTime}
+            onChange={(e) => setOwnTime(e.target.value)}
+            aria-label="Another time"
+            className="min-w-0 rounded-[4px] bg-transparent py-1 text-[13.5px] text-ink outline-none focus-visible:bg-surface"
+          />
+        </label>
       </div>
 
       <p className="mt-5 mb-2 text-[14px] font-medium text-ink">
@@ -107,12 +129,12 @@ export function TimesField({ slots, timezone, onAdd, onRemove, disabled, max }: 
         </summary>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <Input type="date" value={customDate} onChange={(e) => setCustomDate(e.target.value)} className="w-auto flex-1" aria-label="Date" />
-          <Input type="time" value={customTime} onChange={(e) => setCustomTime(e.target.value)} className="w-auto" aria-label="Time" />
+          <Input type="time" value={customTimeValue} onChange={(e) => setCustomTime(e.target.value)} className="w-auto" aria-label="Time" />
           <Button
             variant="secondary"
-            disabled={!customDate || !customTime || full}
+            disabled={!customDate || !customTimeValue || full}
             onClick={() => {
-              const s = { date: customDate, time: customTime };
+              const s = { date: customDate, time: customTimeValue };
               if (indexOf(s) < 0) onAdd(s);
               setCustomDate("");
             }}

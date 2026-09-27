@@ -38,7 +38,7 @@ function Receipt({ title, number, children, className }: { title: string; number
   );
 }
 
-export function Pricing({ loveLetterPrice }: { loveLetterPrice: number | undefined }) {
+export function Pricing({ envelopePrice }: { envelopePrice: number | undefined }) {
   return (
     <section id="pricing" aria-labelledby="pricing-title" className="relative mx-auto mt-28 max-w-6xl scroll-mt-24 px-5 sm:mt-36 sm:px-8">
       <div className="text-center">
@@ -72,10 +72,10 @@ export function Pricing({ loveLetterPrice }: { loveLetterPrice: number | undefin
           </Link>
         </Receipt>
 
-        {loveLetterPrice !== undefined && (
+        {envelopePrice !== undefined && (
         <Receipt title="Paid themes" number="0002" className="rotate-[1.2deg] md:mt-10">
           <ul className="space-y-2">
-            <Line item="love letter theme" price={formatUsd(loveLetterPrice)} />
+            <Line item="envelope theme" price={formatUsd(envelopePrice)} />
             <Line item="sealed envelope" price="incl." />
             <Line item="handwritten letter" price="incl." />
             <Line item="your plan & photos inside" price="incl." />
@@ -83,7 +83,7 @@ export function Pricing({ loveLetterPrice }: { loveLetterPrice: number | undefin
           </ul>
           <p aria-hidden="true" className="my-4 overflow-hidden text-ink/40 whitespace-nowrap">- - - - - - - - - - - - - - - - - - - - - - - -</p>
           <ul>
-            <Line item="TOTAL, ONCE" price={formatUsd(loveLetterPrice)} strong />
+            <Line item="TOTAL, ONCE" price={formatUsd(envelopePrice)} strong />
           </ul>
           <p className="mt-4 text-center text-[12px] text-muted">yours for every invite after that.</p>
           <p aria-hidden="true" className="my-4 overflow-hidden text-ink/40 whitespace-nowrap">- - - - - - - - - - - - - - - - - - - - - - - -</p>
@@ -93,7 +93,7 @@ export function Pricing({ loveLetterPrice }: { loveLetterPrice: number | undefin
             <span className="text-muted">scan with any KHQR banking app. the theme unlocks the moment it&apos;s paid.</span>
           </p>
           <Link
-            href="/demo?theme=love-letter"
+            href="/demo?theme=envelope"
             className="mt-5 block rounded-[4px] border-[1.5px] border-ink py-2 text-center text-[12.5px] tracking-[0.08em] uppercase transition hover:bg-ink hover:text-canvas"
           >
             Try it first
