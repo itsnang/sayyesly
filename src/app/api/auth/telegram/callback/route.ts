@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/env";
 import { takePendingLogin } from "@/lib/auth/oauth-state";
-import { createSession } from "@/lib/auth/session";
+import { createSession, safeNextPath } from "@/lib/auth/session";
 import { BOT_ACCESS_SCOPE, exchangeCode, isTelegramLoginConfigured, verifyIdToken } from "@/lib/auth/telegram";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
@@ -54,5 +54,6 @@ export async function GET(req: NextRequest) {
   if (!user) return redirectTo("/login?error=failed");
 
   await createSession(user.id);
-  return redirectTo(pending.next);
+  // Checked when the login started too; checking again here is cheap and this is the redirect that matters.
+  return redirectTo(safeNextPath(pending.next));
 }

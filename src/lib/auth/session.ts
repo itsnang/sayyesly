@@ -67,7 +67,4 @@ export async function requireUser(next = "/dashboard"): Promise<User> {
 }
 
 /** Only same-site paths are allowed as post-login destinations (no open redirects). */
-export function safeNextPath(next: string | null | undefined, fallback = "/dashboard"): string {
-  if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) return fallback;
-  return next;
-}
+export { safeNextPath } from "./next-path";

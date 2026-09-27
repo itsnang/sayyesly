@@ -3,6 +3,7 @@ import { asc, eq } from "drizzle-orm";
 import { connection } from "next/server";
 import { cache } from "react";
 import { db } from "@/lib/db";
+import { safeHttpUrl } from "@/lib/validation";
 import { invites, inviteTimeSlots, type AnswerRow } from "@/lib/db/schema";
 import type { PublicAnswer, PublicInvite } from "../types";
 import { isExpired, parseQuestion } from "../utils";
@@ -49,7 +50,7 @@ export const getPublicInvite = cache(async (slug: string): Promise<PublicInvite 
     plan: {
       place: invite.planPlace,
       activity: invite.planActivity,
-      mapUrl: invite.planMapUrl,
+      mapUrl: safeHttpUrl(invite.planMapUrl),
       dressCode: invite.planDressCode,
       notes: invite.planNotes,
       photos: invite.planPhotos,

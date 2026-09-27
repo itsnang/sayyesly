@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { zonedTimeToUtc } from "@/lib/time";
+import { safeHttpUrl } from "@/lib/validation";
 import type { InviteFormValues } from "../schemas";
 import { DEFAULT_THEME_ID, getTheme } from "../themes";
 import type { AnswerInput, PublicInvite, SubmitAnswerResult } from "../types";
@@ -29,7 +30,7 @@ function toPreviewInvite(values: InviteFormValues, exampleQuestion: string): Pub
     plan: {
       place: values.planPlace || null,
       activity: values.planActivity || null,
-      mapUrl: values.planMapUrl || null,
+      mapUrl: safeHttpUrl(values.planMapUrl),
       dressCode: values.planDressCode || null,
       notes: values.planNotes || null,
       photos: values.planPhotos
