@@ -44,7 +44,7 @@ export function LandingPage({ envelopePrice }: { envelopePrice: number | undefin
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-10 gap-y-4 px-5 py-9 sm:px-8">
           <Wordmark className="h-[38px] w-auto" />
           <p className="font-mono text-[12px] leading-relaxed text-muted">
-            made with love · 2026
+            © 2026
             <br />
             answers arrive on telegram
           </p>
