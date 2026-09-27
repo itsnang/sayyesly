@@ -5,7 +5,7 @@ import { OG_IMAGE_SIZE } from "@/features/invites/themes";
 import { SITE_TAGLINE } from "@/lib/site";
 
 export const alt =
-  "sayyesly: two invites on phones, a kitten Theme and an envelope invite shown sealed and opened";
+  "sayyesly: an Envelope invite on three phones: the envelope with the question, the letter it opens into, and their yes";
 export const size = OG_IMAGE_SIZE;
 export const contentType = "image/png";
 
@@ -42,12 +42,12 @@ function Phone({ src, left, top, rotate, scale = 1 }: { src: string; left: numbe
 
 export default async function Image() {
   // Literal paths, so the bundler traces only these files into the image route.
-  const [geist, wordmark, kitten, envelope, letter] = await Promise.all([
+  const [geist, wordmark, envelope, letter, answered] = await Promise.all([
     readFile(join(process.cwd(), "assets/Geist-Regular.ttf")),
     readFile(join(process.cwd(), "public/brand/wordmark.png"), "base64").then(dataUrl),
-    readFile(join(process.cwd(), "public/landing/step-ask.png"), "base64").then(dataUrl),
     readFile(join(process.cwd(), "public/landing/envelope-card.png"), "base64").then(dataUrl),
     readFile(join(process.cwd(), "public/landing/envelope-letter.png"), "base64").then(dataUrl),
+    readFile(join(process.cwd(), "public/landing/envelope-yes.png"), "base64").then(dataUrl),
   ]);
 
   // The wordmark image has wide transparent margins; this box crops to the lettering
@@ -112,10 +112,10 @@ export default async function Image() {
           </div>
         </div>
 
-        {/* Envelope, sealed behind and opened in front, then Kitten Soft in front of both. */}
-        <Phone src={envelope} left={958} top={92} rotate={9} />
-        <Phone src={letter} left={806} top={66} rotate={2} />
-        <Phone src={kitten} left={626} top={104} rotate={-7} scale={FRONT_SCALE} />
+        {/* One Envelope invite, back to front: their yes, the envelope with the question, the letter in front. */}
+        <Phone src={answered} left={958} top={92} rotate={9} />
+        <Phone src={envelope} left={806} top={66} rotate={2} />
+        <Phone src={letter} left={626} top={104} rotate={-7} scale={FRONT_SCALE} />
       </div>
     ),
     { ...size, fonts: [{ name: "Geist", data: geist, style: "normal", weight: 400 }] },
