@@ -15,5 +15,5 @@ export default async function Home() {
   // (and the build never needs the database).
   await connection();
   const prices = await landingThemePrices();
-  return <LandingPage loveLetterPrice={prices["love-letter"]} />;
+  return <LandingPage envelopePrice={prices.envelope} />;
 }

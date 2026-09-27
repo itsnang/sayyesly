@@ -15,15 +15,15 @@ export const FIBRES =
 export function PaperFilters() {
   return (
     <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
-      <filter id="ll-deckle" x="-5%" y="-5%" width="110%" height="110%">
+      <filter id="env-deckle" x="-5%" y="-5%" width="110%" height="110%">
         <feTurbulence type="fractalNoise" baseFrequency=".08" numOctaves="4" seed="3" />
         <feDisplacementMap in="SourceGraphic" scale="7" />
       </filter>
-      <filter id="ll-ink">
+      <filter id="env-ink">
         <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="1" seed="2" />
         <feDisplacementMap in="SourceGraphic" scale="1.4" />
       </filter>
-      <filter id="ll-wash" x="-20%" y="-20%" width="140%" height="140%">
+      <filter id="env-wash" x="-20%" y="-20%" width="140%" height="140%">
         <feTurbulence type="fractalNoise" baseFrequency=".06" numOctaves="3" seed="9" />
         <feDisplacementMap in="SourceGraphic" scale="6" />
       </filter>
@@ -33,7 +33,7 @@ export function PaperFilters() {
 
 const inkStroke = {
   fill: "none",
-  stroke: "var(--ll-ink)",
+  stroke: "var(--env-ink)",
   strokeWidth: 1.7,
   strokeLinecap: "round",
   strokeLinejoin: "round",
@@ -44,8 +44,8 @@ type DoodleProps = { size?: number; style?: CSSProperties };
 export function Sun({ size = 64, style }: DoodleProps) {
   return (
     <svg viewBox="0 0 64 64" width={size} height={size} aria-hidden="true" style={style}>
-      <ellipse cx="32" cy="33" rx="10" ry="11" fill="var(--ll-sun)" opacity=".9" filter="url(#ll-wash)" />
-      <g {...inkStroke} strokeWidth={1.3} stroke="var(--ll-graphite)" filter="url(#ll-ink)">
+      <ellipse cx="32" cy="33" rx="10" ry="11" fill="var(--env-sun)" opacity=".9" filter="url(#env-wash)" />
+      <g {...inkStroke} strokeWidth={1.3} stroke="var(--env-graphite)" filter="url(#env-ink)">
         <path d="M32 6v9M32 51v8M6 33h9M50 33h8M13 13l6 6M45 46l6 6M13 53l6-6M46 19l5-5" />
       </g>
     </svg>
@@ -58,9 +58,9 @@ export function Star({ size = 22, style }: DoodleProps) {
       <path
         d="M12 2.5l2.6 6.1 6.6.5-5 4.3 1.6 6.5L12 16.4l-5.8 3.5 1.6-6.5-5-4.3 6.6-.5z"
         {...inkStroke}
-        fill="var(--ll-sky)"
+        fill="var(--env-sky)"
         strokeWidth={1.3}
-        filter="url(#ll-ink)"
+        filter="url(#env-ink)"
       />
     </svg>
   );
@@ -69,27 +69,27 @@ export function Star({ size = 22, style }: DoodleProps) {
 export function Leaf({ size = 26, style }: DoodleProps) {
   return (
     <svg viewBox="0 0 30 30" width={size} height={size} aria-hidden="true" style={style}>
-      <path d="M5 25C5 12 13 5 26 4c0 13-8 21-21 21z" fill="var(--ll-leaf)" opacity=".85" filter="url(#ll-wash)" />
-      <path d="M6 24C12 17 17 12 24 6" {...inkStroke} strokeWidth={1.2} filter="url(#ll-ink)" />
+      <path d="M5 25C5 12 13 5 26 4c0 13-8 21-21 21z" fill="var(--env-leaf)" opacity=".85" filter="url(#env-wash)" />
+      <path d="M6 24C12 17 17 12 24 6" {...inkStroke} strokeWidth={1.2} filter="url(#env-ink)" />
     </svg>
   );
 }
 
 export function FlowerRow({ width = 170, style }: { width?: number; style?: CSSProperties }) {
-  const heads = ["var(--ll-sky)", "var(--ll-petal)", "var(--ll-sun)", "var(--ll-petal)", "var(--ll-sky)"];
+  const heads = ["var(--env-sky)", "var(--env-petal)", "var(--env-sun)", "var(--env-petal)", "var(--env-sky)"];
   return (
     <svg viewBox="0 0 170 40" width={width} aria-hidden="true" style={style}>
-      <path d="M4 38c30-2 130-2 162 0" {...inkStroke} strokeWidth={1.1} stroke="var(--ll-graphite)" filter="url(#ll-ink)" />
+      <path d="M4 38c30-2 130-2 162 0" {...inkStroke} strokeWidth={1.1} stroke="var(--env-graphite)" filter="url(#env-ink)" />
       {heads.map((color, i) => {
         const x = 20 + i * 32;
         const top = 10 + (i % 2) * 5;
         return (
           <g key={i}>
-            <path d={`M${x} 37C${x - 1} 30 ${x + 1} 22 ${x} ${top + 5}`} {...inkStroke} strokeWidth={1.1} stroke="var(--ll-leaf-ink)" />
-            <path d={`M${x} 30c-4-1-6-3-7-6 3 0 6 2 7 6z`} fill="var(--ll-leaf)" />
-            <circle cx={x} cy={top} r="5.5" fill={color} opacity=".9" filter="url(#ll-wash)" />
-            <circle cx={x} cy={top} r="5.5" {...inkStroke} strokeWidth={1} filter="url(#ll-ink)" />
-            <circle cx={x} cy={top} r="1.3" fill="var(--ll-ink)" />
+            <path d={`M${x} 37C${x - 1} 30 ${x + 1} 22 ${x} ${top + 5}`} {...inkStroke} strokeWidth={1.1} stroke="var(--env-leaf-ink)" />
+            <path d={`M${x} 30c-4-1-6-3-7-6 3 0 6 2 7 6z`} fill="var(--env-leaf)" />
+            <circle cx={x} cy={top} r="5.5" fill={color} opacity=".9" filter="url(#env-wash)" />
+            <circle cx={x} cy={top} r="5.5" {...inkStroke} strokeWidth={1} filter="url(#env-ink)" />
+            <circle cx={x} cy={top} r="1.3" fill="var(--env-ink)" />
           </g>
         );
       })}
@@ -100,9 +100,9 @@ export function FlowerRow({ width = 170, style }: { width?: number; style?: CSSP
 export function PaperPlane({ size = 90, style }: DoodleProps) {
   return (
     <svg viewBox="0 0 100 70" width={size} height={size * 0.7} aria-hidden="true" style={style}>
-      <path d="M4 38 96 6 58 64 44 44z" fill="var(--ll-card)" />
-      <path d="M44 44 96 6 36 50z" fill="var(--ll-paper-deep)" />
-      <g {...inkStroke} strokeWidth={1.4} filter="url(#ll-ink)">
+      <path d="M4 38 96 6 58 64 44 44z" fill="var(--env-card)" />
+      <path d="M44 44 96 6 36 50z" fill="var(--env-paper-deep)" />
+      <g {...inkStroke} strokeWidth={1.4} filter="url(#env-ink)">
         <path d="M4 38 96 6 58 64 44 44z" />
         <path d="M44 44 96 6M44 44l-8 6 2-10" />
       </g>
@@ -113,7 +113,7 @@ export function PaperPlane({ size = 90, style }: DoodleProps) {
 export function Arrow({ width = 54, style }: { width?: number; style?: CSSProperties }) {
   return (
     <svg viewBox="0 0 60 30" width={width} aria-hidden="true" style={{ overflow: "visible", ...style }}>
-      <g {...inkStroke} strokeWidth={1.4} filter="url(#ll-ink)">
+      <g {...inkStroke} strokeWidth={1.4} filter="url(#env-ink)">
         <path d="M3 24C18 6 36 4 54 12" />
         <path d="M46 5l8 7-10 3" />
       </g>
@@ -141,12 +141,12 @@ export function InkCircle({ draw = true, pad = 10 }: { draw?: boolean; pad?: num
       <path
         d="M30 9C80-2 162 1 190 19c16 12-6 33-72 37C58 60 7 50 6 30 5 17 26 8 64 5"
         fill="none"
-        stroke="var(--ll-ink)"
+        stroke="var(--env-ink)"
         strokeWidth="1.9"
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
         pathLength={1}
-        style={draw ? { strokeDasharray: 1, strokeDashoffset: 1, animation: "ll-draw .5s ease-out forwards" } : undefined}
+        style={draw ? { strokeDasharray: 1, strokeDashoffset: 1, animation: "env-draw .5s ease-out forwards" } : undefined}
       />
     </svg>
   );
@@ -183,7 +183,7 @@ export function Photo({
       <div style={{ position: "relative", aspectRatio: "4 / 3", overflow: "hidden" }}>
         <Image src={src} unoptimized={!isOptimizable(src)} alt={alt} fill sizes={sizes} priority={priority ?? false} style={{ objectFit: "cover" }} />
       </div>
-      <span aria-hidden="true" style={{ position: "absolute", left: -7, top: -7, fontFamily: "var(--ll-print)", fontSize: 13, color: "var(--ll-graphite)", lineHeight: 1 }}>
+      <span aria-hidden="true" style={{ position: "absolute", left: -7, top: -7, fontFamily: "var(--env-print)", fontSize: 13, color: "var(--env-graphite)", lineHeight: 1 }}>
         +
       </span>
       {tape && (

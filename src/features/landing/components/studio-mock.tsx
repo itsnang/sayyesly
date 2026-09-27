@@ -32,7 +32,7 @@ function ThemeCard({ src, name, price, selected }: { src: string; name: string; 
  * The invite studio as a Creator sees it, drawn with the studio's own parts
  * (inputs, Theme cards, rows, the iPhone preview on the grey stage).
  */
-export function StudioMock({ loveLetterPrice, className }: { loveLetterPrice: number | undefined; className?: string }) {
+export function StudioMock({ envelopePrice, className }: { envelopePrice: number | undefined; className?: string }) {
   const words = ["will", "you", "have", "dinner", "with", "me?"];
   return (
     <div
@@ -80,8 +80,8 @@ export function StudioMock({ loveLetterPrice, className }: { loveLetterPrice: nu
             </div>
             <div className="mt-3 flex gap-3">
               <ThemeCard src="/landing/step-ask.png" name="Kitten Soft" price="Free" selected />
-              {loveLetterPrice !== undefined && (
-                <ThemeCard src="/landing/theme-love-letter.png" name="Love Letter" price={formatUsd(loveLetterPrice)} />
+              {envelopePrice !== undefined && (
+                <ThemeCard src="/landing/theme-envelope.png" name="Envelope" price={formatUsd(envelopePrice)} />
               )}
             </div>
           </div>

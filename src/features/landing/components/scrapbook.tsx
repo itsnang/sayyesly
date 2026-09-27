@@ -40,8 +40,8 @@ export function Scrapbook() {
               className="bottom-6 left-[calc(50%-235px)] h-[250px] w-[190px] -rotate-[7deg] max-lg:hidden"
             />
             <PaperCard
-              src="/landing/theme-love-letter-open.png"
-              alt="the Love Letter Theme, opened into a letter with the plan"
+              src="/landing/theme-envelope-open.png"
+              alt="the Envelope Theme, opened into a letter with the plan"
               position="50% 0%"
               className="right-[calc(50%-240px)] bottom-2 h-[250px] w-[190px] rotate-[6deg] max-lg:hidden"
             />

@@ -8,8 +8,8 @@ import { COLORS } from "./palette";
 
 const { diary: PAGE, ink: INK, graphite: GRAPHITE } = COLORS;
 
-/** Love Letter's link preview: the question handwritten on a diary page. Never shows the Recipient's name. */
-export async function renderLoveLetterOgImage({ question }: OgImageInput) {
+/** Envelope's link preview: the question handwritten on a diary page. Never shows the Recipient's name. */
+export async function renderEnvelopeOgImage({ question }: OgImageInput) {
   const [marker, print] = await Promise.all([
     readFile(join(process.cwd(), "assets/Mansalva-Regular.ttf")),
     readFile(join(process.cwd(), "assets/Geist-Regular.ttf")),

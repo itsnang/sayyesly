@@ -1,11 +1,11 @@
 import type { ThemeDefinition } from "../types";
 import { EXAMPLE_PLAN_PHOTOS } from "../shared/example";
-import { LoveLetterInvite } from "./love-letter-invite";
+import { EnvelopeInvite } from "./envelope-invite";
 
-export const loveLetter: ThemeDefinition = {
-  id: "love-letter",
-  name: "Love Letter",
-  thumbnail: "/landing/theme-love-letter.png",
+export const envelope: ThemeDefinition = {
+  id: "envelope",
+  name: "Envelope",
+  thumbnail: "/landing/theme-envelope.png",
   content: {
     question: { label: "Invitation headline" },
     picture: { label: "Photo next to your letter", whenEmpty: "just the letter" },
@@ -18,5 +18,5 @@ export const loveLetter: ThemeDefinition = {
       planPhotos: EXAMPLE_PLAN_PHOTOS,
     },
   },
-  Invite: LoveLetterInvite,
+  Invite: EnvelopeInvite,
 };

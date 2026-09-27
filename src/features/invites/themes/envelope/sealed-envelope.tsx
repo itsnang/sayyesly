@@ -15,7 +15,7 @@ const FADE_MS = 520;
  * The sealed envelope the Recipient opens first. One tap lifts the flap and slides
  * the card out with the question; after a moment the letter itself opens.
  */
-export function Envelope({ invite, onRead }: { invite: PublicInvite; onRead: () => void }) {
+export function SealedEnvelope({ invite, onRead }: { invite: PublicInvite; onRead: () => void }) {
   const [stage, setStage] = useState<Stage>("sealed");
   const lifted = stage !== "sealed";
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -46,7 +46,7 @@ export function Envelope({ invite, onRead }: { invite: PublicInvite; onRead: () 
         alignItems: "center",
         justifyContent: "center",
         padding: "120px 20px 48px",
-        background: `${GRAIN}, var(--ll-table)`,
+        background: `${GRAIN}, var(--env-table)`,
         opacity: stage === "leaving" ? 0 : 1,
         transition: `opacity ${FADE_MS}ms ease`,
       }}
@@ -65,7 +65,7 @@ export function Envelope({ invite, onRead }: { invite: PublicInvite; onRead: () 
           padding: 0,
           cursor: stage === "sealed" ? "pointer" : "default",
           perspective: 1000,
-          animation: "ll-rise .8s ease-out both",
+          animation: "env-rise .8s ease-out both",
         }}
       >
         {/* Its shadow on the table */}
@@ -83,7 +83,7 @@ export function Envelope({ invite, onRead }: { invite: PublicInvite; onRead: () 
         />
 
         {/* Inside of the envelope */}
-        <Piece clip="inset(0)" tone="var(--ll-envelope-in)" z={0} />
+        <Piece clip="inset(0)" tone="var(--env-envelope-in)" z={0} />
 
         {/* Flap: closed over the card, then folded up behind it */}
         <span
@@ -99,7 +99,7 @@ export function Envelope({ invite, onRead }: { invite: PublicInvite; onRead: () 
             transitionDelay: lifted ? "0s, .3s" : "0s",
           }}
         >
-          <Piece clip="polygon(0 0, 100% 0, 54% 96%, 50% 100%, 46% 96%)" tone="var(--ll-envelope-flap)" z={0} shadow="0 3px 3px rgba(90,68,36,.26)" />
+          <Piece clip="polygon(0 0, 100% 0, 54% 96%, 50% 100%, 46% 96%)" tone="var(--env-envelope-flap)" z={0} shadow="0 3px 3px rgba(90,68,36,.26)" />
         </span>
 
         {/* The card */}
@@ -115,7 +115,7 @@ export function Envelope({ invite, onRead }: { invite: PublicInvite; onRead: () 
             transition: "transform .9s .38s cubic-bezier(.3,.7,.25,1)",
           }}
         >
-          <Piece clip="inset(0)" tone="var(--ll-card)" z={0} shadow="0 -1px 3px rgba(60,48,32,.12)" />
+          <Piece clip="inset(0)" tone="var(--env-card)" z={0} shadow="0 -1px 3px rgba(60,48,32,.12)" />
           <span
               style={{
                 position: "absolute",
@@ -126,10 +126,10 @@ export function Envelope({ invite, onRead }: { invite: PublicInvite; onRead: () 
                 justifyContent: "center",
                 height: "100%",
                 padding: "12% 10% 0",
-                fontFamily: "var(--ll-marker)",
+                fontFamily: "var(--env-marker)",
                 fontSize: sizeForQuestion(question, [30, 36, 44]),
                 lineHeight: 1.08,
-                color: "var(--ll-ink)",
+                color: "var(--env-ink)",
                 textAlign: "center",
                 textWrap: "balance",
               }}
@@ -139,10 +139,10 @@ export function Envelope({ invite, onRead }: { invite: PublicInvite; onRead: () 
         </span>
 
         {/* Pocket: the side flaps, then the bottom flap over them */}
-        <Piece clip="polygon(0 0, 49% 56%, 51% 56%, 100% 0, 100% 100%, 0 100%)" tone="var(--ll-envelope)" z={3} shadow="0 -2px 3px rgba(90,68,36,.2)" />
+        <Piece clip="polygon(0 0, 49% 56%, 51% 56%, 100% 0, 100% 100%, 0 100%)" tone="var(--env-envelope)" z={3} shadow="0 -2px 3px rgba(90,68,36,.2)" />
         <Piece
           clip="polygon(0 100%, 3% 90%, 40% 47%, 50% 43%, 60% 47%, 97% 90%, 100% 100%)"
-          tone="var(--ll-envelope-front)"
+          tone="var(--env-envelope-front)"
           z={4}
           shadow="0 -3px 4px rgba(90,68,36,.26)"
         />
@@ -157,12 +157,12 @@ export function Envelope({ invite, onRead }: { invite: PublicInvite; onRead: () 
               flexDirection: "column",
               alignItems: "center",
               gap: 5,
-              fontFamily: "var(--ll-print)",
+              fontFamily: "var(--env-print)",
               fontSize: 10.5,
               fontWeight: 500,
               letterSpacing: ".14em",
               textTransform: "uppercase",
-              color: "var(--ll-ink)",
+              color: "var(--env-ink)",
             }}
           >
             {details.map((d) => (
@@ -175,9 +175,9 @@ export function Envelope({ invite, onRead }: { invite: PublicInvite; onRead: () 
         aria-live="polite"
         style={{
           marginTop: 34,
-          fontFamily: "var(--ll-pen)",
+          fontFamily: "var(--env-pen)",
           fontSize: 24,
-          color: "var(--ll-ink)",
+          color: "var(--env-ink)",
           minHeight: 30,
           opacity: stage === "sealed" ? 1 : 0,
           transition: "opacity .3s ease",
@@ -195,7 +195,7 @@ function Piece({ clip, tone, z, shadow }: { clip: string; tone: string; z: numbe
     position: "absolute",
     inset: 0,
     zIndex: z,
-    filter: `url(#ll-deckle)${shadow ? ` drop-shadow(${shadow})` : ""}`,
+    filter: `url(#env-deckle)${shadow ? ` drop-shadow(${shadow})` : ""}`,
     pointerEvents: "none",
   };
   return (

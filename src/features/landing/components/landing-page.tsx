@@ -11,8 +11,8 @@ import { Story } from "./story";
 import { StudioShowcase } from "./studio-showcase";
 import { ThemesBoard } from "./themes-board";
 
-/** `loveLetterPrice` is undefined while Love Letter isn't on sale; the page then leaves it out. */
-export function LandingPage({ loveLetterPrice }: { loveLetterPrice: number | undefined }) {
+/** `envelopePrice` is undefined while Envelope isn't on sale; the page then leaves it out. */
+export function LandingPage({ envelopePrice }: { envelopePrice: number | undefined }) {
   return (
     <div className="studio w-full overflow-x-clip">
       <SiteNav />
@@ -20,9 +20,9 @@ export function LandingPage({ loveLetterPrice }: { loveLetterPrice: number | und
         <Hero />
         <Scrapbook />
         <HowItGoes />
-        <StudioShowcase loveLetterPrice={loveLetterPrice} />
-        <ThemesBoard loveLetterPrice={loveLetterPrice} />
-        <Pricing loveLetterPrice={loveLetterPrice} />
+        <StudioShowcase envelopePrice={envelopePrice} />
+        <ThemesBoard envelopePrice={envelopePrice} />
+        <Pricing envelopePrice={envelopePrice} />
         <Story />
         <Faq />
 

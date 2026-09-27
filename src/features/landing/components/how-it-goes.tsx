@@ -15,8 +15,8 @@ const STEPS = [
   },
   {
     title: "Or it comes as a letter",
-    body: "With Love Letter, your question arrives in a sealed envelope that opens into a handwritten letter with the plan.",
-    src: "/landing/theme-love-letter.png",
+    body: "With Envelope, your question arrives sealed, and opens into a handwritten letter with the plan.",
+    src: "/landing/theme-envelope.png",
     position: "50% 35%",
     note: "one of the Themes",
   },
