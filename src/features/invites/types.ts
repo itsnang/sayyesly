@@ -60,3 +60,9 @@ export type SubmitAnswerResult = {
 };
 
 export type ActionResult = { error?: string };
+
+/** Where an Invite's Answer will be sent, as the Share drawer shows it. */
+export type ShareState = {
+  canDm: boolean;
+  linkedGroups: { id: string; title: string | null }[];
+};

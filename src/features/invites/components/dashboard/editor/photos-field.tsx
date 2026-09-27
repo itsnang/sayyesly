@@ -5,7 +5,8 @@ import { useRef, useState, type ReactNode } from "react";
 import { buttonClass, cx, inputClass } from "@/components/shared/ui";
 import { isOptimizable } from "@/lib/media";
 import { ImageIcon, useDropTarget } from "../image-field";
-import { ACCEPTED_IMAGE_TYPES, imageFiles, uploadImage } from "../upload-image";
+import { useImageUpload } from "../../../hooks/use-image-upload";
+import { ACCEPTED_IMAGE_TYPES, imageFiles } from "../upload-image";
 
 type Photo = { key: string; url: string };
 type Pending = { key: string; preview: string; progress: number };
@@ -53,6 +54,7 @@ export function PhotosField({ photos, max, uploadsEnabled, disabled, onAdd, onRe
   // anything else is a link someone is typing, so it keeps its input.
   const [settled, setSettled] = useState(() => new Set(photos.map((p) => p.url).filter(Boolean)));
   const room = max - photos.length - pending.length;
+  const images = useImageUpload();
 
   async function addFiles(files: File[]) {
     setUploadError(null);
@@ -62,13 +64,14 @@ export function PhotosField({ photos, max, uploadsEnabled, disabled, onAdd, onRe
 
     // One at a time, so each gets the full connection and keeps its order.
     for (const { file, key, preview } of batch) {
-      const outcome = await uploadImage(file, (progress) => setPending((p) => p.map((x) => (x.key === key ? { ...x, progress } : x))));
-      setPending((p) => p.filter((x) => x.key !== key));
+      const result = await images.upload(file, (progress) => setPending((p) => p.map((x) => (x.key === key ? { ...x, progress } : x))));
       URL.revokeObjectURL(preview);
-      if ("url" in outcome) {
-        setSettled((prev) => new Set(prev).add(outcome.url));
-        onAdd(outcome.url);
-      } else setUploadError(outcome.error);
+      if ("cancelled" in result) return; // left the page mid-upload: stop, add nothing
+      setPending((p) => p.filter((x) => x.key !== key));
+      if ("url" in result) {
+        setSettled((prev) => new Set(prev).add(result.url));
+        onAdd(result.url);
+      } else setUploadError(result.error);
     }
   }
 

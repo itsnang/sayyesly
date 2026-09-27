@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { PublicInvite } from "../../types";
-import type { PlanChoice } from "./use-invite-answer";
+import type { PlanChoice } from "../../hooks/use-invite-answer";
 
 /** How many months ahead the Recipient can page the calendar. */
 const MONTHS_AHEAD = 2;

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Architects_Daughter, Caveat, Courier_Prime, Fraunces, Instrument_Sans } from "next/font/google";
 import { connection } from "next/server";
 import { BASE_OPEN_GRAPH, BASE_TWITTER, SITE_DESCRIPTION, SITE_HOME_TITLE, SITE_TITLE, SITE_URL } from "@/lib/site";
+import { QueryProvider } from "@/lib/query/query-provider";
 import "./globals.css";
 
 const caveat = Caveat({
@@ -60,7 +61,9 @@ export default async function RootLayout({
       lang="en"
       className={`${caveat.variable} ${architectsDaughter.variable} ${instrumentSans.variable} ${fraunces.variable} ${courierPrime.variable} h-full`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <QueryProvider>{children}</QueryProvider>
+      </body>
     </html>
   );
 }

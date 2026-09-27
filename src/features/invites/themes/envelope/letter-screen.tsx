@@ -5,7 +5,7 @@ import type { PublicInvite } from "../../types";
 import { NOTE_MAX_LENGTH } from "../../utils/answer";
 import { timesFor } from "../../utils/time-of-day";
 import { formatInZone, MONTHS, timeLabel } from "../shared/format";
-import type { PlanChoice } from "../shared/use-invite-answer";
+import type { PlanChoice } from "../../hooks/use-invite-answer";
 import { isoDate, usePlanSelection } from "../shared/use-plan-selection";
 import { Label, MapLink, penStyle } from "./lettering";
 import { Arrow, FlowerRow, InkCircle, Leaf, PaperPlane, Photo, Star, Sun } from "./ornaments";

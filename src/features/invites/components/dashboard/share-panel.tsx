@@ -1,6 +1,9 @@
+"use client";
+
 import { buttonClass, inputClass, Note } from "@/components/shared/ui";
+import { useShareState } from "../../hooks/use-share-state";
+import type { ShareState } from "../../types";
 import { CopyButton } from "./copy-button";
-import { RefreshOnFocus } from "./refresh-on-focus";
 
 /**
  * The Share drawer's content: the invite link, ready to send, and one tap to
@@ -9,27 +12,29 @@ import { RefreshOnFocus } from "./refresh-on-focus";
  * The send actions (copy / Send in Telegram) are gated on having *somewhere*
  * for the Answer to go: the bot DM'ing the Creator, or at least one Linked
  * group. Sending the link with neither set up means the Answer arrives with
- * nowhere to go, silently. `RefreshOnFocus` re-reads both as soon as either
- * changes, so pressing Start or linking a group unlocks this on return,
+ * nowhere to go, silently. `useShareState` re-reads both when the tab comes
+ * back into view, so pressing Start or linking a group unlocks this on return,
  * without a manual reload.
  */
 export function SharePanel({
+  inviteId,
   shareUrl,
   linkCode,
   botUsername,
   recipientName,
-  linkedGroups,
-  canDm,
+  initialShareState,
   justCreated,
 }: {
+  inviteId: string;
   shareUrl: string;
   linkCode: string;
   botUsername: string | null;
   recipientName: string;
-  linkedGroups: { id: string; title: string | null }[];
-  canDm: boolean;
+  /** As the page rendered it; re-read on return to the tab */
+  initialShareState: ShareState;
   justCreated: boolean;
 }) {
+  const { canDm, linkedGroups } = useShareState(inviteId, initialShareState);
   const who = recipientName.trim() || "them";
   const hasChannel = canDm || linkedGroups.length > 0;
   const command = `/link ${linkCode}`;
@@ -40,8 +45,6 @@ export function SharePanel({
 
   return (
     <div className="grid gap-8">
-      <RefreshOnFocus />
-
       <section aria-labelledby="share-link">
         {justCreated && <p className="mb-4 text-[15px] font-medium text-ink">Your invite is ready.</p>}
         <h3 id="share-link" className="text-[13.5px] font-medium text-ink">

@@ -44,7 +44,7 @@ src/
   features/<slice>/
     actions/           'use server' files (+ index.ts barrel without 'use server')
     components/        UI
-    hooks/             client server state: TanStack Query mutations and polls (docs/adr/0002)
+    hooks/             every browser call to our server, via TanStack Query (docs/adr/0002)
     schemas/           zod form schemas shared by React Hook Form and the actions
     server/            server-only modules: queries, integrations, webhook handlers ('server-only' import)
     themes/            (invites) the theme registry
