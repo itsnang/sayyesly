@@ -6,11 +6,13 @@ import type { InviteFormValues } from "../schemas";
 import { DEFAULT_THEME_ID, getTheme } from "../themes";
 import type { AnswerInput, PublicInvite, SubmitAnswerResult } from "../types";
 import { parseQuestion } from "../utils/question";
+import { DEFAULT_TIME_OF_DAY } from "../utils/time-of-day";
 import { PREVIEW_MESSAGE, PREVIEW_READY } from "./theme-preview-protocol";
 
 function toPreviewInvite(values: InviteFormValues): PublicInvite {
   const now = Date.now();
-  const timeSlots = values.timeSlots
+  // Same as saving: "Let them pick" shows the calendar and none of the times still in the form.
+  const timeSlots = (values.allowCustomTime ? [] : values.timeSlots)
     .map((slot, i) => ({ id: `preview-${i}`, at: zonedTimeToUtc(slot.date, slot.time, values.timezone || "UTC") }))
     .filter((s): s is { id: string; at: Date } => !!s.at && s.at.getTime() > now)
     .sort((a, b) => a.at.getTime() - b.at.getTime())
@@ -35,8 +37,8 @@ function toPreviewInvite(values: InviteFormValues): PublicInvite {
     },
     timezone: values.timezone || "UTC",
     timeSlots,
-    // With nothing chosen yet, still let the preview show the calendar.
-    allowCustomTime: values.allowCustomTime || timeSlots.length === 0,
+    allowCustomTime: values.allowCustomTime,
+    timeOfDay: values.timeOfDay ?? DEFAULT_TIME_OF_DAY,
     answer: null,
     expired: false,
   };

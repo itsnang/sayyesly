@@ -7,13 +7,17 @@ import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } fr
 import { createPortal } from "react-dom";
 import { Controller, useFieldArray, useForm, useWatch, type FieldErrors, type FieldPath } from "react-hook-form";
 import { Wordmark } from "@/components/shared/studio";
-import { Button, buttonClass, Checkbox, cx, Field, FieldError, Input, Note, Textarea } from "@/components/shared/ui";
+import { Button, buttonClass, chipClass, cx, Field, FieldError, Input, Note, Textarea } from "@/components/shared/ui";
 import { formatUsd } from "@/lib/format";
 import { saveInvite } from "../../../actions";
 import { inviteFormSchema, MAX_PLAN_PHOTOS, MAX_TIME_SLOTS, type InviteFormValues } from "../../../schemas";
 import type { ThemeChoice } from "../../../server/theme-access";
 import type { ThemeContent } from "../../../themes";
+import { kittenSoftContent } from "../../../themes/kitten-soft";
+import { timeLabel } from "../../../themes/shared/format";
 import { inviteTitle } from "../../../utils";
+import { withExample } from "../../../utils/example";
+import { TIME_OF_DAY_LABELS, TIMES_OF_DAY, timesFor } from "../../../utils/time-of-day";
 import { ImageField } from "../image-field";
 import { DesktopMock, DeviceToggle, PhoneMock, PreviewSheet, type Device } from "./live-preview";
 import { QuestionField } from "./question-field";
@@ -26,17 +30,18 @@ type SectionId = "plan" | "when" | "extras";
 // The optional layer: every field here already has a working default.
 const SECTIONS: { id: SectionId; title: string; fields: FieldPath<InviteFormValues>[] }[] = [
   { id: "plan", title: "Plan", fields: ["planPlace", "planActivity", "planMapUrl", "planDressCode", "planNotes", "planPhotos"] },
-  { id: "when", title: "When", fields: ["timezone", "timeSlots", "allowCustomTime"] },
+  { id: "when", title: "When", fields: ["timezone", "timeSlots", "allowCustomTime", "timeOfDay"] },
   { id: "extras", title: "Extras", fields: ["message", "imageUrl"] },
 ];
 const MAIN_FIELDS: FieldPath<InviteFormValues>[] = ["question", "recipientName", "themeId"];
 
 // Used only if the selected Theme is missing from the list: show everything, name nothing theme-specific.
 const ALL_CONTENT: ThemeContent = {
-  question: { label: "Question", placeholder: "will you have dinner with me?" },
+  question: { label: "Question" },
   picture: { label: "Picture", whenEmpty: "the theme's own picture" },
   note: true,
   planPhotos: true,
+  example: kittenSoftContent.example,
 };
 
 /** The Extras section's name, after what the selected Theme actually shows (null: nothing to set). */
@@ -71,9 +76,9 @@ function summarise(id: SectionId, v: InviteFormValues, content: ThemeContent): s
       return extras ? count(extras, "detail", "details") : "A surprise";
     }
     case "when": {
+      if (v.allowCustomTime) return `They pick · ${TIME_OF_DAY_LABELS[v.timeOfDay]}`;
       const n = v.timeSlots?.length ?? 0;
-      if (n === 0) return v.allowCustomTime ? "They pick" : "Needs a time";
-      return `${count(n, "time", "times")}${v.allowCustomTime ? " or they pick" : ""}`;
+      return n === 0 ? "Needs a time" : count(n, "time", "times");
     }
     case "extras": {
       const parts: string[] = [];
@@ -160,7 +165,8 @@ type InviteEditorProps = {
 export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnabled, share, shareOpen, footer, notice, onUnlockTheme }: InviteEditorProps) {
   const router = useRouter();
   const isNew = inviteId === null;
-  const [open, setOpen] = useState<Set<SectionId>>(() => new Set());
+  // The note and picture are what make an Invite feel personal, so they start open.
+  const [open, setOpen] = useState<Set<SectionId>>(() => new Set(["extras"]));
   const [device, setDevice] = useState<Device>("phone");
   const [serverError, setServerError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -207,6 +213,9 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
   // The selected Theme decides which optional fields are worth asking for.
   const content = themes.find((t) => t.id === values.themeId)?.content ?? ALL_CONTENT;
   const extras = extrasTitle(content);
+  // The preview fills what's still empty from the Theme's example, so the Creator sees what it can hold.
+  const preview = withExample(values, content);
+  const exampleTag = preview.filled.length > 0 && <ExampleTag filled={preview.filled} />;
   // A paid Theme can be tried on the preview before buying; it has to be unlocked to save.
   const selectedTheme = themes.find((t) => t.id === values.themeId);
   const themeLocked = isThemeLocked(selectedTheme, defaults.themeId);
@@ -328,13 +337,14 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
               </button>
             )}
           </div>
-          <div className="grid min-h-0 flex-1 place-items-center px-8 pb-8">
+          <div className="grid min-h-0 flex-1 place-items-center px-8">
             {device === "phone" ? (
-              <PhoneMock values={values} className="h-full max-h-[780px]" />
+              <PhoneMock values={preview.values} className="h-full max-h-[780px]" />
             ) : (
-              <DesktopMock values={values} className="w-[min(100%,1100px,calc((100dvh-10rem)*1.6))]" />
+              <DesktopMock values={preview.values} className="w-[min(100%,1100px,calc((100dvh-10rem)*1.6))]" />
             )}
           </div>
+          <div className="flex h-14 shrink-0 items-center justify-center px-8">{exampleTag}</div>
         </div>
 
         {/* Settings */}
@@ -358,7 +368,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
               render={({ field }) => (
                 <QuestionField
                   label={content.question.label}
-                  placeholder={content.question.placeholder}
+                  placeholder={content.example.question.replace(/\*/g, "")}
                   value={field.value}
                   onChange={field.onChange}
                   disabled={answered}
@@ -397,6 +407,30 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
             />
             {errors.themeId && <FieldError className="mt-2">{errors.themeId.message}</FieldError>}
           </div>
+
+          {/* Right after the Theme, which decides whether there's a note or picture at all */}
+          {extras && (
+            <div id="section-extras">
+              <Section {...section("extras")}>
+                <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
+                  {content.note && (
+                    <Field label="Note under the question" optional error={errors.message?.message}>
+                      <Textarea {...register("message")} rows={2} placeholder={content.example.note} />
+                    </Field>
+                  )}
+                  {content.picture && (
+                    <Field label={content.picture.label} optional hint={`Leave it empty for ${content.picture.whenEmpty}.`} error={errors.imageUrl?.message}>
+                      <Controller
+                        control={control}
+                        name="imageUrl"
+                        render={({ field }) => <ImageField value={field.value} onChange={field.onChange} uploadsEnabled={uploadsEnabled} />}
+                      />
+                    </Field>
+                  )}
+                </div>
+              </Section>
+            </div>
+          )}
 
           <div id="section-plan">
             <Section {...section("plan")}>
@@ -444,23 +478,78 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
           <div id="section-when">
             <Section {...section("when")} locked={answered}>
               <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
-                <Checkbox
-                  {...register("allowCustomTime")}
-                  disabled={answered}
-                  label="Let them pick a time"
-                  description="They get a calendar and choose any day and time."
+                <Controller
+                  control={control}
+                  name="allowCustomTime"
+                  render={({ field }) => (
+                    <div role="radiogroup" aria-label="Who picks the time" className="grid grid-cols-2 gap-1 rounded-[8px] border border-ink/15 bg-surface p-1">
+                      {[
+                        { value: true, label: "Let them pick" },
+                        { value: false, label: "I'll pick the times" },
+                      ].map((mode) => (
+                        <button
+                          key={mode.label}
+                          type="button"
+                          role="radio"
+                          aria-checked={field.value === mode.value}
+                          disabled={answered}
+                          onClick={() => field.onChange(mode.value)}
+                          className={cx(
+                            "rounded-[6px] px-2 py-2 text-[13.5px] font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose disabled:cursor-not-allowed",
+                            field.value === mode.value ? "bg-white text-ink shadow-[0_1px_3px_rgba(35,27,23,0.14)]" : "text-muted hover:text-ink",
+                          )}
+                        >
+                          {mode.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 />
+
                 <div>
-                  <p className="mb-3 text-[13px] text-muted">Or offer specific times:</p>
+                  <p className="mb-2 text-[13.5px] font-medium text-ink">Part of the day</p>
+                  <Controller
+                    control={control}
+                    name="timeOfDay"
+                    render={({ field }) => (
+                      <div role="radiogroup" aria-label="Part of the day" className="flex flex-wrap gap-1.5">
+                        {TIMES_OF_DAY.map((t) => (
+                          <button
+                            key={t}
+                            type="button"
+                            role="radio"
+                            aria-checked={field.value === t}
+                            disabled={answered}
+                            onClick={() => field.onChange(t)}
+                            className={chipClass(field.value === t, "px-3 py-1.5 text-[13.5px]")}
+                          >
+                            {TIME_OF_DAY_LABELS[t]}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  />
+                </div>
+
+                {values.allowCustomTime ? (
+                  <p className="text-[13px] leading-relaxed text-muted">
+                    They get a calendar to choose a day, then a time from{" "}
+                    <b className="font-medium text-ink">
+                      {timeLabel(timesFor(values.timeOfDay)[0]!)} to {timeLabel(timesFor(values.timeOfDay).at(-1)!)}
+                    </b>{" "}
+                    or any other time they write in.
+                  </p>
+                ) : (
                   <TimesField
                     slots={values.timeSlots ?? []}
+                    quickTimes={timesFor(values.timeOfDay)}
                     timezone={values.timezone}
                     onAdd={(s) => slots.append(s)}
                     onRemove={(i) => slots.remove(i)}
                     disabled={answered}
                     max={MAX_TIME_SLOTS}
                   />
-                </div>
+                )}
                 {(errors.timeSlots?.message || errors.timeSlots?.root?.message) && (
                   <FieldError className="-mt-2">{errors.timeSlots?.message ?? errors.timeSlots?.root?.message}</FieldError>
                 )}
@@ -488,29 +577,6 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
             </Section>
           </div>
 
-          {extras && (
-            <div id="section-extras">
-              <Section {...section("extras")}>
-                <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
-                  {content.note && (
-                    <Field label="Note under the question" optional error={errors.message?.message}>
-                      <Textarea {...register("message")} rows={2} placeholder="no pressure :)" />
-                    </Field>
-                  )}
-                  {content.picture && (
-                    <Field label={content.picture.label} optional hint={`Leave it empty for ${content.picture.whenEmpty}.`} error={errors.imageUrl?.message}>
-                      <Controller
-                        control={control}
-                        name="imageUrl"
-                        render={({ field }) => <ImageField value={field.value} onChange={field.onChange} uploadsEnabled={uploadsEnabled} />}
-                      />
-                    </Field>
-                  )}
-                </div>
-              </Section>
-            </div>
-          )}
-
           {footer && <div className="border-t border-ink/10 px-5 py-6">{footer}</div>}
         </form>
       </div>
@@ -523,9 +589,20 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
         <div className="flex-[2] [&>button]:w-full [&>button]:py-2.5 [&>button]:text-[14px]">{primary}</div>
       </div>
 
-      {previewOpen && <PreviewSheet values={values} onClose={() => setPreviewOpen(false)} />}
+      {previewOpen && <PreviewSheet values={preview.values} note={exampleTag} onClose={() => setPreviewOpen(false)} />}
       {isClient && sharing && share && createPortal(<ShareDrawer onClose={() => setSharing(false)}>{share}</ShareDrawer>, document.body)}
     </div>
+  );
+}
+
+const listed = (items: string[]) => (items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`);
+
+/** Says which parts of the preview are the Theme's example rather than the Creator's own. */
+function ExampleTag({ filled }: { filled: string[] }) {
+  return (
+    <p className="max-w-[440px] text-center text-[12.5px] leading-snug text-muted">
+      {`Example ${listed(filled)} shown until you add your own. It's never sent.`}
+    </p>
   );
 }
 

@@ -3,6 +3,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import type { PublicInvite } from "../../types";
 import { NOTE_MAX_LENGTH } from "../../utils/answer";
+import { timesFor } from "../../utils/time-of-day";
 import { formatInZone, MONTHS, timeLabel } from "../shared/format";
 import type { PlanChoice } from "../shared/use-invite-answer";
 import { isoDate, usePlanSelection } from "../shared/use-plan-selection";
@@ -10,7 +11,6 @@ import { Label, MapLink, penStyle } from "./lettering";
 import { Arrow, FlowerRow, InkCircle, Leaf, PaperPlane, Photo, Star, Sun } from "./ornaments";
 
 const WEEKDAYS = ["s", "m", "t", "w", "t", "f", "s"];
-const TIMES = ["18:30", "19:00", "19:30", "20:00", "20:30"];
 const PHOTO_TILTS = [-2.2, 1.8, -1.2];
 
 type LetterScreenProps = {
@@ -236,7 +236,7 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
               </div>
 
               <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "14px 24px", marginTop: 26 }}>
-                {TIMES.map((t) => (
+                {timesFor(invite.timeOfDay).map((t) => (
                   <CircledChoice
                     key={t}
                     selected={!selection.slotId && selection.time === t}

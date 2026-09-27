@@ -44,8 +44,10 @@ export async function saveInvite(inviteId: string | null, input: InviteFormValue
     return { error: "That theme isn't unlocked yet." };
   }
 
+  // "Let them pick" means a calendar and no Time slots: any times still in the
+  // form (from before switching modes) aren't saved.
   const wanted: Date[] = [];
-  for (const slot of values.timeSlots) {
+  for (const slot of values.allowCustomTime ? [] : values.timeSlots) {
     const at = zonedTimeToUtc(slot.date, slot.time, values.timezone);
     if (!at) return { error: "One of the times isn't a real date." };
     wanted.push(at);
@@ -71,6 +73,7 @@ export async function saveInvite(inviteId: string | null, input: InviteFormValue
     question: values.question,
     timezone: values.timezone,
     allowCustomTime: values.allowCustomTime,
+    timeOfDay: values.timeOfDay,
     themeId: values.themeId,
   } satisfies Partial<NewInvite>;
 
@@ -184,6 +187,7 @@ export async function duplicateInvite(inviteId: string): Promise<DuplicateResult
       // Old Time slots would already be in the past, so this Invite starts with
       // none; always lets them suggest a time, so it's still sendable as is.
       allowCustomTime: true,
+      timeOfDay: source.timeOfDay,
     })
     .returning({ id: invites.id });
   if (!created) return { error: "Couldn't duplicate. Please try again." };

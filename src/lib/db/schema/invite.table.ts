@@ -1,6 +1,10 @@
-import { boolean, index, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { TIMES_OF_DAY } from "../../time/time-of-day";
 import { themes } from "./theme.table";
 import { users } from "./user.table";
+
+// Which part of the day the Invite is for; sets the times offered around it.
+export const timeOfDayEnum = pgEnum("time_of_day", TIMES_OF_DAY);
 
 export type PlanPhoto = {
   url: string;
@@ -36,6 +40,7 @@ export const invites = pgTable(
     // IANA zone that Time slots and Custom times are shown and entered in
     timezone: text("timezone").notNull().default("Asia/Phnom_Penh"),
     allowCustomTime: boolean("allow_custom_time").notNull().default(false),
+    timeOfDay: timeOfDayEnum("time_of_day").notNull().default("evening"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

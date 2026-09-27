@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Iphone15Pro } from "@/components/shared/mockups/iphone-15-pro";
 import { Safari } from "@/components/shared/mockups/safari";
 import { buttonClass, chipClass, cx } from "@/components/shared/ui";
@@ -129,7 +129,7 @@ export function DesktopMock({ values, className }: { values: InviteFormValues; c
 }
 
 /** Full-screen preview for small screens, where there's no room for a canvas beside the fields. */
-export function PreviewSheet({ values, onClose }: { values: InviteFormValues; onClose: () => void }) {
+export function PreviewSheet({ values, note, onClose }: { values: InviteFormValues; note?: ReactNode; onClose: () => void }) {
   const [device, setDevice] = useState<Device>("phone");
   return (
     <div role="dialog" aria-modal="true" aria-label="Preview" className="fixed inset-0 z-50 flex flex-col bg-canvas">
@@ -139,6 +139,7 @@ export function PreviewSheet({ values, onClose }: { values: InviteFormValues; on
           Close
         </button>
       </div>
+      {note && <div className="flex justify-center border-b border-ink/10 bg-card px-4 py-2">{note}</div>}
       {device === "phone" ? (
         <div className="flex-1">
           <LiveFrame values={values} title="Invite preview" />

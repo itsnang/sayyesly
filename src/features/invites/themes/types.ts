@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 import type { ImageResponse } from "next/og";
-import type { AnswerInput, PublicInvite, QuestionSegment, SubmitAnswerResult } from "../types";
+import type { AnswerInput, PlanPhoto, PublicInvite, QuestionSegment, SubmitAnswerResult } from "../types";
 
 /**
  * Props every Theme's invite component receives. Themes never load or save
@@ -29,8 +29,8 @@ export const OG_IMAGE_SIZE = { width: 1200, height: 630 } as const;
  * labels from here, so it never assumes a particular Theme's look.
  */
 export type ThemeContent = {
-  /** What the editor calls the question, e.g. "Question" or "Invitation headline", and its example */
-  question: { label: string; placeholder: string };
+  /** What the editor calls the question, e.g. "Question" or "Invitation headline" */
+  question: { label: string };
   /** The picture on the ask screen; `false` when the Theme has none */
   picture: {
     /** Field label, e.g. "Picture at the top" */
@@ -42,6 +42,18 @@ export type ThemeContent = {
   note: boolean;
   /** Photos of the place on the Plan screen */
   planPhotos: boolean;
+  /**
+   * What an Invite in this Theme can look like. The studio preview shows it in
+   * place of the fields the Creator leaves empty, and /demo uses it. Never saved.
+   */
+  example: {
+    /** Wrap the word to highlight in asterisks, like a saved question */
+    question: string;
+    note: string;
+    /** null when the Theme's own picture already stands in */
+    picture: string | null;
+    planPhotos: PlanPhoto[];
+  };
 };
 
 /** The browser-safe half of a Theme: its Recipient-facing component. */

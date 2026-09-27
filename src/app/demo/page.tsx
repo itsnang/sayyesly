@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { ThemePreview } from "@/features/invites/components/theme-preview";
 import type { InviteFormValues } from "@/features/invites/schemas";
-import { DEFAULT_THEME_ID, hasTheme } from "@/features/invites/themes";
+import { DEFAULT_THEME_ID, getTheme, hasTheme } from "@/features/invites/themes";
+import { withExample } from "@/features/invites/utils/example";
+import { DEFAULT_TIME_OF_DAY } from "@/features/invites/utils/time-of-day";
 import { BASE_OPEN_GRAPH, BASE_TWITTER, SITE_TITLE } from "@/lib/site";
 
 const DEMO_TITLE = "Try a demo invite";
@@ -16,10 +19,11 @@ export const metadata: Metadata = {
   twitter: { ...BASE_TWITTER, title: `${DEMO_TITLE} · ${SITE_TITLE}`, description: DEMO_DESCRIPTION },
 };
 
-// A public example invite. Answers stay in the browser: nothing is saved or sent.
+// A public example invite: the Theme's own example (the same one the studio
+// preview shows) with a plan. Answers stay in the browser: nothing is saved or sent.
 const DEMO: InviteFormValues = {
   recipientName: "you",
-  question: "will you have *dinner* with me?",
+  question: "",
   message: "",
   imageUrl: "",
   planPlace: "mauu steak",
@@ -27,19 +31,18 @@ const DEMO: InviteFormValues = {
   planMapUrl: "",
   planDressCode: "",
   planNotes: "",
-  planPhotos: [
-    { url: "/pasted-1780505948966-1.png", alt: "restaurant exterior", caption: "" },
-    { url: "/pasted-1780505892491-0.png", alt: "neon sign", caption: "the vibe ✦" },
-    { url: "/pasted-1780505849218-0.png", alt: "a steak", caption: "the steak ✦" },
-  ],
+  planPhotos: [],
   timezone: "Asia/Phnom_Penh",
   allowCustomTime: true,
+  timeOfDay: DEFAULT_TIME_OF_DAY,
   timeSlots: [],
   themeId: DEFAULT_THEME_ID,
 };
 
 export default async function DemoPage({ searchParams }: PageProps<"/demo">) {
-  const { theme } = await searchParams;
-  const themeId = typeof theme === "string" && hasTheme(theme) ? theme : DEFAULT_THEME_ID;
-  return <ThemePreview fixedValues={{ ...DEMO, themeId }} />;
+  const { theme: requested } = await searchParams;
+  const theme = getTheme(typeof requested === "string" && hasTheme(requested) ? requested : DEFAULT_THEME_ID);
+  if (!theme) notFound();
+  const { values } = withExample({ ...DEMO, themeId: theme.id }, theme.content);
+  return <ThemePreview fixedValues={values} />;
 }
