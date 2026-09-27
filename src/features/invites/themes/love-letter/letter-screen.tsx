@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import type { PublicInvite } from "../../types";
 import { NOTE_MAX_LENGTH } from "../../utils/answer";
 import { formatInZone, MONTHS, timeLabel } from "../shared/format";
@@ -92,9 +92,6 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
           </h1>
           <Leaf size={24} style={{ position: "absolute", right: 10, bottom: -26, transform: "rotate(18deg)" }} />
         </section>
-        <div style={{ textAlign: "center", marginTop: 30 }}>
-          <MaybeLater busy={busy} onConfirm={onMaybeLater} />
-        </div>
 
         {(invite.imageUrl || invite.message) && (
           <section className="ll-split" style={{ marginTop: 40 }}>
@@ -327,7 +324,7 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
             {busy ? "sending…" : "count me in"}
           </button>
           <div style={{ marginTop: 22 }}>
-            <MaybeLater busy={busy} onConfirm={onMaybeLater} />
+            <MaybeLater busy={busy} error={error} onConfirm={onMaybeLater} />
           </div>
         </section>
       </div>
@@ -335,28 +332,82 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
   );
 }
 
-/** The quiet way out. An Answer can't be changed, so it asks once more before sending. */
-function MaybeLater({ busy, onConfirm }: { busy: boolean; onConfirm: () => void }) {
-  const [confirming, setConfirming] = useState(false);
+/**
+ * The quiet way out. An Answer can't be changed, so it asks once more in a note
+ * laid over the letter. On success the whole screen is replaced; on failure the
+ * note stays open and says why.
+ */
+function MaybeLater({ busy, error, onConfirm }: { busy: boolean; error: string | null; onConfirm: () => void }) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  // `error` is shared with "count me in", so only show one this note caused.
+  const [sent, setSent] = useState(false);
   const link = { ...penStyle, fontSize: 22, background: "none", border: "none", textUnderlineOffset: 4, cursor: "pointer", padding: 6 } as const;
+  const close = () => {
+    if (!busy) dialog.current?.close();
+  };
 
-  if (!confirming) {
-    return (
-      <button type="button" onClick={() => setConfirming(true)} disabled={busy} style={{ ...link, color: "var(--ll-graphite)", textDecoration: "underline" }}>
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          setSent(false);
+          dialog.current?.showModal();
+        }}
+        disabled={busy}
+        style={{ ...link, color: "var(--ll-graphite)", textDecoration: "underline" }}
+      >
         i can&apos;t make it this time
       </button>
-    );
-  }
-  return (
-    <p style={{ ...penStyle, fontSize: 22, color: "var(--ll-graphite)" }}>
-      let them know you can&apos;t make it?{" "}
-      <button type="button" onClick={onConfirm} disabled={busy} style={{ ...link, color: "var(--ll-ink)", textDecoration: "underline" }}>
-        {busy ? "sending…" : "send"}
-      </button>
-      <button type="button" onClick={() => setConfirming(false)} disabled={busy} style={{ ...link, color: "var(--ll-graphite)" }}>
-        never mind
-      </button>
-    </p>
+
+      <dialog
+        ref={dialog}
+        className="ll-dialog"
+        aria-labelledby="ll-decline-title"
+        onCancel={(e) => busy && e.preventDefault()}
+        onClick={(e) => e.target === e.currentTarget && close()}
+      >
+        <div style={{ padding: "30px 24px 20px", textAlign: "center" }}>
+          <p id="ll-decline-title" style={{ fontFamily: "var(--ll-marker)", fontSize: 32, lineHeight: 1.1, color: "var(--ll-ink)" }}>
+            can&apos;t make it this time?
+          </p>
+          <p style={{ ...penStyle, fontSize: 22, marginTop: 12, color: "var(--ll-graphite)" }}>
+            we&apos;ll let them know, gently. once it&apos;s sent, it can&apos;t be changed.
+          </p>
+          {sent && error && (
+            <p role="alert" style={{ ...penStyle, fontSize: 20, marginTop: 10, color: "var(--ll-error)" }}>
+              {error}
+            </p>
+          )}
+          <div style={{ display: "flex", flexWrap: "wrap-reverse", justifyContent: "center", alignItems: "center", gap: "6px 22px", marginTop: 22 }}>
+            <button type="button" onClick={close} disabled={busy} style={{ ...link, color: "var(--ll-graphite)" }}>
+              never mind
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSent(true);
+                onConfirm();
+              }}
+              disabled={busy}
+              style={{
+                position: "relative",
+                padding: "10px 26px 8px",
+                border: "none",
+                background: "none",
+                fontFamily: "var(--ll-marker)",
+                fontSize: 26,
+                color: "var(--ll-ink)",
+                cursor: busy ? "not-allowed" : "pointer",
+              }}
+            >
+              <DrawnBox />
+              {busy ? "sending…" : "send it"}
+            </button>
+          </div>
+        </div>
+      </dialog>
+    </>
   );
 }
 
