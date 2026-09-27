@@ -1,5 +1,7 @@
 import { Cloud, Envelope, Flower, Heart, Leaf, Loop, Petal, Sparkle, Spiral, Squiggle, Star } from "@/components/shared/doodles";
+import Link from "next/link";
 import { InkButton } from "@/components/shared/studio";
+import { buttonClass } from "@/components/shared/ui";
 
 /**
  * Doodles in a loose arc around the headline (positions are % of the hero box).
@@ -44,13 +46,17 @@ export function Hero() {
               One link with your question and the plan. Their answer lands in your Telegram.
             </span>
           </h1>
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-x-4 gap-y-3">
-            <InkButton href="/dashboard/invites/new">Make your invite</InkButton>
-            <p className="text-left text-[13px] leading-tight">
-              <span className="block text-ink">Free to start</span>
-              <span className="text-muted">they don&apos;t need an account</span>
-            </p>
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+            <InkButton href="/dashboard/invites/new">Make an invite</InkButton>
+            <Link href="/demo?theme=envelope" className={buttonClass("secondary", "md", "px-5")}>
+              Try the demo
+            </Link>
           </div>
+          {/* What a visitor needs to know before clicking: it's free, you need Telegram, they don't need anything. */}
+          <p className="mt-4 text-[13px] leading-snug text-balance text-muted">
+            <span className="whitespace-nowrap">Free to start ·</span> <span className="whitespace-nowrap">you log in with Telegram ·</span>{" "}
+            <span className="whitespace-nowrap">they don&apos;t need an account</span>
+          </p>
         </div>
       </div>
 

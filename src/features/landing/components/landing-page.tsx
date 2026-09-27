@@ -34,7 +34,7 @@ export function LandingPage({ envelopePrice }: { envelopePrice: number | undefin
           <p className="mt-3 text-[15px] text-muted">It takes about a minute, and Kitten Soft is free.</p>
           <div className="mt-7 flex justify-center">
             <InkButton href="/dashboard/invites/new">
-              Make your invite <Heart className="size-3.5 text-rose" strokeWidth={2.4} />
+              Make an invite <Heart className="size-3.5 text-rose" strokeWidth={2.4} />
             </InkButton>
           </div>
         </section>

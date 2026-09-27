@@ -46,7 +46,7 @@ export function Pricing({ envelopePrice }: { envelopePrice: number | undefined }
           What it costs
         </h2>
         <p className="mx-auto mt-2 max-w-md text-[15px] text-muted">
-          Asking is free. If you want a different look, a theme is a one-time buy, no subscription.
+          Asking is free. If you want a different look, a Theme is a one-time buy, no subscription.
         </p>
       </div>
 
@@ -68,7 +68,7 @@ export function Pricing({ envelopePrice }: { envelopePrice: number | undefined }
             href="/dashboard/invites/new"
             className="mt-5 block rounded-[4px] border-[1.5px] border-ink py-2 text-center text-[12.5px] tracking-[0.08em] uppercase transition hover:bg-ink hover:text-canvas"
           >
-            Start free
+            Make an invite
           </Link>
         </Receipt>
 
@@ -78,7 +78,6 @@ export function Pricing({ envelopePrice }: { envelopePrice: number | undefined }
             <Line item="envelope theme" price={formatUsd(envelopePrice)} />
             <Line item="sealed envelope" price="incl." />
             <Line item="handwritten letter" price="incl." />
-            <Line item="your plan & photos inside" price="incl." />
             <Line item="everything on no. 0001" price="free" />
           </ul>
           <p aria-hidden="true" className="my-4 overflow-hidden text-ink/40 whitespace-nowrap">- - - - - - - - - - - - - - - - - - - - - - - -</p>
@@ -96,7 +95,7 @@ export function Pricing({ envelopePrice }: { envelopePrice: number | undefined }
             href="/demo?theme=envelope"
             className="mt-5 block rounded-[4px] border-[1.5px] border-ink py-2 text-center text-[12.5px] tracking-[0.08em] uppercase transition hover:bg-ink hover:text-canvas"
           >
-            Try it first
+            Try the demo
           </Link>
         </Receipt>
         )}
