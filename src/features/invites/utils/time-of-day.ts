@@ -22,5 +22,5 @@ const TIMES: Record<TimeOfDay, readonly string[]> = {
 
 /** The times offered around a part of the day, earliest first (Evening's if it's missing). */
 export function timesFor(timeOfDay: TimeOfDay | undefined): readonly string[] {
-  return TIMES[timeOfDay ?? DEFAULT_TIME_OF_DAY] ?? TIMES[DEFAULT_TIME_OF_DAY];
+  return TIMES[timeOfDay ?? DEFAULT_TIME_OF_DAY];
 }

@@ -51,7 +51,8 @@ export const inviteFormSchema = z
     // The When section's mode: true is "Let them pick" (a calendar, no Time slots),
     // false is "I'll pick the times" (only the Time slots below).
     allowCustomTime: z.boolean(),
-    timeOfDay: z.enum(TIMES_OF_DAY),
+    // A form from before this field existed (a tab left open across a deploy) still saves, as Evening.
+    timeOfDay: z.enum(TIMES_OF_DAY).catch("evening"),
     timeSlots: z
       .array(
         z.object({

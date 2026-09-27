@@ -84,7 +84,11 @@ function summarise(id: SectionId, v: InviteFormValues, content: ThemeContent): s
     case "extras": {
       const parts: string[] = [];
       if (content.note && v.message?.trim()) parts.push(`“${v.message.trim()}”`);
-      if (content.picture) parts.push(v.imageUrl?.trim() ? "Your picture" : "Default picture");
+      if (content.picture) {
+        // What they'll actually get, e.g. "Just the letter" (the preview may be showing an example photo).
+        const empty = content.picture.whenEmpty;
+        parts.push(v.imageUrl?.trim() ? "Your picture" : empty.charAt(0).toUpperCase() + empty.slice(1));
+      }
       return parts.join(" · ") || "None";
     }
   }
@@ -558,7 +562,13 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
                 </div>
                 {editingZone && (
                   <Field label="Time zone" hint="Every time on this invite is in this zone, for you and for them." error={errors.timezone?.message}>
-                    <TimeZoneSelect {...register("timezone")} current={values.timezone} />
+                    <Controller
+                      control={control}
+                      name="timezone"
+                      render={({ field }) => (
+                        <TimeZoneSelect value={field.value} onChange={field.onChange} disabled={answered} invalid={!!errors.timezone} />
+                      )}
+                    />
                   </Field>
                 )}
               </div>
@@ -583,13 +593,13 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
   );
 }
 
-const listed = (items: string[]) => (items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`);
+const listFormat = new Intl.ListFormat("en", { type: "conjunction" });
 
 /** Says which parts of the preview are the Theme's example rather than the Creator's own. */
 function ExampleTag({ filled }: { filled: string[] }) {
   return (
     <p className="max-w-[440px] text-center text-[12.5px] leading-snug text-muted">
-      {`Example ${listed(filled)} shown until you add your own. It's never sent.`}
+      {`Example ${listFormat.format(filled)} shown until you add your own. It's never sent.`}
     </p>
   );
 }
