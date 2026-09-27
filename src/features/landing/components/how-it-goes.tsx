@@ -56,13 +56,13 @@ export function HowItGoes() {
   };
 
   return (
-    <section aria-labelledby="how-title" className="mx-auto mt-24 max-w-6xl px-5 sm:mt-32 sm:px-8">
+    <section id="how" aria-labelledby="how-title" className="mx-auto mt-24 max-w-6xl scroll-mt-24 px-5 sm:mt-32 sm:px-8">
       <div className="grid items-center gap-10 lg:grid-cols-[280px_1fr] lg:gap-16">
         <div>
           <h2 id="how-title" className="text-[15px] font-semibold tracking-[0.02em] text-ink uppercase">
             How it goes
           </h2>
-          <p className="mt-2 text-[15px] leading-snug text-ink">From your question to their answer, in four taps.</p>
+          <p className="mt-2 text-[15px] leading-snug text-ink">What they see, from your link to their answer.</p>
 
           <p className="mt-10 font-serif text-[40px] leading-none text-ink" aria-live="polite">
             {pad(index + 1)}

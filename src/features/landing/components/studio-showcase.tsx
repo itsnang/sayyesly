@@ -36,7 +36,7 @@ export function StudioShowcase({ envelopePrice }: { envelopePrice: number | unde
       </div>
 
       <div className="mt-10 flex justify-center">
-        <InkButton href="/dashboard/invites/new">Open the studio</InkButton>
+        <InkButton href="/dashboard/invites/new">Make an invite</InkButton>
       </div>
     </section>
   );

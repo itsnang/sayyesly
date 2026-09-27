@@ -16,15 +16,15 @@ function PaperCard({ src, alt, position, className }: { src: string; alt: string
 
 export function Scrapbook() {
   return (
-    <section id="how" aria-labelledby="scrapbook-title" className="relative mt-24 scroll-mt-24">
+    <section id="preview" aria-labelledby="scrapbook-title" className="relative mt-24 scroll-mt-24">
       <div className="diary-paper relative">
         <TornEdge position="top" className="text-diary" seed={3} />
 
         <div className="relative mx-auto max-w-6xl px-5 pt-14 pb-20 sm:px-8 sm:pt-16">
           <h2 id="scrapbook-title" className="mx-auto max-w-md text-center font-mono text-[13.5px] leading-relaxed text-ink">
-            One link. One question. The whole plan inside.
+            What lands on their phone.
             <br />
-            And the answer, straight to your phone.
+            And what lands on yours.
           </h2>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             <PaperButton href="/dashboard/invites/new" className="whitespace-nowrap">Make an invite</PaperButton>
@@ -95,7 +95,6 @@ export function Scrapbook() {
         <TornEdge position="bottom" className="text-diary" seed={7} />
       </div>
 
-      <p className="mt-16 text-center text-[20px] text-ink sm:text-[22px]">Say it nicely. Hear it instantly.</p>
     </section>
   );
 }
