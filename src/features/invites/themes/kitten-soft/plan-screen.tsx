@@ -6,7 +6,7 @@ import type { PublicInvite } from "../../types";
 import { NOTE_MAX_LENGTH } from "../../utils/answer";
 import { timesFor } from "../../utils/time-of-day";
 import { MONTHS, timeLabel as sharedTimeLabel } from "../shared/format";
-import type { PlanChoice } from "../shared/use-invite-answer";
+import type { PlanChoice } from "../../hooks/use-invite-answer";
 import { isoDate, usePlanSelection } from "../shared/use-plan-selection";
 import { isOptimizable } from "@/lib/media";
 import { formatInZone, PillButton, Prompt, WobbleFilter, WobblyBorder } from "./shared";

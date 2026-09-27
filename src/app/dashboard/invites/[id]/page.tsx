@@ -45,12 +45,12 @@ export default async function EditInvitePage({ params, searchParams }: PageProps
       }
       share={
         <SharePanel
+          inviteId={invite.id}
           shareUrl={shareUrl}
           linkCode={invite.linkCode}
           botUsername={botUsername}
           recipientName={invite.values.recipientName}
-          linkedGroups={invite.linkedGroups}
-          canDm={user.canDm}
+          initialShareState={{ canDm: user.canDm, linkedGroups: invite.linkedGroups }}
           justCreated={query.created === "1"}
         />
       }

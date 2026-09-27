@@ -4,7 +4,8 @@ import Image from "next/image";
 import { useRef, useState, type DragEvent } from "react";
 import { buttonClass, cx, inputClass } from "@/components/shared/ui";
 import { isOptimizable } from "@/lib/media";
-import { ACCEPTED_IMAGE_TYPES, imageFiles, uploadImage } from "./upload-image";
+import { useImageUpload } from "../../hooks/use-image-upload";
+import { ACCEPTED_IMAGE_TYPES, imageFiles } from "./upload-image";
 
 type ImageFieldProps = {
   value: string;
@@ -58,16 +59,18 @@ export function ImageField({ value, onChange, uploadsEnabled, disabled }: ImageF
   const [upload, setUpload] = useState<Upload>(null);
   const [error, setError] = useState<string | null>(null);
   const [linkMode, setLinkMode] = useState(() => !uploadsEnabled || (!!value && !isImageUrl(value)));
+  const images = useImageUpload();
 
   async function start(file: File) {
     setError(null);
     const preview = URL.createObjectURL(file);
     setUpload({ preview, progress: 0 });
-    const outcome = await uploadImage(file, (progress) => setUpload((u) => (u ? { ...u, progress } : u)));
-    setUpload(null);
+    const result = await images.upload(file, (progress) => setUpload((u) => (u ? { ...u, progress } : u)));
     URL.revokeObjectURL(preview);
-    if ("url" in outcome) onChange(outcome.url);
-    else setError(outcome.error);
+    if ("cancelled" in result) return; // left the page mid-upload
+    setUpload(null);
+    if ("url" in result) onChange(result.url);
+    else setError(result.error);
   }
 
   const busy = !!upload;

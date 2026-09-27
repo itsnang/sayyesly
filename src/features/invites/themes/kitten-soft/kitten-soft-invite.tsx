@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import type { InviteThemeProps } from "../types";
-import { useInviteAnswer } from "../shared/use-invite-answer";
+import { useInviteAnswer } from "../../hooks/use-invite-answer";
 import { AskScreen } from "./ask-screen";
 import { DoneScreen } from "./done-screen";
 import { MaybeLaterScreen } from "./maybe-later-screen";
