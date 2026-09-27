@@ -444,10 +444,10 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
               <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
                 <p className="text-[13px] text-muted">Shown after they say yes. Leave it empty to keep it a surprise.</p>
                 <Field label="Where" optional error={errors.planPlace?.message}>
-                  <Input {...register("planPlace")} placeholder="mauu steak" />
+                  <Input {...register("planPlace")} placeholder="the café by the river" />
                 </Field>
                 <Field label="What you'll do" optional error={errors.planActivity?.message}>
-                  <Input {...register("planActivity")} placeholder="steak dinner" />
+                  <Input {...register("planActivity")} placeholder="dinner, then a walk" />
                 </Field>
                 <Field label="Map link" optional hint="In Google Maps: Share → Copy link." error={errors.planMapUrl?.message}>
                   <Input {...register("planMapUrl")} type="url" inputMode="url" placeholder="https://maps.app.goo.gl/…" />

@@ -5,33 +5,34 @@ import { useEffect, useState } from "react";
 import { Arrow, Heart, Sparkle, Squiggle } from "@/components/shared/doodles";
 import { ArrowIcon } from "@/components/shared/studio";
 
+// Shown with the Envelope Theme, a real invite start to finish.
 const STEPS = [
   {
-    title: "They open it",
-    body: "Your question, your picture, two buttons. Most people tap the link straight from Telegram.",
-    src: "/landing/step-ask.png",
-    position: "50% 40%",
+    title: "It arrives sealed",
+    body: "They tap your link, often straight from Telegram, and an envelope is waiting for them to open.",
+    src: "/landing/envelope-sealed.png",
+    position: "50% 45%",
+    note: "one tap to open",
+  },
+  {
+    title: "A letter opens",
+    body: "Your question, your picture and a few words from you, handwritten, with the plan underneath.",
+    src: "/landing/envelope-letter.png",
+    position: "50% 0%",
     note: "your words, your picture",
   },
   {
-    title: "Or it comes as a letter",
-    body: "With Envelope, your question arrives sealed, and opens into a handwritten letter with the plan.",
-    src: "/landing/theme-envelope.png",
-    position: "50% 35%",
-    note: "one of the Themes",
-  },
-  {
     title: "They pick a time",
-    body: "The plan appears: place, photos, dress code. They pick one of your evenings, or suggest their own.",
-    src: "/landing/step-plan.png",
-    position: "50% 0%",
+    body: "A day on the calendar and a time that suits them, or one of the times you offered.",
+    src: "/landing/envelope-time.png",
+    position: "50% 30%",
     note: "in your city's time",
   },
   {
     title: "You hear it first",
-    body: "Confetti on their side, a Telegram message on yours, with the time, the place and their note.",
-    src: "/landing/step-done.png",
-    position: "50% 40%",
+    body: "They see “see ya there!”, and a Telegram message tells you the day, the time and their note.",
+    src: "/landing/envelope-yes.png",
+    position: "50% 35%",
     note: "the same second",
   },
 ];
