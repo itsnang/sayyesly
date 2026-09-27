@@ -57,14 +57,14 @@ export function ThemesBoard({ envelopePrice }: { envelopePrice: number | undefin
           Pick a mood
         </h2>
         <p className="mx-auto mt-2 max-w-md text-[15px] text-muted">
-          A theme is the look and the personality. The question, the plan and the answer work the same in all of them.
+          A Theme is the look and the personality. The question, the plan and the answer work the same in all of them.
         </p>
       </div>
 
       <div className="relative mt-14 flex flex-wrap items-start justify-center gap-x-12 gap-y-14">
         <Polaroid
           src="/landing/step-ask.png"
-          alt="the Kitten Soft theme"
+          alt="the Kitten Soft Theme"
           caption="kitten soft"
           price="free"
           note="Pink grid paper, a kitten with flowers and your words in marker."
@@ -84,7 +84,7 @@ export function ThemesBoard({ envelopePrice }: { envelopePrice: number | undefin
             </div>
             <Polaroid
               src="/landing/envelope-card.png"
-              alt="the Envelope theme: a sealed envelope that opens into a letter"
+              alt="the Envelope Theme: a sealed envelope that opens into a letter"
               caption="envelope"
               price={formatUsd(envelopePrice)}
               note="A sealed envelope that opens into a handwritten letter with your plan."
@@ -97,7 +97,7 @@ export function ThemesBoard({ envelopePrice }: { envelopePrice: number | undefin
 
         {/* sticky note */}
         <div className="relative w-[230px] rotate-[1.5deg] bg-[#fbe99a] p-5 pt-6 shadow-[0_14px_26px_-16px_rgba(60,30,20,0.45)] sm:mt-4">
-          <p className="font-mono text-[12px] tracking-[0.06em] text-ink uppercase">every theme comes with</p>
+          <p className="font-mono text-[12px] tracking-[0.06em] text-ink uppercase">every Theme comes with</p>
           <ul className="mt-3 space-y-2 text-[14px] leading-snug text-ink">
             {["your plan & up to 3 photos", "a calendar in your time zone", 'a kind way to say not now', "the Telegram ping"].map((item) => (
               <li key={item} className="flex gap-2">
@@ -106,7 +106,7 @@ export function ThemesBoard({ envelopePrice }: { envelopePrice: number | undefin
               </li>
             ))}
           </ul>
-          <p className="mt-4 font-mono text-[11.5px] leading-snug text-ink/70">paid themes: pay once with any KHQR banking app</p>
+          <p className="mt-4 font-mono text-[11.5px] leading-snug text-ink/70">paid Themes: pay once with any KHQR banking app</p>
         </div>
 
         <Star aria-hidden className="absolute top-0 left-[12%] size-6 fill-sun text-ink max-md:hidden" />

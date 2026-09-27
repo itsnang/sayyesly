@@ -1,5 +1,7 @@
-import { Cat, Cloud, Envelope, Flower, Heart, Leaf, Loop, Petal, Sparkle, Spiral, Squiggle, Star } from "@/components/shared/doodles";
+import { Cloud, Envelope, Flower, Heart, Leaf, Loop, Petal, Sparkle, Spiral, Squiggle, Star } from "@/components/shared/doodles";
+import Link from "next/link";
 import { InkButton } from "@/components/shared/studio";
+import { buttonClass } from "@/components/shared/ui";
 
 /**
  * Doodles in a loose arc around the headline (positions are % of the hero box).
@@ -44,19 +46,27 @@ export function Hero() {
               One link with your question and the plan. Their answer lands in your Telegram.
             </span>
           </h1>
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-x-4 gap-y-3">
-            <InkButton href="/dashboard/invites/new">Make your invite</InkButton>
-            <p className="text-left text-[13px] leading-tight">
-              <span className="block text-ink">Free to start</span>
-              <span className="text-muted">they don&apos;t need an account</span>
-            </p>
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+            <InkButton href="/dashboard/invites/new">Make an invite</InkButton>
+            <Link href="/demo?theme=envelope" className={buttonClass("secondary", "md", "px-5")}>
+              Try the demo
+            </Link>
           </div>
+          {/* What a visitor needs to know before clicking: it's free, you need Telegram, they don't need anything. */}
+          <p className="mt-4 text-[13px] leading-snug text-balance text-muted">
+            <span className="whitespace-nowrap">Free to start ·</span> <span className="whitespace-nowrap">you log in with Telegram ·</span>{" "}
+            <span className="whitespace-nowrap">they don&apos;t need an account</span>
+          </p>
         </div>
       </div>
 
-      {/* Baseline with the cat and a sealed invite, like a doodle along the bottom of a notebook */}
+      {/* Baseline with a few flowers and a sealed invite, like a doodle along the bottom of a notebook */}
       <div className="relative mt-10 flex items-end justify-between px-[8%]" aria-hidden="true">
-        <Cat className="w-24 text-ink sm:w-28" />
+        <div className="flex items-end gap-1.5">
+          <Flower fill="var(--color-sun)" className="w-9 text-ink sm:w-10" />
+          <Leaf fill="var(--color-sage)" className="mb-1 w-6 -rotate-12 text-ink sm:w-7" />
+          <Flower fill="var(--color-sky)" className="w-7 text-ink sm:w-8" />
+        </div>
         <div className="mb-1 flex items-end gap-2">
           <Heart className="mb-5 size-4 -rotate-12 text-rose" />
           <Envelope className="w-14 rotate-[-8deg] text-ink sm:w-16" />

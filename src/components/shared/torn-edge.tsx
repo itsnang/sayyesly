@@ -24,7 +24,7 @@ export function TornEdge({
   seed = 1,
 }: {
   position: "top" | "bottom";
-  /** Must set the fill colour, e.g. `text-grid-pink` */
+  /** Must set the fill colour, e.g. `text-diary` */
   className?: string;
   seed?: number;
 }) {

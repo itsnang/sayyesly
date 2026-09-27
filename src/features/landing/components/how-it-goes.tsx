@@ -56,13 +56,13 @@ export function HowItGoes() {
   };
 
   return (
-    <section aria-labelledby="how-title" className="mx-auto mt-24 max-w-6xl px-5 sm:mt-32 sm:px-8">
+    <section id="how" aria-labelledby="how-title" className="mx-auto mt-24 max-w-6xl scroll-mt-24 px-5 sm:mt-32 sm:px-8">
       <div className="grid items-center gap-10 lg:grid-cols-[280px_1fr] lg:gap-16">
         <div>
           <h2 id="how-title" className="text-[15px] font-semibold tracking-[0.02em] text-ink uppercase">
             How it goes
           </h2>
-          <p className="mt-2 text-[15px] leading-snug text-ink">From your question to their answer, in four taps.</p>
+          <p className="mt-2 text-[15px] leading-snug text-ink">What they see, from your link to their answer.</p>
 
           <p className="mt-10 font-serif text-[40px] leading-none text-ink" aria-live="polite">
             {pad(index + 1)}
@@ -99,7 +99,7 @@ export function HowItGoes() {
         </div>
 
         {/* A thick-framed stage, like a game screen, with the real invite on it */}
-        <div className="grid-paper relative overflow-hidden rounded-[22px] border-[3px] border-ink">
+        <div className="diary-paper relative overflow-hidden rounded-[22px] border-[3px] border-ink">
           <div className="relative mx-auto flex h-[440px] max-w-[520px] items-end justify-center pt-8 sm:h-[480px]">
             {STEPS.map((s, i) => (
               <span

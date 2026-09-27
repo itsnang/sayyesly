@@ -30,7 +30,8 @@
   --color-rose: #de4a80;
   --color-rose-deep: #b3305f;
   --color-rose-soft: #f7e1e8;
-  --color-grid-pink: #f3dbe3;
+  /* Envelope's diary page: cream paper, faint cobalt rules */
+  --color-diary: #f8f6f0;
   --color-sky: #a8c8e6;
   --color-sage: #c3d69a;
   --color-coral: #e8694b;
@@ -76,13 +77,11 @@
   font-variation-settings: "opsz" 144, "SOFT" 100;
 }
 
-/* Scrapbook grid paper */
-@utility grid-paper {
-  background-color: var(--color-grid-pink);
-  background-image:
-    linear-gradient(rgba(150, 70, 100, 0.13) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(150, 70, 100, 0.13) 1px, transparent 1px);
-  background-size: 34px 34px;
+/* Envelope's diary paper: cream with faint cobalt ruled lines, like the letter's "write back" lines */
+@utility diary-paper {
+  background-color: var(--color-diary);
+  background-image: linear-gradient(transparent 35px, rgba(38, 55, 196, 0.17) 35px, rgba(38, 55, 196, 0.17) 36px);
+  background-size: 100% 36px;
 }
 
 @utility no-scrollbar {

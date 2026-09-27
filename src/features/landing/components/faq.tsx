@@ -9,19 +9,19 @@ const QUESTIONS = [
   },
   {
     q: "What if none of my times work for them?",
-    a: "Turn on \"let them suggest a time\" and they get a calendar and a time picker. Times always show in your invite's time zone, so nobody turns up an hour early.",
+    a: "Choose \"Let them pick\" when you make it. They get a calendar, a few times around the part of the day you chose, and a box for any other time. Times always show in your invite's time zone, so nobody turns up an hour early.",
   },
   {
     q: "Who sees the link preview?",
     a: "Anyone the link is forwarded to sees your question in the preview, never their name. Invites aren't listed on search engines.",
   },
   {
-    q: "How do paid themes work?",
-    a: "You pay once per theme with any banking app that scans KHQR. It unlocks as soon as the payment is confirmed, and it's yours for every invite after that.",
+    q: "How do paid Themes work?",
+    a: "You pay once per Theme with any banking app that scans KHQR. It unlocks as soon as the payment is confirmed, and it's yours for every invite after that.",
   },
   {
     q: "Can I change the plan after they say yes?",
-    a: "Yes. Place, map link, dress code, notes and photos stay editable. The question, the times and the theme lock once they've answered, since that's what they said yes to.",
+    a: "Yes. Place, map link, dress code, notes and photos stay editable. The question, the times and the Theme lock once they've answered, since that's what they said yes to.",
   },
 ];
 

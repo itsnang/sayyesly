@@ -1,4 +1,4 @@
-import { Cat, Cloud, Flower, Heart, Leaf, Sparkle } from "@/components/shared/doodles";
+import { Cloud, Envelope, Flower, Heart, Leaf, Sparkle } from "@/components/shared/doodles";
 
 export function Story() {
   return (
@@ -16,7 +16,7 @@ export function Story() {
       </div>
 
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 max-md:opacity-40">
-        <Cat className="absolute bottom-6 left-[4%] w-32 text-ink lg:w-40" />
+        <Envelope className="absolute bottom-10 left-[4%] w-28 -rotate-6 text-ink lg:w-36" />
         <Heart className="absolute top-10 left-[16%] size-6 text-rose" />
         <Cloud fill="var(--color-sky)" className="absolute top-4 left-[3%] w-14 text-ink" />
         <Flower fill="var(--color-rose-soft)" className="absolute top-8 right-[8%] w-12 text-ink" />
