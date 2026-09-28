@@ -1,4 +1,4 @@
-import { boolean, index, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, integer, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { TIMES_OF_DAY } from "../../time/time-of-day";
 import { themes } from "./theme.table";
 import { users } from "./user.table";
@@ -37,6 +37,11 @@ export const invites = pgTable(
     planDressCode: text("plan_dress_code"),
     planNotes: text("plan_notes"),
     planPhotos: jsonb("plan_photos").$type<PlanPhoto[]>().notNull().default([]),
+    // The Song: a canonical YouTube watch link (see recognizeSong), or null
+    songUrl: text("song_url"),
+    // The part of the Song that plays, repeating: from this second, for 15, 30 or 60 seconds
+    songStart: integer("song_start").notNull().default(0),
+    songLength: integer("song_length").notNull().default(30),
     // IANA zone that Time slots and Custom times are shown and entered in
     timezone: text("timezone").notNull().default("Asia/Phnom_Penh"),
     allowCustomTime: boolean("allow_custom_time").notNull().default(false),

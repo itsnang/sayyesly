@@ -28,6 +28,10 @@ _Avoid_: page, card, date
 The details of the date (place, map link, activity, dress code, notes). A Theme that asks first reveals them after the Recipient says Yes; a Theme that invites shows them up front.
 _Avoid_: details, itinerary
 
+**Song**:
+A piece of music the Creator attaches to an Invite by linking to it on a music service. It plays in the background once the Recipient first taps the Invite: only the part the Creator chose (15, 30 or 60 seconds), over and over. At most one per Invite, and free on every Theme.
+_Avoid_: soundtrack, music, audio
+
 **Time slot**:
 A specific future date and time the Creator offers on an Invite, which the Recipient can choose. Always shown in the Invite's time zone, not the viewer's.
 _Avoid_: time, option, availability

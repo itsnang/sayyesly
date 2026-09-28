@@ -7,6 +7,7 @@ export const kittenSoftContent: ThemeContent = {
   picture: { label: "Picture at the top", whenEmpty: "the kitten with the bouquet" },
   note: true,
   planPhotos: true,
+  song: true,
   example: {
     question: "will you have *dinner* with me?",
     note: "no pressure :)",

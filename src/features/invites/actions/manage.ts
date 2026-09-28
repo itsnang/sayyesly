@@ -11,6 +11,7 @@ import { inviteFormSchema, type InviteFormValues } from "../schemas";
 import { canUseTheme } from "../server/theme-access";
 import { DEFAULT_THEME_ID } from "../themes";
 import { newInviteSlug, newLinkCode } from "../utils";
+import { DEFAULT_SONG_LENGTH, songFromUrl } from "../utils/song";
 
 type SaveResult = {
   error?: string;
@@ -21,6 +22,8 @@ type SaveResult = {
 type DuplicateResult = { error?: string; id?: string; /** The copy uses the free Theme; the original one is no longer usable */ themeSwapped?: boolean };
 
 const emptyToNull = (v: string) => (v === "" ? null : v);
+// Saved in one form whatever was pasted (youtu.be, Shorts, ?si=…), so it compares and plays the same.
+const canonicalSongUrl = (v: string) => songFromUrl(v)?.url ?? null;
 
 /**
  * Creates (`inviteId` null) or updates one of the Creator's Invites. Once the
@@ -32,7 +35,15 @@ export async function saveInvite(inviteId: string | null, input: InviteFormValue
   if (!user) return { error: "Please log in again." };
 
   if (inviteId !== null && !idSchema.safeParse(inviteId).success) return { error: "Invite not found." };
-  const parsed = inviteFormSchema.safeParse(input);
+  // A studio tab from before Songs existed (left open across a deploy) sends none: save it without one
+  // (and one from before the part could be chosen plays from the start).
+  // (The type says it's there; the browser that sent it may not know that.)
+  const sent: Partial<InviteFormValues> | null = input && typeof input === "object" ? input : null;
+  const parsed = inviteFormSchema.safeParse(
+    sent
+      ? { ...sent, songUrl: sent.songUrl ?? "", songStart: sent.songStart ?? 0, songLength: sent.songLength ?? DEFAULT_SONG_LENGTH }
+      : input,
+  );
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Please check the form." };
   const values = parsed.data;
 
@@ -72,6 +83,9 @@ export async function saveInvite(inviteId: string | null, input: InviteFormValue
       alt: p.alt || "plan photo",
       ...(p.caption ? { caption: p.caption } : {}),
     })),
+    songUrl: canonicalSongUrl(values.songUrl),
+    songStart: values.songStart,
+    songLength: values.songLength,
   } satisfies Partial<NewInvite>;
 
   const lockable = {
@@ -189,6 +203,9 @@ export async function duplicateInvite(inviteId: string): Promise<DuplicateResult
       planDressCode: source.planDressCode,
       planNotes: source.planNotes,
       planPhotos: source.planPhotos,
+      songUrl: source.songUrl,
+      songStart: source.songStart,
+      songLength: source.songLength,
       timezone: source.timezone,
       // Old Time slots would already be in the past, so this Invite starts with
       // none; always lets them suggest a time, so it's still sendable as is.

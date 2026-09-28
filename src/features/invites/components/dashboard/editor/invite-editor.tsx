@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Controller, useFieldArray, useForm, useWatch, type FieldErrors, type FieldPath } from "react-hook-form";
 import { Wordmark } from "@/components/shared/studio";
@@ -25,6 +25,9 @@ import { DesktopMock, DeviceToggle, PhoneMock, PreviewSheet, type Device } from 
 import { QuestionField } from "./question-field";
 import { isThemeLocked, ThemeField } from "./theme-field";
 import { PhotosField } from "./photos-field";
+import { DEFAULT_SONG_LENGTH, recognizeSong, songFromUrl } from "../../../utils/song";
+import { SongDetails } from "./song-details";
+import { SongPartPicker } from "./song-part-picker";
 import { TimesField } from "./times-field";
 import { TimeZoneSelect } from "./time-zone-select";
 
@@ -34,7 +37,7 @@ type SectionId = "plan" | "when" | "extras";
 const SECTIONS: { id: SectionId; title: string; fields: FieldPath<InviteFormValues>[] }[] = [
   { id: "plan", title: "Plan", fields: ["planPlace", "planActivity", "planMapUrl", "planDressCode", "planNotes", "planPhotos"] },
   { id: "when", title: "When", fields: ["timezone", "timeSlots", "allowCustomTime", "timeOfDay"] },
-  { id: "extras", title: "Extras", fields: ["message", "imageUrl"] },
+  { id: "extras", title: "Extras", fields: ["message", "imageUrl", "songUrl"] },
 ];
 const MAIN_FIELDS: FieldPath<InviteFormValues>[] = ["question", "recipientName", "themeId"];
 
@@ -44,15 +47,18 @@ const ALL_CONTENT: ThemeContent = {
   picture: { label: "Picture", whenEmpty: "the theme's own picture" },
   note: true,
   planPhotos: true,
+  song: true,
   example: kittenSoftContent.example,
 };
 
-/** The Extras section's name, after what the selected Theme actually shows (null: nothing to set). */
+const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+
+/** The Extras section's name, after what the selected Theme actually shows, e.g. "Note, picture & song" (null: nothing to set). */
 function extrasTitle(content: ThemeContent): string | null {
-  if (content.note && content.picture) return "Note & picture";
-  if (content.note) return "Note";
-  if (content.picture) return "Picture";
-  return null;
+  const names = [content.note && "note", content.picture && "picture", content.song && "song"].filter((n): n is string => !!n);
+  if (names.length === 0) return null;
+  const title = names.length === 1 ? names[0]! : `${names.slice(0, -1).join(", ")} & ${names.at(-1)!}`;
+  return capitalize(title);
 }
 
 const hasError = (errors: FieldErrors<InviteFormValues>, fields: FieldPath<InviteFormValues>[]) =>
@@ -89,8 +95,9 @@ function summarise(id: SectionId, v: InviteFormValues, content: ThemeContent): s
       if (content.picture) {
         // What they'll actually get, e.g. "Just the letter" (the preview may be showing an example photo).
         const empty = content.picture.whenEmpty;
-        parts.push(v.imageUrl?.trim() ? "Your picture" : empty.charAt(0).toUpperCase() + empty.slice(1));
+        parts.push(v.imageUrl?.trim() ? "Your picture" : capitalize(empty));
       }
+      if (content.song && v.songUrl?.trim() && recognizeSong(v.songUrl).ok) parts.push("♪ Song");
       return parts.join(" · ") || "None";
     }
   }
@@ -219,6 +226,21 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
   // A paid Theme can be tried on the preview before buying; it has to be unlocked to save.
   const selectedTheme = themes.find((t) => t.id === values.themeId);
   const themeLocked = isThemeLocked(selectedTheme, defaults.themeId);
+  // The Song and the part of it that plays: a different song starts from its beginning again.
+  const songLink = songFromUrl(values.songUrl);
+  const songId = songLink?.id ?? null;
+  const lastSongId = useRef(songId);
+  useEffect(() => {
+    if (songId && lastSongId.current && songId !== lastSongId.current) setValue("songStart", 0, { shouldDirty: true });
+    lastSongId.current = songId ?? lastSongId.current;
+  }, [songId, setValue]);
+  const setSongPart = useCallback(
+    (start: number, length: number, byCreator: boolean) => {
+      setValue("songStart", start, { shouldDirty: byCreator });
+      setValue("songLength", length, { shouldDirty: byCreator });
+    },
+    [setValue],
+  );
   const unlock = (theme: ThemeChoice) => onUnlockTheme?.(theme, () => setValue("themeId", theme.id, { shouldDirty: true }));
   const title = isNew ? "New invite" : inviteTitle(values.recipientName ?? "", values.question ?? "");
   const lockNote = "Locked, because they've already answered.";
@@ -439,6 +461,28 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
                         name="imageUrl"
                         render={({ field }) => <ImageField value={field.value} onChange={field.onChange} uploadsEnabled={uploadsEnabled} />}
                       />
+                    </Field>
+                  )}
+                  {content.song && (
+                    <Field
+                      label="Song"
+                      optional
+                      hint="Plays in the background once they tap. In YouTube: Share → Copy link."
+                      error={errors.songUrl?.message}
+                    >
+                      <div className="grid gap-2">
+                        <Input {...register("songUrl")} type="url" inputMode="url" placeholder="https://youtu.be/…" />
+                        <SongDetails songUrl={values.songUrl ?? ""} />
+                        {songLink && (
+                          <SongPartPicker
+                            key={songLink.id}
+                            song={songLink}
+                            start={values.songStart ?? 0}
+                            length={values.songLength ?? DEFAULT_SONG_LENGTH}
+                            onChange={setSongPart}
+                          />
+                        )}
+                      </div>
                     </Field>
                   )}
                 </div>

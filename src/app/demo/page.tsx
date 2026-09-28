@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ThemePreview } from "@/features/invites/components/theme-preview";
 import type { InviteFormValues } from "@/features/invites/schemas";
+import { DEFAULT_SONG_LENGTH } from "@/features/invites/utils/song";
 import { DEFAULT_THEME_ID, getTheme, hasTheme } from "@/features/invites/themes";
 import { withExample } from "@/features/invites/utils/example";
 import { DEFAULT_TIME_OF_DAY } from "@/features/invites/utils/time-of-day";
@@ -35,6 +36,9 @@ const DEMO: InviteFormValues = {
   planDressCode: "",
   planNotes: "",
   planPhotos: [],
+  songUrl: "",
+  songStart: 0,
+  songLength: DEFAULT_SONG_LENGTH,
   timezone: "Asia/Phnom_Penh",
   allowCustomTime: true,
   timeOfDay: DEFAULT_TIME_OF_DAY,
