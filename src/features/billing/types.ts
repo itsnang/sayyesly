@@ -2,7 +2,7 @@ import type { PurchaseStatus } from "@/lib/db/schema";
 
 export type CheckoutResult = {
   error?: string;
-  /** Already free or owned: nothing to pay */
+  /** Already usable (free, owned, or the Creator is a Tester): nothing to pay */
   owned?: boolean;
   purchaseId?: string;
   qrImageUrl?: string;
@@ -17,5 +17,6 @@ export type ThemeForSale = {
   id: string;
   name: string;
   priceCents: number;
+  /** The Creator can already use it (free, owned, or they're a Tester), so it isn't for sale to them */
   owned: boolean;
 };

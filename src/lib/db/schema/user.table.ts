@@ -11,6 +11,8 @@ export const users = pgTable("users", {
   username: text("username"),
   photoUrl: text("photo_url"),
   canDm: boolean("can_dm").notNull().default(false),
+  // When an Admin made this Creator a Tester (every Theme on offer, free); null when they're not one.
+  testerSince: timestamp("tester_since", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

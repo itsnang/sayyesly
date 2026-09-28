@@ -18,6 +18,10 @@ _Avoid_: she, her, invitee, guest
 A person with an email-and-password account in the admin portal, separate from any Creator.
 _Avoid_: user, staff, owner
 
+**Tester**:
+A Creator an Admin has chosen to try sayyesly for free: while they are a Tester they can use every Theme on offer without a Purchase. Stopping it doesn't change their existing Invites, but they can't pick a Paid theme they don't own again.
+_Avoid_: whitelist, VIP, friend, comp
+
 ### Invites
 
 **Invite**:
@@ -62,7 +66,7 @@ The look and personality an Invite is shown in. Every Invite has exactly one.
 _Avoid_: template, skin, design
 
 **Paid theme**:
-A Theme with a price; a Creator can only use it after a successful Purchase of it.
+A Theme with a price; a Creator can only use it after a successful Purchase of it, or while they are a Tester.
 
 **Published** / **Hidden**:
 Whether a Theme is currently offered. A Published Theme appears in the picker and can be bought; a Hidden one no longer does, but a Creator who already owns it keeps full use of it, and any Invite already using it is unaffected.
