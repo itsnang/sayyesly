@@ -1,5 +1,5 @@
 import type { ThemeDefinition } from "../types";
-import { EXAMPLE_PLAN_PHOTOS } from "../shared/example";
+import { EXAMPLE_PICTURE, EXAMPLE_PLAN_PHOTOS } from "../shared/example";
 import { EnvelopeInvite } from "./envelope-invite";
 
 export const envelope: ThemeDefinition = {
@@ -14,7 +14,7 @@ export const envelope: ThemeDefinition = {
     example: {
       question: "dinner by the *river*?",
       note: "i've been wanting to take you here for a while.",
-      picture: "/pasted-1780505948966-1.png",
+      picture: EXAMPLE_PICTURE,
       planPhotos: EXAMPLE_PLAN_PHOTOS,
     },
   },
