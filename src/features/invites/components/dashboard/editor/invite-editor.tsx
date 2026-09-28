@@ -21,7 +21,7 @@ import { inviteTitle } from "../../../utils";
 import { withExample } from "../../../utils/example";
 import { DEFAULT_TIME_OF_DAY, TIME_OF_DAY_LABELS, TIMES_OF_DAY, timesFor } from "../../../utils/time-of-day";
 import { ImageField } from "../image-field";
-import { DesktopMock, DeviceToggle, PhoneMock, PreviewSheet, type Device } from "./live-preview";
+import { DesktopMock, DeviceToggle, PhoneMock, PreviewSheet } from "./live-preview";
 import { QuestionField } from "./question-field";
 import { isThemeLocked, ThemeField } from "./theme-field";
 import { PhotosField } from "./photos-field";
@@ -30,8 +30,8 @@ import { SongDetails } from "./song-details";
 import { SongPartPicker } from "./song-part-picker";
 import { TimesField } from "./times-field";
 import { TimeZoneSelect } from "./time-zone-select";
-
-type SectionId = "plan" | "when" | "extras";
+import { useShallow } from "zustand/react/shallow";
+import { useStudio, type SectionId } from "../../../stores/studio-store";
 
 // The optional layer: every field here already has a working default.
 const SECTIONS: { id: SectionId; title: string; fields: FieldPath<InviteFormValues>[] }[] = [
@@ -158,35 +158,39 @@ type InviteEditorProps = {
   uploadsEnabled: boolean;
   /** The Share drawer's content (link, group chats); only for saved invites */
   share?: ReactNode;
-  /** Open the Share drawer straight away, e.g. right after creating */
-  shareOpen?: boolean | undefined;
   /** Shown at the very end of the settings, e.g. deleting the invite */
   footer?: ReactNode;
   /** A one-off notice above the question, e.g. a duplicated Invite's Theme changing */
   notice?: ReactNode;
-  /**
-   * Buy a locked Theme without leaving the form. Call `select` once it's
-   * unlocked to switch the invite to it.
-   */
-  onUnlockTheme?: ((theme: ThemeChoice, select: () => void) => void) | undefined;
 };
 
 /**
  * The invite studio: the live invite on a canvas (phone or desktop) and one
  * column of settings beside it. The question is always open; every optional
  * section is a single line with its current value until you open it.
+ * Its screen state (sections, device, drawers, checkout) is the studio store's;
+ * render it inside StudioStoreProvider.
  */
-export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnabled, share, shareOpen, footer, notice, onUnlockTheme }: InviteEditorProps) {
+export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnabled, share, footer, notice }: InviteEditorProps) {
   const router = useRouter();
   const isNew = inviteId === null;
-  // The note and picture are what make an Invite feel personal, so they start open.
-  const [open, setOpen] = useState<Set<SectionId>>(() => new Set(["extras"]));
-  const [device, setDevice] = useState<Device>("phone");
+  const { openSections, device, previewOpen, sharing, editingZone } = useStudio(
+    useShallow((s) => ({ openSections: s.openSections, device: s.device, previewOpen: s.previewOpen, sharing: s.sharing, editingZone: s.editingZone })),
+  );
+  const { toggleSection, revealSections, setDevice, setPreviewOpen, setSharing, toggleEditingZone, openCheckout } = useStudio(
+    useShallow((s) => ({
+      toggleSection: s.toggleSection,
+      revealSections: s.revealSections,
+      setDevice: s.setDevice,
+      setPreviewOpen: s.setPreviewOpen,
+      setSharing: s.setSharing,
+      toggleEditingZone: s.toggleEditingZone,
+      openCheckout: s.openCheckout,
+    })),
+  );
+  // Only about the last save, so it stays with the form.
   const [serverError, setServerError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [sharing, setSharing] = useState(!!shareOpen);
-  const [editingZone, setEditingZone] = useState(false);
   const isClient = useIsClient();
   const save = useSaveInvite(inviteId);
 
@@ -241,26 +245,19 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
     },
     [setValue],
   );
-  const unlock = (theme: ThemeChoice) => onUnlockTheme?.(theme, () => setValue("themeId", theme.id, { shouldDirty: true }));
+  // Buy a locked Theme without leaving the form; once it's paid, the Invite switches to it.
+  const unlock = (theme: ThemeChoice) => openCheckout(theme, () => setValue("themeId", theme.id, { shouldDirty: true }));
   const title = isNew ? "New invite" : inviteTitle(values.recipientName ?? "", values.question ?? "");
   const lockNote = "Locked, because they've already answered.";
-
-  const toggle = (id: SectionId) =>
-    setOpen((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
 
   const section = (id: SectionId) => {
     const s = SECTIONS.find((x) => x.id === id)!;
     return {
       title: id === "extras" && extras ? extras : s.title,
       summary: summarise(id, values, content),
-      open: open.has(id),
+      open: openSections.includes(id),
       invalid: hasError(errors, s.fields),
-      onToggle: () => toggle(id),
+      onToggle: () => toggleSection(id),
     };
   };
 
@@ -268,8 +265,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
     setServerError(null);
     setSaved(false);
     if (themeLocked && selectedTheme) {
-      if (onUnlockTheme) unlock(selectedTheme);
-      else setServerError(`Unlock ${selectedTheme.name} on the Themes page first.`);
+      unlock(selectedTheme);
       return;
     }
     let result;
@@ -298,7 +294,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
   // Open every section with a problem; React Hook Form focuses the first field.
   const onInvalid = (errs: FieldErrors<InviteFormValues>) => {
     const broken = SECTIONS.filter((s) => hasError(errs, s.fields)).map((s) => s.id);
-    if (broken.length) setOpen((prev) => new Set([...prev, ...broken]));
+    if (broken.length) revealSections(broken);
     if (!hasError(errs, MAIN_FIELDS) && broken[0]) {
       requestAnimationFrame(() => document.getElementById(`section-${broken[0]}`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
     }
@@ -316,12 +312,8 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
 
   // Unlocking buys the Theme, not the invite, so it opens checkout without checking the form's fields.
   const primary =
-    themeLocked && selectedTheme && onUnlockTheme ? (
+    themeLocked && selectedTheme ? (
       <Button type="button" size="sm" onClick={() => unlock(selectedTheme)}>
-        Unlock {formatUsd(selectedTheme.priceCents)}
-      </Button>
-    ) : themeLocked && selectedTheme ? (
-      <Button type="submit" form="invite-form" size="sm">
         Unlock {formatUsd(selectedTheme.priceCents)}
       </Button>
     ) : isNew ? (
@@ -367,7 +359,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
         <div className="hidden min-w-0 flex-1 flex-col bg-stage lg:flex">
           <div className="flex shrink-0 items-center justify-center gap-3 p-4">
             <DeviceToggle value={device} onChange={setDevice} />
-            {themeLocked && selectedTheme && onUnlockTheme && (
+            {themeLocked && selectedTheme && (
               <button type="button" onClick={() => unlock(selectedTheme)} className={buttonClass("primary", "sm")}>
                 Unlock {selectedTheme.name} · {formatUsd(selectedTheme.priceCents)}
               </button>
@@ -436,7 +428,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
                   value={field.value}
                   savedThemeId={defaults.themeId}
                   onChange={field.onChange}
-                  onUnlock={onUnlockTheme && unlock}
+                  onUnlock={unlock}
                   disabled={answered}
                 />
               )}
@@ -616,7 +608,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
                     Time zone: <b className="font-medium text-ink">{values.timezone.replace(/_/g, " ")}</b>
                   </span>
                   {!answered && (
-                    <button type="button" onClick={() => setEditingZone((v) => !v)} className="text-ink underline underline-offset-4">
+                    <button type="button" onClick={() => toggleEditingZone} className="text-ink underline underline-offset-4">
                       {editingZone ? "Done" : "Change"}
                     </button>
                   )}
