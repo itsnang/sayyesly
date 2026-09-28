@@ -52,6 +52,11 @@ export function LoginScreen({ next, error, available }: { next: string; error: s
             <br />
             the bot will message you when someone answers.
           </p>
+          <p className="mt-4 text-center text-[12px] leading-relaxed text-muted">
+            By continuing you agree to the{" "}
+            <Link href="/terms" className="underline underline-offset-2 hover:text-ink">Terms</Link> and{" "}
+            <Link href="/privacy" className="underline underline-offset-2 hover:text-ink">Privacy Policy</Link>.
+          </p>
         </div>
       </main>
 
