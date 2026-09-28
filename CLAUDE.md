@@ -45,6 +45,7 @@ src/
     actions/           'use server' files (+ index.ts barrel without 'use server')
     components/        UI
     hooks/             every browser call to our server, via TanStack Query (docs/adr/0002)
+    stores/            Zustand stores for screen state shared across components, one per tree via a provider (docs/adr/0003)
     schemas/           zod form schemas shared by React Hook Form and the actions
     server/            server-only modules: queries, integrations, webhook handlers ('server-only' import)
     themes/            (invites) the theme registry
@@ -80,6 +81,7 @@ Themes are code: `src/features/invites/themes/<id>/` exports a `ThemeDefinition`
 - Security headers live in `next.config.ts`; the Content-Security-Policy (per-request script nonce) lives in `src/proxy.ts`. Every page renders per request so it gets the nonce. Adding a third-party script, iframe or upload host means updating that policy
 - Links a Creator typed that end up in an `href` go through `safeHttpUrl()`. Route handlers that change state from a form check `isSameOriginRequest()` (Server Actions get this from Next.js)
 - Analytics events are declared in `lib/analytics/events.ts` and sent with `track()` (or `trackClick()` on server-rendered links). Properties are ids and enums only, never free text (names, questions, notes); every event passes through the sanitiser, which hides Invite slugs and drops titles and query strings. PostHog loads after the page (`src/instrumentation-client.ts`), is off without `NEXT_PUBLIC_POSTHOG_KEY`, and is reached through the `/ingest` rewrite
+- Browser state has three homes (docs/adr/0003): server data in TanStack Query hooks, form values in React Hook Form, and screen state shared by several components in a slice's Zustand store (created per tree in a provider, never at module level). State used by one component stays in its `useState`
 - Files are kebab-case (`ask-screen.tsx`); exported components stay PascalCase
 - Mobile-first; check layouts at 375px width
 
