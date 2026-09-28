@@ -1,4 +1,5 @@
 import { Arrow, Sparkle } from "@/components/shared/doodles";
+import { trackClick } from "@/lib/analytics/track";
 import { InkButton } from "@/components/shared/studio";
 import { StudioMock } from "./studio-mock";
 
@@ -36,7 +37,9 @@ export function StudioShowcase({ envelopePrice }: { envelopePrice: number | unde
       </div>
 
       <div className="mt-10 flex justify-center">
-        <InkButton href="/dashboard/invites/new">Make an invite</InkButton>
+        <InkButton href="/dashboard/invites/new" {...trackClick("make_invite_clicked", { location: "studio" })}>
+          Make an invite
+        </InkButton>
       </div>
     </section>
   );

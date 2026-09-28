@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect } from "react";
 import { Button, buttonClass, Note } from "@/components/shared/ui";
 import { formatUsd } from "@/lib/format";
+import { track } from "@/lib/analytics/track";
 import { useThemePurchase } from "../hooks/use-theme-purchase";
 
 /**
@@ -21,6 +22,9 @@ export function BuyThemeDialog({
   onPaid?: () => void;
 }) {
   const { phase: shown, ticket, countdown, error, retry } = useThemePurchase(theme.id, onPaid);
+
+  // Once per opening of the checkout.
+  useEffect(() => track("checkout_opened", { theme: theme.id }), [theme.id]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { trackClick } from "@/lib/analytics/track";
 import { Arrow, Smiley, Sparkle, Star } from "@/components/shared/doodles";
 import { NotifCard, PaperButton, PhoneShot, Tape } from "@/components/shared/studio";
 import { TornEdge } from "@/components/shared/torn-edge";
@@ -27,7 +28,7 @@ export function Scrapbook() {
             And what lands on yours.
           </h2>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <PaperButton href="/dashboard/invites/new" className="whitespace-nowrap">Make an invite</PaperButton>
+            <PaperButton href="/dashboard/invites/new" className="whitespace-nowrap" {...trackClick("make_invite_clicked", { location: "scrapbook" })}>Make an invite</PaperButton>
             <PaperButton href="/demo" className="whitespace-nowrap">Try the demo ▷</PaperButton>
           </div>
 

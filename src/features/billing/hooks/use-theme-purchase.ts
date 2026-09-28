@@ -1,3 +1,4 @@
+import { track } from "@/lib/analytics/track";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -73,13 +74,16 @@ export function useThemePurchase(themeId: string, onPaid?: () => void) {
   else if (!ticket || statusRefused) phase = "error";
   else phase = waitingPhase(status.data?.status, countdown.expired);
 
+  const alreadyOwned = start.data?.owned === true;
   const paidOnce = useRef(false);
   useEffect(() => {
     if (phase !== "paid" || paidOnce.current) return;
     paidOnce.current = true;
+    // Already owned means nothing was bought this time.
+    if (!alreadyOwned) track("theme_paid", { theme: themeId });
     onPaid?.();
     router.refresh();
-  }, [phase, onPaid, router]);
+  }, [phase, onPaid, router, alreadyOwned, themeId]);
 
   return {
     phase,

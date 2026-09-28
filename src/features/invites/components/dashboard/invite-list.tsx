@@ -83,7 +83,7 @@ export function InviteList({ invites, siteUrl }: { invites: InviteSummary[]; sit
 
             {/* Above the row's link overlay so it stays clickable */}
             <div className="relative z-10 flex shrink-0 items-center gap-1">
-              <CopyButton text={shareUrl} label="Copy link" />
+              <CopyButton text={shareUrl} label="Copy link" shareLink />
               <DuplicateInviteButton inviteId={invite.id} compact />
               <span aria-hidden className="hidden px-1 text-[18px] text-faint transition group-hover:translate-x-0.5 group-hover:text-ink sm:inline">
                 →
