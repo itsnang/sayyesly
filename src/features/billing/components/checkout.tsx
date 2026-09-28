@@ -34,9 +34,10 @@ export function BuyThemeDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="checkout-title"
-        className="w-full max-w-[380px] rounded-t-[10px] border border-ink/10 bg-white shadow-[0_24px_60px_-20px_rgba(35,27,23,0.35)] sm:rounded-[10px]"
+        className="max-h-[92dvh] w-full overflow-y-auto rounded-t-[16px] bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_24px_60px_-20px_rgba(35,27,23,0.35)] sm:max-w-[380px] sm:rounded-[10px] sm:border sm:border-ink/10 sm:pb-0"
       >
-        <div className="flex items-start justify-between gap-3 border-b border-ink/10 px-5 pt-5 pb-4">
+        <div aria-hidden className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-ink/15 sm:hidden" />
+        <div className="flex items-start justify-between gap-3 border-b border-ink/10 px-5 pt-4 pb-4 sm:pt-5">
           <div className="min-w-0">
             <p className="text-[12px] text-muted">Pay once to unlock</p>
             <h2 id="checkout-title" className="mt-0.5 truncate text-[17px] font-semibold text-ink">
