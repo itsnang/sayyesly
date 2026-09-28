@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { InviteThemeProps } from "../types";
 import { useInviteAnswer } from "../../hooks/use-invite-answer";
 import { AskScreen } from "./ask-screen";
@@ -8,6 +8,8 @@ import { DoneScreen } from "./done-screen";
 import { MaybeLaterScreen } from "./maybe-later-screen";
 import { PlanScreen } from "./plan-screen";
 import { useRain } from "./shared";
+import { PinnedSong, preloadSongPlayer, SONG_BAR_SPACE } from "../shared/song-player";
+import { useFirstTap } from "../shared/use-first-tap";
 
 // The pink grid paper. It used to be painted by the global body, which put it behind
 // every page while loading; the Theme now owns it.
@@ -24,6 +26,12 @@ export function KittenSoftInvite(props: InviteThemeProps) {
   const [stage, setStage] = useState<"ask" | "plan">("ask");
   const dodges = useRef(0);
   const { celebrate, layer } = useRain();
+  // No envelope to open here: the Song starts on the Recipient's first touch, whatever it lands on.
+  const tapped = useFirstTap(!!invite.song);
+  const song = tapped ? invite.song : null;
+  useEffect(() => {
+    if (invite.song) preloadSongPlayer();
+  }, [invite.song]);
 
   let screen;
   if (answering.answer?.answer === "yes") {
@@ -66,9 +74,19 @@ export function KittenSoftInvite(props: InviteThemeProps) {
   }
 
   return (
-    <div style={{ background: PAPER_BACKGROUND, minHeight: "100vh", width: "100%", flexShrink: 0 }}>
+    <div
+      style={{
+        background: PAPER_BACKGROUND,
+        minHeight: "100vh",
+        width: "100%",
+        flexShrink: 0,
+        // Room at the bottom so the Song's bar never covers the last button.
+        ...(song ? { paddingBottom: SONG_BAR_SPACE } : {}),
+      }}
+    >
       {layer}
       {screen}
+      {song && <PinnedSong song={song} shadow="0 12px 30px -12px rgba(224,76,138,.45)" />}
     </div>
   );
 }

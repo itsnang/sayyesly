@@ -26,6 +26,7 @@ import { QuestionField } from "./question-field";
 import { isThemeLocked, ThemeField } from "./theme-field";
 import { PhotosField } from "./photos-field";
 import { recognizeSong } from "../../../utils/song";
+import { SongDetails } from "./song-details";
 import { TimesField } from "./times-field";
 import { TimeZoneSelect } from "./time-zone-select";
 
@@ -49,12 +50,14 @@ const ALL_CONTENT: ThemeContent = {
   example: kittenSoftContent.example,
 };
 
+const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+
 /** The Extras section's name, after what the selected Theme actually shows, e.g. "Note, picture & song" (null: nothing to set). */
 function extrasTitle(content: ThemeContent): string | null {
   const names = [content.note && "note", content.picture && "picture", content.song && "song"].filter((n): n is string => !!n);
   if (names.length === 0) return null;
   const title = names.length === 1 ? names[0]! : `${names.slice(0, -1).join(", ")} & ${names.at(-1)!}`;
-  return title.charAt(0).toUpperCase() + title.slice(1);
+  return capitalize(title);
 }
 
 const hasError = (errors: FieldErrors<InviteFormValues>, fields: FieldPath<InviteFormValues>[]) =>
@@ -91,7 +94,7 @@ function summarise(id: SectionId, v: InviteFormValues, content: ThemeContent): s
       if (content.picture) {
         // What they'll actually get, e.g. "Just the letter" (the preview may be showing an example photo).
         const empty = content.picture.whenEmpty;
-        parts.push(v.imageUrl?.trim() ? "Your picture" : empty.charAt(0).toUpperCase() + empty.slice(1));
+        parts.push(v.imageUrl?.trim() ? "Your picture" : capitalize(empty));
       }
       if (content.song && v.songUrl?.trim() && recognizeSong(v.songUrl).ok) parts.push("♪ Song");
       return parts.join(" · ") || "None";
@@ -445,8 +448,16 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
                     </Field>
                   )}
                   {content.song && (
-                    <Field label="Song" optional hint="Plays softly while they read. In Spotify: Share → Copy song link." error={errors.songUrl?.message}>
-                      <Input {...register("songUrl")} type="url" inputMode="url" placeholder="https://open.spotify.com/track/…" />
+                    <Field
+                      label="Song"
+                      optional
+                      hint="Plays in the background once they tap. Most people hear Spotify's 30-second preview. In Spotify: Share → Copy song link."
+                      error={errors.songUrl?.message}
+                    >
+                      <div className="grid gap-2">
+                        <Input {...register("songUrl")} type="url" inputMode="url" placeholder="https://open.spotify.com/track/…" />
+                        <SongDetails songUrl={values.songUrl ?? ""} />
+                      </div>
                     </Field>
                   )}
                 </div>

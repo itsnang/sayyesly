@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import type { InviteThemeProps } from "../types";
 import { useInviteAnswer } from "../../hooks/use-invite-answer";
 import { MaybeLaterScreen, YesScreen } from "./answered-screens";
@@ -9,7 +9,7 @@ import { markerFont, penFont, printFont } from "./fonts";
 import { LetterScreen } from "./letter-screen";
 import { PaperFilters } from "./ornaments";
 import { CSS_VARIABLES } from "./palette";
-import { SONG_PLAYER_HEIGHT, SongPlayer } from "../shared/song-player";
+import { PinnedSong, preloadSongPlayer, SONG_BAR_SPACE } from "../shared/song-player";
 
 /**
  * Envelope: an invitation rather than a question. A handmade envelope opens
@@ -23,6 +23,11 @@ export function EnvelopeInvite(props: InviteThemeProps) {
   // The Song plays from the "tap to open" tap on, through the letter and the answer.
   const [opened, setOpened] = useState(false);
   const song = opened ? invite.song : null;
+  // Only while there's an envelope left to open: an answered Invite never plays its Song.
+  const canPlay = !!invite.song && !invite.answer;
+  useEffect(() => {
+    if (canPlay) preloadSongPlayer();
+  }, [canPlay]);
   const [justAnswered, setJustAnswered] = useState(false);
 
   let screen;
@@ -65,29 +70,12 @@ export function EnvelopeInvite(props: InviteThemeProps) {
         overflowX: "clip",
         color: "var(--env-ink)",
         // Room at the bottom so the Song's bar never covers the last button.
-        ...(song ? { paddingBottom: SONG_PLAYER_HEIGHT + 28, background: "var(--env-diary)" } : {}),
+        ...(song ? { paddingBottom: SONG_BAR_SPACE, background: "var(--env-diary)" } : {}),
       }}
     >
       <PaperFilters />
       {screen}
-      {song && (
-        // Background music: Spotify's small player, pinned to the bottom edge, nothing drawn over it.
-        <div
-          style={{
-            position: "fixed",
-            left: 12,
-            right: 12,
-            bottom: "max(12px, env(safe-area-inset-bottom))",
-            zIndex: 40,
-            maxWidth: 420,
-            margin: "0 auto",
-            borderRadius: 12,
-            boxShadow: "0 12px 30px -12px rgba(38,55,196,.45)",
-          }}
-        >
-          <SongPlayer song={song} autoPlay />
-        </div>
-      )}
+      {song && <PinnedSong song={song} shadow="0 12px 30px -12px rgba(38,55,196,.45)" />}
       <style>{`
         .env-split { display: grid; gap: 30px; align-items: start; }
         @media (min-width: 620px) { .env-split { grid-template-columns: 1.1fr 1fr; } }

@@ -69,3 +69,9 @@ export type ShareState = {
   canDm: boolean;
   linkedGroups: { id: string; title: string | null }[];
 };
+
+/** What the studio shows for a pasted Song: its title and cover, from Spotify. */
+export type SongDetails = {
+  title: string;
+  coverUrl: string | null;
+};

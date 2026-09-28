@@ -5,11 +5,12 @@ import type { SongLink } from "../../utils/song";
 
 /*
  * The Song's player: Spotify's own compact embed (their smallest official
- * size), for Themes to place at the edge of the screen so the music plays in
- * the background. Nothing may be drawn over it. Mount it right after the
- * Recipient's first tap (Envelope's "tap to open"): browsers that allow sound
- * after a tap then start it by itself, the rest show its play button. Spotify
- * plays a 30-second preview to anyone not logged in there (itsnang/sayyesly#102).
+ * size), pinned to the edge of the screen so the Song plays in the background.
+ * Nothing may be drawn over it. Mount it right after the Recipient's first tap
+ * (Envelope's "tap to open", anywhere on Kitten Soft): browsers that allow
+ * sound after a tap then start it by itself, the rest show its play button.
+ * Spotify plays a 30-second preview to anyone not logged in there (research:
+ * itsnang/sayyesly#102).
  */
 
 type SpotifyController = {
@@ -103,4 +104,36 @@ export function SongPlayer({ song, autoPlay = false }: { song: SongLink; autoPla
     );
   }
   return <div ref={host} style={{ height: SONG_PLAYER_HEIGHT, borderRadius: 12, overflow: "hidden" }} />;
+}
+
+/**
+ * Start fetching Spotify's player script as the Invite opens, so the player is
+ * ready moments after the first tap (iPhones only honour a tap for about a second).
+ */
+export function preloadSongPlayer(): void {
+  loadSpotifyApi().catch(() => {});
+}
+
+/** Room a Theme leaves at the bottom of the page so the pinned Song never covers its last button. */
+export const SONG_BAR_SPACE = SONG_PLAYER_HEIGHT + 28;
+
+/** The Song pinned to the bottom of the screen, playing in the background. `shadow` lets a Theme tint its edge. */
+export function PinnedSong({ song, shadow }: { song: SongLink; shadow: string }) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        left: 12,
+        right: 12,
+        bottom: "max(12px, env(safe-area-inset-bottom))",
+        zIndex: 40,
+        maxWidth: 420,
+        margin: "0 auto",
+        borderRadius: 12,
+        boxShadow: shadow,
+      }}
+    >
+      <SongPlayer song={song} autoPlay />
+    </div>
+  );
 }

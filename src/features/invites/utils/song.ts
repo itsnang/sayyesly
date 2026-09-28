@@ -1,6 +1,6 @@
 /**
  * A Song the Creator linked: one track on Spotify. Spotify only, because its
- * small player can sit at the edge of the screen while the music plays;
+ * small player can sit at the edge of the screen while the Song plays;
  * YouTube's player has to stay large and visible (see itsnang/sayyesly#101).
  */
 export type SongLink = {
