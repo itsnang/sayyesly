@@ -19,7 +19,7 @@ const linkUrl = z
   .max(2000)
   .refine((v) => v === "" || /^https?:\/\/\S+$/.test(v), "Use a full link starting with https://");
 
-// A Spotify link to one song; the refusal says what to paste instead.
+// A YouTube link to one song; the refusal says what to paste instead.
 const songUrl = z
   .string()
   .trim()

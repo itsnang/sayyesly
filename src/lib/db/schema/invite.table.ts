@@ -37,7 +37,7 @@ export const invites = pgTable(
     planDressCode: text("plan_dress_code"),
     planNotes: text("plan_notes"),
     planPhotos: jsonb("plan_photos").$type<PlanPhoto[]>().notNull().default([]),
-    // The Song: a canonical Spotify track link (see recognizeSong), or null
+    // The Song: a canonical YouTube watch link (see recognizeSong), or null
     songUrl: text("song_url"),
     // IANA zone that Time slots and Custom times are shown and entered in
     timezone: text("timezone").notNull().default("Asia/Phnom_Penh"),

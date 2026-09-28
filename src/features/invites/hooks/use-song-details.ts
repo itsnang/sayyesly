@@ -5,16 +5,16 @@ import type { SongDetails } from "../types";
 import { songFromUrl } from "../utils/song";
 
 /**
- * The title and cover of the Song link in the studio field, once it's a
- * Spotify song link; nothing while it isn't. The same song is looked up once.
+ * The title, channel and cover of the Song link in the studio field, once
+ * it's a YouTube link; nothing while it isn't. The same song is looked up once.
  */
 export function useSongDetails(songUrl: string) {
   const canonical = songFromUrl(songUrl)?.url ?? null;
   return useQuery({
     queryKey: ["song-details", canonical],
     queryFn: async (): Promise<SongDetails> => {
-      const { title, coverUrl } = await runAction(() => getSongDetails(canonical!));
-      return { title, coverUrl };
+      const { title, by, coverUrl } = await runAction(() => getSongDetails(canonical!));
+      return { title, by, coverUrl };
     },
     enabled: canonical !== null,
     staleTime: Infinity,

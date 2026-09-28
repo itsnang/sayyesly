@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import type { InviteThemeProps } from "../types";
 import { useInviteAnswer } from "../../hooks/use-invite-answer";
 import { MaybeLaterScreen, YesScreen } from "./answered-screens";
@@ -9,7 +9,7 @@ import { markerFont, penFont, printFont } from "./fonts";
 import { LetterScreen } from "./letter-screen";
 import { PaperFilters } from "./ornaments";
 import { CSS_VARIABLES } from "./palette";
-import { PinnedSong, preloadSongPlayer, SONG_BAR_SPACE } from "../shared/song-player";
+import { BackgroundSong } from "../shared/background-song";
 
 /**
  * Envelope: an invitation rather than a question. A handmade envelope opens
@@ -20,14 +20,10 @@ export function EnvelopeInvite(props: InviteThemeProps) {
   const { invite } = props;
   const answering = useInviteAnswer(props);
   const [reading, setReading] = useState(false);
-  // The Song plays from the "tap to open" tap on, through the letter and the answer.
+  // The Song plays in the background from the "tap to open" tap on, through the letter and the answer.
   const [opened, setOpened] = useState(false);
-  const song = opened ? invite.song : null;
-  // Only while there's an envelope left to open: an answered Invite never plays its Song.
-  const canPlay = !!invite.song && !invite.answer;
-  useEffect(() => {
-    if (canPlay) preloadSongPlayer();
-  }, [canPlay]);
+  // Only while there's an envelope left to open: an Invite answered before this visit stays quiet.
+  const song = invite.answer ? null : invite.song;
   const [justAnswered, setJustAnswered] = useState(false);
 
   let screen;
@@ -69,13 +65,11 @@ export function EnvelopeInvite(props: InviteThemeProps) {
         flexShrink: 0,
         overflowX: "clip",
         color: "var(--env-ink)",
-        // Room at the bottom so the Song's bar never covers the last button.
-        ...(song ? { paddingBottom: SONG_BAR_SPACE, background: "var(--env-diary)" } : {}),
       }}
     >
       <PaperFilters />
       {screen}
-      {song && <PinnedSong song={song} shadow="0 12px 30px -12px rgba(38,55,196,.45)" />}
+      {song && <BackgroundSong song={song} playing={opened} />}
       <style>{`
         .env-split { display: grid; gap: 30px; align-items: start; }
         @media (min-width: 620px) { .env-split { grid-template-columns: 1.1fr 1fr; } }

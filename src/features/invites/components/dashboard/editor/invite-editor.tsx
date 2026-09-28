@@ -451,11 +451,11 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
                     <Field
                       label="Song"
                       optional
-                      hint="Plays in the background once they tap. Most people hear Spotify's 30-second preview. In Spotify: Share → Copy song link."
+                      hint="Plays in the background once they tap. In YouTube: Share → Copy link."
                       error={errors.songUrl?.message}
                     >
                       <div className="grid gap-2">
-                        <Input {...register("songUrl")} type="url" inputMode="url" placeholder="https://open.spotify.com/track/…" />
+                        <Input {...register("songUrl")} type="url" inputMode="url" placeholder="https://youtu.be/…" />
                         <SongDetails songUrl={values.songUrl ?? ""} />
                       </div>
                     </Field>

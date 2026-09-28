@@ -70,8 +70,10 @@ export type ShareState = {
   linkedGroups: { id: string; title: string | null }[];
 };
 
-/** What the studio shows for a pasted Song: its title and cover, from Spotify. */
+/** What the studio shows for a pasted Song: its title, channel and cover, from YouTube. */
 export type SongDetails = {
   title: string;
+  /** The YouTube channel, usually the artist */
+  by: string | null;
   coverUrl: string | null;
 };
