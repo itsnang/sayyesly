@@ -29,6 +29,13 @@
       "when": 1790567404791,
       "tag": "0003_grant-admin-funnel",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790571651146,
+      "tag": "0004_invite-song",
+      "breakpoints": true
     }
   ]
 }

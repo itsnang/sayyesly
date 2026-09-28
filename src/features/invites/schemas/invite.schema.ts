@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { isValidTimeZone } from "@/lib/time";
 import { TIMES_OF_DAY } from "@/lib/time/time-of-day";
+import { recognizeSong } from "../utils/song";
 
 // Form values are plain strings/booleans (empty string = not set) so the same
 // schema drives React Hook Form in the browser and validation on the server.
@@ -17,6 +18,17 @@ const linkUrl = z
   .trim()
   .max(2000)
   .refine((v) => v === "" || /^https?:\/\/\S+$/.test(v), "Use a full link starting with https://");
+
+// A YouTube or Spotify link to one song; the refusal says what to paste instead.
+const songUrl = z
+  .string()
+  .trim()
+  .max(2000)
+  .superRefine((v, ctx) => {
+    if (v === "") return;
+    const song = recognizeSong(v);
+    if (!song.ok) ctx.addIssue({ code: "custom", message: song.reason });
+  });
 
 export const MAX_TIME_SLOTS = 8;
 export const MAX_PLAN_PHOTOS = 3;
@@ -47,6 +59,7 @@ export const inviteFormSchema = z
         }),
       )
       .max(MAX_PLAN_PHOTOS),
+    songUrl,
     timezone: z.string().refine(isValidTimeZone, "Pick a real time zone, e.g. Asia/Phnom_Penh"),
     // The When section's mode: true is "Let them pick" (a calendar, no Time slots),
     // false is "I'll pick the times" (only the Time slots below).

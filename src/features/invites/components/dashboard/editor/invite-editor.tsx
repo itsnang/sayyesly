@@ -25,6 +25,7 @@ import { DesktopMock, DeviceToggle, PhoneMock, PreviewSheet, type Device } from 
 import { QuestionField } from "./question-field";
 import { isThemeLocked, ThemeField } from "./theme-field";
 import { PhotosField } from "./photos-field";
+import { recognizeSong } from "../../../utils/song";
 import { TimesField } from "./times-field";
 import { TimeZoneSelect } from "./time-zone-select";
 
@@ -34,7 +35,7 @@ type SectionId = "plan" | "when" | "extras";
 const SECTIONS: { id: SectionId; title: string; fields: FieldPath<InviteFormValues>[] }[] = [
   { id: "plan", title: "Plan", fields: ["planPlace", "planActivity", "planMapUrl", "planDressCode", "planNotes", "planPhotos"] },
   { id: "when", title: "When", fields: ["timezone", "timeSlots", "allowCustomTime", "timeOfDay"] },
-  { id: "extras", title: "Extras", fields: ["message", "imageUrl"] },
+  { id: "extras", title: "Extras", fields: ["message", "imageUrl", "songUrl"] },
 ];
 const MAIN_FIELDS: FieldPath<InviteFormValues>[] = ["question", "recipientName", "themeId"];
 
@@ -44,15 +45,16 @@ const ALL_CONTENT: ThemeContent = {
   picture: { label: "Picture", whenEmpty: "the theme's own picture" },
   note: true,
   planPhotos: true,
+  song: true,
   example: kittenSoftContent.example,
 };
 
-/** The Extras section's name, after what the selected Theme actually shows (null: nothing to set). */
+/** The Extras section's name, after what the selected Theme actually shows, e.g. "Note, picture & song" (null: nothing to set). */
 function extrasTitle(content: ThemeContent): string | null {
-  if (content.note && content.picture) return "Note & picture";
-  if (content.note) return "Note";
-  if (content.picture) return "Picture";
-  return null;
+  const names = [content.note && "note", content.picture && "picture", content.song && "song"].filter((n): n is string => !!n);
+  if (names.length === 0) return null;
+  const title = names.length === 1 ? names[0]! : `${names.slice(0, -1).join(", ")} & ${names.at(-1)!}`;
+  return title.charAt(0).toUpperCase() + title.slice(1);
 }
 
 const hasError = (errors: FieldErrors<InviteFormValues>, fields: FieldPath<InviteFormValues>[]) =>
@@ -91,6 +93,7 @@ function summarise(id: SectionId, v: InviteFormValues, content: ThemeContent): s
         const empty = content.picture.whenEmpty;
         parts.push(v.imageUrl?.trim() ? "Your picture" : empty.charAt(0).toUpperCase() + empty.slice(1));
       }
+      if (content.song && v.songUrl?.trim() && recognizeSong(v.songUrl).ok) parts.push("♪ Song");
       return parts.join(" · ") || "None";
     }
   }
@@ -439,6 +442,11 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
                         name="imageUrl"
                         render={({ field }) => <ImageField value={field.value} onChange={field.onChange} uploadsEnabled={uploadsEnabled} />}
                       />
+                    </Field>
+                  )}
+                  {content.song && (
+                    <Field label="Song" optional hint="One song on YouTube or Spotify: Share → Copy link." error={errors.songUrl?.message}>
+                      <Input {...register("songUrl")} type="url" inputMode="url" placeholder="https://open.spotify.com/track/…" />
                     </Field>
                   )}
                 </div>

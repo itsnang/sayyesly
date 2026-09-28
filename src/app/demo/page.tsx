@@ -35,6 +35,7 @@ const DEMO: InviteFormValues = {
   planDressCode: "",
   planNotes: "",
   planPhotos: [],
+  songUrl: "",
   timezone: "Asia/Phnom_Penh",
   allowCustomTime: true,
   timeOfDay: DEFAULT_TIME_OF_DAY,
