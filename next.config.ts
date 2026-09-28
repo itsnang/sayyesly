@@ -42,6 +42,17 @@ const nextConfig: NextConfig = {
       { source: "/picker", destination: "/i/k1tten-d1n", permanent: true },
     ];
   },
+  // Analytics goes to our own origin and is forwarded to PostHog's EU hosts,
+  // so the CSP stays same-origin and ad blockers don't drop it
+  // (src/instrumentation-client.ts).
+  async rewrites() {
+    return [
+      { source: "/ingest/static/:path*", destination: "https://eu-assets.i.posthog.com/static/:path*" },
+      { source: "/ingest/:path*", destination: "https://eu.i.posthog.com/:path*" },
+    ];
+  },
+  // PostHog's API paths end in a slash; don't redirect them away from it.
+  skipTrailingSlashRedirect: true,
 };
 
 export default nextConfig;

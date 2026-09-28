@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { TrackOnMount } from "@/lib/analytics/track-on-mount";
 import { getCurrentUser } from "@/lib/auth/session";
 import { submitAnswer } from "../actions";
 import { getInviteCreatorId, getPublicInvite } from "../server/data";
@@ -20,6 +21,7 @@ export async function InviteView({ slug }: { slug: string }) {
   return (
     <>
       {isPreview && <PreviewBanner />}
+      {!isPreview && !invite.expired && <TrackOnMount event="invite_opened" props={{ theme: invite.themeId }} />}
       {invite.expired ? (
         <ExpiredScreen />
       ) : (

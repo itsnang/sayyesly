@@ -57,8 +57,8 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     {
-      // Every page; not API routes, Next.js assets, or files with an extension (images in /public).
-      source: "/((?!api|_next/static|_next/image|.*\\.[a-zA-Z0-9]+$).*)",
+      // Every page; not API routes, analytics forwarding, Next.js assets, or files with an extension (images in /public).
+      source: "/((?!api|ingest|_next/static|_next/image|.*\\.[a-zA-Z0-9]+$).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },
