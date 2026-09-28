@@ -9,6 +9,7 @@ import { markerFont, penFont, printFont } from "./fonts";
 import { LetterScreen } from "./letter-screen";
 import { PaperFilters } from "./ornaments";
 import { CSS_VARIABLES } from "./palette";
+import { BackgroundSong } from "../shared/background-song";
 
 /**
  * Envelope: an invitation rather than a question. A handmade envelope opens
@@ -19,6 +20,10 @@ export function EnvelopeInvite(props: InviteThemeProps) {
   const { invite } = props;
   const answering = useInviteAnswer(props);
   const [reading, setReading] = useState(false);
+  // The Song plays in the background from the "tap to open" tap on, through the letter and the answer.
+  const [opened, setOpened] = useState(false);
+  // Only while there's an envelope left to open: an Invite answered before this visit stays quiet.
+  const song = invite.answer ? null : invite.song;
   const [justAnswered, setJustAnswered] = useState(false);
 
   let screen;
@@ -27,7 +32,7 @@ export function EnvelopeInvite(props: InviteThemeProps) {
   } else if (answering.answer?.answer === "maybe_later") {
     screen = <MaybeLaterScreen justAnswered={justAnswered} />;
   } else if (!reading) {
-    screen = <SealedEnvelope invite={invite} onRead={() => setReading(true)} />;
+    screen = <SealedEnvelope invite={invite} onOpen={() => setOpened(true)} onRead={() => setReading(true)} />;
   } else {
     screen = (
       <LetterScreen
@@ -53,10 +58,18 @@ export function EnvelopeInvite(props: InviteThemeProps) {
   return (
     <div
       className={`${markerFont.variable} ${penFont.variable} ${printFont.variable}`}
-      style={{ ...(CSS_VARIABLES as CSSProperties), minHeight: "100vh", width: "100%", flexShrink: 0, overflowX: "clip", color: "var(--env-ink)" }}
+      style={{
+        ...(CSS_VARIABLES as CSSProperties),
+        minHeight: "100vh",
+        width: "100%",
+        flexShrink: 0,
+        overflowX: "clip",
+        color: "var(--env-ink)",
+      }}
     >
       <PaperFilters />
       {screen}
+      {song && <BackgroundSong song={song} playing={opened} />}
       <style>{`
         .env-split { display: grid; gap: 30px; align-items: start; }
         @media (min-width: 620px) { .env-split { grid-template-columns: 1.1fr 1fr; } }

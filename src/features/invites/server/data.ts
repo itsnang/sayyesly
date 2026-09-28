@@ -3,6 +3,7 @@ import { asc, eq } from "drizzle-orm";
 import { connection } from "next/server";
 import { cache } from "react";
 import { db } from "@/lib/db";
+import { songClip } from "../utils/song";
 import { safeHttpUrl } from "@/lib/validation";
 import { invites, inviteTimeSlots, type AnswerRow } from "@/lib/db/schema";
 import type { PublicAnswer, PublicInvite } from "../types";
@@ -61,6 +62,7 @@ export const getPublicInvite = cache(async (slug: string): Promise<PublicInvite 
       .map((slot) => ({ id: slot.id, startsAt: slot.startsAt.toISOString() })),
     allowCustomTime: invite.allowCustomTime,
     timeOfDay: invite.timeOfDay,
+    song: songClip(invite.songUrl, invite.songStart, invite.songLength),
     answer: invite.answer ? toPublicAnswer(invite.answer) : null,
     expired: !invite.answer && isExpired(invite, now),
   };

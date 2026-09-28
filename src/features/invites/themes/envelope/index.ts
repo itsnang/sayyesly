@@ -11,6 +11,7 @@ export const envelope: ThemeDefinition = {
     picture: { label: "Photo next to your letter", whenEmpty: "just the letter" },
     note: true,
     planPhotos: true,
+    song: true,
     example: {
       question: "dinner by the *river*?",
       note: "i've been wanting to take you here for a while.",

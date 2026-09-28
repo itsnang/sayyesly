@@ -42,6 +42,8 @@ export type ThemeContent = {
   note: boolean;
   /** Photos of the place on the Plan screen */
   planPhotos: boolean;
+  /** Plays the Song the Creator linked, drawn in the Theme's own style. Turn on only once the Theme can play it. */
+  song: boolean;
   /**
    * What an Invite in this Theme can look like. The studio preview shows it in
    * place of the fields the Creator leaves empty, and /demo uses it. Never saved.

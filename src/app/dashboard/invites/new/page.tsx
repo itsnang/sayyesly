@@ -1,5 +1,6 @@
 import { InviteStudio } from "../_components/invite-studio";
 import type { InviteFormValues } from "@/features/invites/schemas";
+import { DEFAULT_SONG_LENGTH } from "@/features/invites/utils/song";
 import { getThemeChoices } from "@/features/invites/server/theme-access";
 import { DEFAULT_THEME_ID } from "@/features/invites/themes";
 import { DEFAULT_TIME_OF_DAY } from "@/features/invites/utils/time-of-day";
@@ -18,6 +19,9 @@ const NEW_INVITE: InviteFormValues = {
   planDressCode: "",
   planNotes: "",
   planPhotos: [],
+  songUrl: "",
+  songStart: 0,
+  songLength: DEFAULT_SONG_LENGTH,
   timezone: "Asia/Phnom_Penh",
   allowCustomTime: true,
   timeOfDay: DEFAULT_TIME_OF_DAY,

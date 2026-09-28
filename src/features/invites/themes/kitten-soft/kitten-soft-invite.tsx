@@ -8,6 +8,8 @@ import { DoneScreen } from "./done-screen";
 import { MaybeLaterScreen } from "./maybe-later-screen";
 import { PlanScreen } from "./plan-screen";
 import { useRain } from "./shared";
+import { BackgroundSong } from "../shared/background-song";
+import { useFirstTap } from "../shared/use-first-tap";
 
 // The pink grid paper. It used to be painted by the global body, which put it behind
 // every page while loading; the Theme now owns it.
@@ -24,6 +26,10 @@ export function KittenSoftInvite(props: InviteThemeProps) {
   const [stage, setStage] = useState<"ask" | "plan">("ask");
   const dodges = useRef(0);
   const { celebrate, layer } = useRain();
+  // No envelope to open here: the Song starts in the background on the Recipient's first touch,
+  // whatever it lands on. An Invite answered before this visit stays quiet.
+  const song = invite.answer ? null : invite.song;
+  const tapped = useFirstTap(!!song);
 
   let screen;
   if (answering.answer?.answer === "yes") {
@@ -66,9 +72,17 @@ export function KittenSoftInvite(props: InviteThemeProps) {
   }
 
   return (
-    <div style={{ background: PAPER_BACKGROUND, minHeight: "100vh", width: "100%", flexShrink: 0 }}>
+    <div
+      style={{
+        background: PAPER_BACKGROUND,
+        minHeight: "100vh",
+        width: "100%",
+        flexShrink: 0,
+      }}
+    >
       {layer}
       {screen}
+      {song && <BackgroundSong song={song} playing={tapped} />}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import type { SongClip } from "./utils/song";
 import type { PlanPhoto } from "@/lib/db/schema";
 import type { TimeOfDay } from "@/lib/time/time-of-day";
 import type { AnswerInput } from "./utils/answer";
@@ -46,6 +47,8 @@ export type PublicInvite = {
   allowCustomTime: boolean;
   /** Sets the times a Recipient can tap when picking their own */
   timeOfDay: TimeOfDay;
+  /** The Song and the part of it that plays, already recognised; null when there's none */
+  song: SongClip | null;
   /** The Answer, once given; themes show it instead of asking again */
   answer: PublicAnswer | null;
   expired: boolean;
@@ -65,4 +68,12 @@ export type ActionResult = { error?: string };
 export type ShareState = {
   canDm: boolean;
   linkedGroups: { id: string; title: string | null }[];
+};
+
+/** What the studio shows for a pasted Song: its title, channel and cover, from YouTube. */
+export type SongDetails = {
+  title: string;
+  /** The YouTube channel, usually the artist */
+  by: string | null;
+  coverUrl: string | null;
 };

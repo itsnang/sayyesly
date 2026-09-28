@@ -20,7 +20,8 @@ function contentSecurityPolicy(nonce: string) {
     // Uploads go straight to R2 with a signed URL.
     `connect-src 'self' https://*.r2.cloudflarestorage.com${isDev ? " ws: wss:" : ""}`,
     // The studio's live preview is our own /preview/theme.
-    "frame-src 'self'",
+    // The Song's background player (privacy-mode YouTube), loaded inside Invites.
+    "frame-src 'self' https://www.youtube-nocookie.com",
     "frame-ancestors 'self'",
     "form-action 'self'",
     "base-uri 'self'",

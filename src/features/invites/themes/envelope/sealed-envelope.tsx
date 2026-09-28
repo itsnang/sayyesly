@@ -15,7 +15,17 @@ const FADE_MS = 520;
  * The sealed envelope the Recipient opens first. One tap lifts the flap and slides
  * the card out with the question; after a moment the letter itself opens.
  */
-export function SealedEnvelope({ invite, onRead }: { invite: PublicInvite; onRead: () => void }) {
+export function SealedEnvelope({
+  invite,
+  onOpen,
+  onRead,
+}: {
+  invite: PublicInvite;
+  /** The "tap to open" tap itself, while the browser still counts it as the Recipient's (the Song starts here) */
+  onOpen?: () => void;
+  /** The letter is ready to show, once the envelope has opened */
+  onRead: () => void;
+}) {
   const [stage, setStage] = useState<Stage>("sealed");
   const lifted = stage !== "sealed";
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -28,6 +38,7 @@ export function SealedEnvelope({ invite, onRead }: { invite: PublicInvite; onRea
   function open() {
     if (stage !== "sealed") return;
     setStage("opening");
+    onOpen?.();
     timers.current.push(
       setTimeout(() => setStage("leaving"), LEAVE_AFTER_MS),
       setTimeout(onRead, LEAVE_AFTER_MS + FADE_MS),
