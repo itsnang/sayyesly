@@ -54,7 +54,7 @@ src/
   lib/                 shared code: db/ (+ db/queries for cross-slice reads), auth/, telegram/,
                        cutluy/, storage/, time/, format/, query/ (TanStack Query provider + runAction),
                        analytics/ (PostHog events, sanitiser, track()),
-                       validation.ts, rate-limit.ts, site.ts, theme-ids.ts
+                       validation.ts, rate-limit.ts, site.ts, theme-ids.ts, theme-access.ts
   env.ts               server-only, zod-validated env; use requireEnv() for optional vars
 ```
 

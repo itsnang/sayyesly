@@ -1,1 +1,1 @@
-export { themeAccess } from "./theme-ownership";
+export { themeAccess } from "./theme-access";

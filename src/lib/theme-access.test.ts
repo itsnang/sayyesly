@@ -56,8 +56,9 @@ describe("isThemeUsable", () => {
     expect(isThemeUsable(paid, tester)).toBe(true);
   });
 
-  test("a Tester can't use a hidden Paid theme they don't own", () => {
+  test("a Tester can't use a hidden Theme they don't own, Paid or free", () => {
     expect(isThemeUsable(hidden, tester)).toBe(false);
+    expect(isThemeUsable(hiddenFree, tester)).toBe(false);
   });
 
   test("a Tester keeps a hidden Theme they bought", () => {
