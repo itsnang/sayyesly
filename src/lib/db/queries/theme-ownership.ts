@@ -1,25 +1,21 @@
 import "server-only";
 import { and, eq } from "drizzle-orm";
+import type { ThemeAccess } from "@/lib/theme-access";
 import { db } from "../client";
-import { purchases } from "../schema";
+import { purchases, users } from "../schema";
 
 // Shared by the invites slice (who may use a Theme) and the billing slice
-// (what to sell), which can't import each other. Ownership = a paid Purchase.
+// (what to sell), which can't import each other. Ownership = a paid Purchase;
+// a Tester can also use every Theme on offer (see lib/theme-access).
 
-/** Ids of the Themes this user has bought. */
-export async function ownedThemeIds(userId: string): Promise<Set<string>> {
-  const rows = await db
-    .select({ themeId: purchases.themeId })
-    .from(purchases)
-    .where(and(eq(purchases.userId, userId), eq(purchases.status, "paid")));
-  return new Set(rows.map((r) => r.themeId));
-}
-
-/** Whether this user has a paid Purchase of the Theme. */
-export async function ownsTheme(userId: string, themeId: string): Promise<boolean> {
-  const row = await db.query.purchases.findFirst({
-    where: and(eq(purchases.userId, userId), eq(purchases.themeId, themeId), eq(purchases.status, "paid")),
-    columns: { id: true },
-  });
-  return !!row;
+/** The Themes this Creator owns, and whether they're a Tester. */
+export async function themeAccess(userId: string): Promise<ThemeAccess> {
+  const [rows, user] = await Promise.all([
+    db
+      .select({ themeId: purchases.themeId })
+      .from(purchases)
+      .where(and(eq(purchases.userId, userId), eq(purchases.status, "paid"))),
+    db.query.users.findFirst({ where: eq(users.id, userId), columns: { testerSince: true } }),
+  ]);
+  return { owned: new Set(rows.map((r) => r.themeId)), tester: !!user?.testerSince };
 }

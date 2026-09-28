@@ -43,6 +43,13 @@
       "when": 1790579434458,
       "tag": "0005_invite-song-part",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790590976335,
+      "tag": "0006_creator-tester",
+      "breakpoints": true
     }
   ]
 }

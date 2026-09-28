@@ -1,1 +1,1 @@
-export { ownedThemeIds, ownsTheme } from "./theme-ownership";
+export { themeAccess } from "./theme-ownership";

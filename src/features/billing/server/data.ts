@@ -1,15 +1,16 @@
 import "server-only";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { ownedThemeIds } from "@/lib/db/queries";
+import { themeAccess } from "@/lib/db/queries";
 import { themes } from "@/lib/db/schema";
+import { isThemeUsable } from "@/lib/theme-access";
 import type { ThemeForSale } from "../types";
 
-/** Available Themes with whether this Creator already owns each (free ones count as owned). */
+/** Available Themes with whether this Creator already has each (free ones, owned ones, and all of them for a Tester). */
 export async function listThemesForSale(userId: string): Promise<ThemeForSale[]> {
-  const [rows, owned] = await Promise.all([
+  const [rows, access] = await Promise.all([
     db.select().from(themes).where(eq(themes.isActive, true)).orderBy(asc(themes.sortOrder), asc(themes.name)),
-    ownedThemeIds(userId),
+    themeAccess(userId),
   ]);
-  return rows.map((t) => ({ id: t.id, name: t.name, priceCents: t.priceCents, owned: t.priceCents === 0 || owned.has(t.id) }));
+  return rows.map((t) => ({ id: t.id, name: t.name, priceCents: t.priceCents, owned: isThemeUsable(t, access) }));
 }
