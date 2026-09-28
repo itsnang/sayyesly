@@ -58,7 +58,15 @@ export default async function EditInvitePage({ params, searchParams }: PageProps
       footer={
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3">
-            {invite.answered && <ReopenInviteButton inviteId={invite.id} recipientName={invite.values.recipientName} />}
+            {invite.answerKind && (
+              <ReopenInviteButton
+                inviteId={invite.id}
+                recipientName={invite.values.recipientName}
+                themeId={invite.values.themeId}
+                answerKind={invite.answerKind}
+                expired={invite.expired}
+              />
+            )}
             <DuplicateInviteButton inviteId={invite.id} />
           </div>
           <DeleteInviteButton inviteId={invite.id} />

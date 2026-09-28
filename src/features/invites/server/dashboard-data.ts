@@ -1,7 +1,7 @@
 import "server-only";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { invites, inviteTimeSlots, linkedGroups } from "@/lib/db/schema";
+import { invites, inviteTimeSlots, linkedGroups, type AnswerKind } from "@/lib/db/schema";
 import { utcToZonedParts } from "@/lib/time";
 import type { InviteFormValues } from "../schemas";
 import { isExpired } from "../utils";
@@ -47,6 +47,10 @@ export type EditableInvite = {
   slug: string;
   linkCode: string;
   answered: boolean;
+  /** Which Answer it has, if any */
+  answerKind: AnswerKind | null;
+  /** Every Time slot has passed and no Custom time is allowed: without an Answer, it couldn't be answered */
+  expired: boolean;
   /** Group chats that hear the Answer, newest last */
   linkedGroups: { id: string; title: string | null }[];
   values: InviteFormValues;
@@ -58,7 +62,7 @@ export async function getMyInvite(inviteId: string, userId: string): Promise<Edi
     where: and(eq(invites.id, inviteId), eq(invites.creatorId, userId)),
     with: {
       timeSlots: { orderBy: asc(inviteTimeSlots.startsAt) },
-      answer: { columns: { id: true } },
+      answer: { columns: { kind: true } },
       linkedGroups: { columns: { id: true, chatTitle: true }, orderBy: asc(linkedGroups.createdAt) },
     },
   });
@@ -70,6 +74,8 @@ export async function getMyInvite(inviteId: string, userId: string): Promise<Edi
     slug: row.slug,
     linkCode: row.linkCode,
     answered: !!row.answer,
+    answerKind: row.answer?.kind ?? null,
+    expired: isExpired(row, new Date(now)),
     linkedGroups: row.linkedGroups.map((g) => ({ id: g.id, title: g.chatTitle })),
     values: {
       recipientName: row.recipientName,
