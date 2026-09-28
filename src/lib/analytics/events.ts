@@ -14,6 +14,8 @@ export type AnalyticsEvents = {
   link_copied: NoProps;
   invite_opened: { theme: string };
   invite_answered: { kind: "yes" | "maybe_later" };
+  /** The Creator cleared an Answer so the Recipient can answer again; `kind` is the Answer cleared */
+  invite_reopened: { theme: string; kind: "yes" | "maybe_later" };
   checkout_opened: { theme: string };
   theme_paid: { theme: string };
 };
