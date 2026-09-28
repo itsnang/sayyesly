@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Architects_Daughter, Caveat, Courier_Prime, Fraunces, Instrument_Sans } from "next/font/google";
 import { connection } from "next/server";
 import { BASE_OPEN_GRAPH, BASE_TWITTER, SITE_DESCRIPTION, SITE_HOME_TITLE, SITE_TITLE, SITE_URL } from "@/lib/site";
+import { env } from "@/env";
 import { QueryProvider } from "@/lib/query/query-provider";
 import "./globals.css";
 
@@ -45,6 +46,8 @@ export const metadata: Metadata = {
   // Indexable pages set their own.
   openGraph: BASE_OPEN_GRAPH,
   twitter: BASE_TWITTER,
+  // fb:app_id, which Meta's Sharing Debugger asks for; every page inherits it. Only when configured.
+  ...(env.FACEBOOK_APP_ID ? { facebook: { appId: env.FACEBOOK_APP_ID } } : {}),
 };
 
 export default async function RootLayout({
