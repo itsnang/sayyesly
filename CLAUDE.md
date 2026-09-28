@@ -19,7 +19,7 @@ bun run r2:check                  # verify R2 uploads (CORS, signed PUT, public 
 bun test             # unit tests (bun's built-in runner, *.test.ts next to the code)
 ```
 
-Quality gate: `bun run typecheck && bun run lint && bun test && bun run build`. Unit tests cover the agreed seams only: answer rules (`features/invites/utils/answer.ts`), Telegram message text and command parsing, the CutLuy webhook signature/amount check, the Server Action → TanStack Query adapter (`lib/query/action.ts`), when the Theme purchase poll stops (`features/billing/utils/purchase-phase.ts`), the post-login redirect check (`lib/auth/next-path.ts`) and the same-origin (CSRF) check (`lib/auth/same-origin.ts`).
+Quality gate: `bun run typecheck && bun run lint && bun test && bun run build`. Unit tests cover the agreed seams only: answer rules (`features/invites/utils/answer.ts`), Telegram message text and command parsing, the CutLuy webhook signature/amount check, the Server Action → TanStack Query adapter (`lib/query/action.ts`), when the Theme purchase poll stops (`features/billing/utils/purchase-phase.ts`), the post-login redirect check (`lib/auth/next-path.ts`), the same-origin (CSRF) check (`lib/auth/same-origin.ts`) and what analytics may send (`lib/analytics/sanitize.ts`).
 
 Copy `.env.example` to `.env.local`. Locally, point `DATABASE_URL` at a separate dev database, never production.
 
@@ -52,6 +52,7 @@ src/
     types.ts
   lib/                 shared code: db/ (+ db/queries for cross-slice reads), auth/, telegram/,
                        cutluy/, storage/, time/, format/, query/ (TanStack Query provider + runAction),
+                       analytics/ (PostHog events, sanitiser, track()),
                        validation.ts, rate-limit.ts, site.ts, theme-ids.ts
   env.ts               server-only, zod-validated env; use requireEnv() for optional vars
 ```
@@ -78,6 +79,7 @@ Themes are code: `src/features/invites/themes/<id>/` exports a `ThemeDefinition`
 - Escape user text with `escapeHtml()` before sending it in Telegram HTML messages
 - Security headers live in `next.config.ts`; the Content-Security-Policy (per-request script nonce) lives in `src/proxy.ts`. Every page renders per request so it gets the nonce. Adding a third-party script, iframe or upload host means updating that policy
 - Links a Creator typed that end up in an `href` go through `safeHttpUrl()`. Route handlers that change state from a form check `isSameOriginRequest()` (Server Actions get this from Next.js)
+- Analytics events are declared in `lib/analytics/events.ts` and sent with `track()` (or `trackClick()` on server-rendered links). Properties are ids and enums only, never free text (names, questions, notes); every event passes through the sanitiser, which hides Invite slugs and drops titles and query strings. PostHog loads after the page (`src/instrumentation-client.ts`), is off without `NEXT_PUBLIC_POSTHOG_KEY`, and is reached through the `/ingest` rewrite
 - Files are kebab-case (`ask-screen.tsx`); exported components stay PascalCase
 - Mobile-first; check layouts at 375px width
 

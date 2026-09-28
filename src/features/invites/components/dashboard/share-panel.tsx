@@ -56,7 +56,7 @@ export function SharePanel({
         {hasChannel ? (
           <>
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <CopyButton text={shareUrl} variant="primary" size="md" />
+              <CopyButton text={shareUrl} variant="primary" size="md" shareLink />
               <a href={telegramShare} target="_blank" rel="noopener noreferrer" className={buttonClass("secondary")}>
                 Send in Telegram
               </a>

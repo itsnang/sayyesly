@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { trackClick } from "@/lib/analytics/track";
 
 const ERRORS: Record<string, string> = {
   expired: "That login took too long or was opened in another browser. Please try again.",
@@ -36,6 +37,7 @@ export function LoginScreen({ next, error, available }: { next: string; error: s
           {available && (
             <a
               href={href}
+              {...trackClick("login_started")}
               className="mt-8 flex h-12 w-full items-center justify-center gap-2.5 rounded-lg bg-[#2aabee] text-[16px] font-medium text-white transition-colors hover:bg-[#229ed9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2aabee]"
             >
               <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="currentColor">

@@ -5,6 +5,7 @@ import type { InviteFormValues } from "@/features/invites/schemas";
 import { DEFAULT_THEME_ID, getTheme, hasTheme } from "@/features/invites/themes";
 import { withExample } from "@/features/invites/utils/example";
 import { DEFAULT_TIME_OF_DAY } from "@/features/invites/utils/time-of-day";
+import { TrackOnMount } from "@/lib/analytics/track-on-mount";
 import { BASE_OPEN_GRAPH, BASE_TWITTER, SITE_TITLE } from "@/lib/site";
 
 const DEMO_TITLE = "Try a demo invite";
@@ -46,5 +47,10 @@ export default async function DemoPage({ searchParams }: PageProps<"/demo">) {
   const theme = getTheme(typeof requested === "string" && hasTheme(requested) ? requested : DEFAULT_THEME_ID);
   if (!theme) notFound();
   const { values } = withExample({ ...DEMO, themeId: theme.id }, theme.content);
-  return <ThemePreview fixedValues={values} />;
+  return (
+    <>
+      <ThemePreview fixedValues={values} />
+      <TrackOnMount event="demo_opened" props={{ theme: theme.id }} />
+    </>
+  );
 }

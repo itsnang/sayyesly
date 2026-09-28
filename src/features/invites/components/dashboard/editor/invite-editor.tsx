@@ -9,6 +9,7 @@ import { Controller, useFieldArray, useForm, useWatch, type FieldErrors, type Fi
 import { Wordmark } from "@/components/shared/studio";
 import { Button, buttonClass, chipClass, cx, Field, FieldError, Input, Note, Textarea } from "@/components/shared/ui";
 import { formatUsd } from "@/lib/format";
+import { track } from "@/lib/analytics/track";
 import { errorMessage } from "@/lib/query/action";
 import { useSaveInvite } from "../../../hooks/use-invite-mutations";
 import { inviteFormSchema, MAX_PLAN_PHOTOS, MAX_TIME_SLOTS, type InviteFormValues } from "../../../schemas";
@@ -257,6 +258,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
       return;
     }
     if (isNew) {
+      track("invite_created", { theme: data.themeId });
       router.push(`/dashboard/invites/${result.id}?created=1`);
       return;
     }

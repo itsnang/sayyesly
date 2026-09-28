@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useRef } from "react";
+import { track } from "@/lib/analytics/track";
 import { ActionError, errorMessage, runAction } from "@/lib/query/action";
 import type { InviteThemeProps } from "../themes/types";
 import type { AnswerInput } from "../types";
@@ -19,6 +20,8 @@ export function useInviteAnswer({ invite, submitAnswer }: InviteThemeProps) {
     mutationFn: async (input: AnswerInput) => {
       const result = await runAction(() => submitAnswer(input));
       if (!result.answer) throw new ActionError("Something went wrong. Please try again.");
+      // Previews (the studio, /demo, a Creator opening their own Invite) save nothing, so they don't count.
+      if (!result.preview) track("invite_answered", { kind: result.answer.answer });
       return result.answer;
     },
   });

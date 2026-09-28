@@ -1,4 +1,5 @@
 import { Cloud, Envelope, Flower, Heart, Leaf, Loop, Petal, Sparkle, Spiral, Squiggle, Star } from "@/components/shared/doodles";
+import { trackClick } from "@/lib/analytics/track";
 import Link from "next/link";
 import { InkButton } from "@/components/shared/studio";
 import { buttonClass } from "@/components/shared/ui";
@@ -47,7 +48,9 @@ export function Hero() {
             </span>
           </h1>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <InkButton href="/dashboard/invites/new">Make an invite</InkButton>
+            <InkButton href="/dashboard/invites/new" {...trackClick("make_invite_clicked", { location: "hero" })}>
+              Make an invite
+            </InkButton>
             <Link href="/demo?theme=envelope" className={buttonClass("secondary", "md", "px-5")}>
               Try the demo
             </Link>
