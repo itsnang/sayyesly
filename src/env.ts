@@ -25,6 +25,8 @@ const serverSchema = z.object({
   R2_SECRET_ACCESS_KEY: optional(z.string()),
   R2_BUCKET: optional(z.string()),
   R2_PUBLIC_URL: optional(z.string().regex(/^https:\/\//, "must start with https://")),
+  // Meta app id for the fb:app_id tag in link previews (developers.facebook.com → My Apps). Optional.
+  FACEBOOK_APP_ID: optional(z.string().regex(/^\d+$/, "must be the numeric App ID")),
 });
 
 /**
