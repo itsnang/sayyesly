@@ -1,4 +1,4 @@
-// Anonymous product analytics (PostHog, EU), loaded only after the page has
+// Anonymous product analytics (PostHog, US cloud), loaded only after the page has
 // finished loading so it never delays what the visitor sees. Off unless
 // NEXT_PUBLIC_POSTHOG_KEY is set. See docs: spec itsnang/sayyesly#94.
 import { sanitizeEvent } from "@/lib/analytics/sanitize";
@@ -7,9 +7,9 @@ import { analyticsEnabled, attachAnalytics, onTrackedClick } from "@/lib/analyti
 async function startAnalytics() {
   const { default: posthog } = await import("posthog-js");
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
-    // Same-origin: next.config.ts forwards /ingest to PostHog's EU hosts.
+    // Same-origin: next.config.ts forwards /ingest to PostHog's US hosts.
     api_host: "/ingest",
-    ui_host: "https://eu.posthog.com",
+    ui_host: "https://us.posthog.com",
     // No cookies or storage, and nobody is ever identified.
     persistence: "memory",
     person_profiles: "identified_only",
