@@ -19,7 +19,7 @@ bun run r2:check                  # verify R2 uploads (CORS, signed PUT, public 
 bun test             # unit tests (bun's built-in runner, *.test.ts next to the code)
 ```
 
-Quality gate: `bun run typecheck && bun run lint && bun test && bun run build`. Unit tests cover the agreed seams only: answer rules (`features/invites/utils/answer.ts`), recognising a Song link (`features/invites/utils/song.ts`), Telegram message text and command parsing, the CutLuy webhook signature/amount check, the Server Action → TanStack Query adapter (`lib/query/action.ts`), when the Theme purchase poll stops (`features/billing/utils/purchase-phase.ts`), the post-login redirect check (`lib/auth/next-path.ts`), the same-origin (CSRF) check (`lib/auth/same-origin.ts`) and what analytics may send (`lib/analytics/sanitize.ts`).
+Quality gate: `bun run typecheck && bun run lint && bun test && bun run build`. Unit tests cover the agreed seams only: answer rules (`features/invites/utils/answer.ts`), recognising a Song link (`features/invites/utils/song.ts`), Telegram message text and command parsing, the CutLuy webhook signature/amount check, the Server Action → TanStack Query adapter (`lib/query/action.ts`), when the Theme purchase poll stops (`features/billing/utils/purchase-phase.ts`), who may use a Theme (`lib/theme-access.ts`), the post-login redirect check (`lib/auth/next-path.ts`), the same-origin (CSRF) check (`lib/auth/same-origin.ts`) and what analytics may send (`lib/analytics/sanitize.ts`).
 
 Copy `.env.example` to `.env.local`. Locally, point `DATABASE_URL` at a separate dev database, never production.
 
@@ -54,7 +54,7 @@ src/
   lib/                 shared code: db/ (+ db/queries for cross-slice reads), auth/, telegram/,
                        cutluy/, storage/, time/, format/, query/ (TanStack Query provider + runAction),
                        analytics/ (PostHog events, sanitiser, track()),
-                       validation.ts, rate-limit.ts, site.ts, theme-ids.ts
+                       validation.ts, rate-limit.ts, site.ts, theme-ids.ts, theme-access.ts
   env.ts               server-only, zod-validated env; use requireEnv() for optional vars
 ```
 
@@ -62,7 +62,7 @@ Slices: `invites` (invite page, themes, answer flow, notifications, editor), `te
 
 ### Payments
 
-A Paid theme unlocks **only** when `/api/cutluy/webhook` receives a signature-verified `payment.completed` whose amount matches the Purchase's `amount_cents` (copied from `themes.price_cents` on the server). Never unlock from a redirect or anything the browser sends. `canUseTheme()` gates saving an invite with a Theme.
+A Paid theme unlocks **only** when `/api/cutluy/webhook` receives a signature-verified `payment.completed` whose amount matches the Purchase's `amount_cents` (copied from `themes.price_cents` on the server). Never unlock from a redirect or anything the browser sends. `canUseTheme()` gates saving an invite with a Theme. A Tester (a Creator an Admin marked, `users.tester_since`) can use every Theme on offer without a Purchase; that access is never stored as a Purchase. Every access check goes through `lib/theme-access.ts` with `themeAccess()` from `lib/db/queries`.
 
 ### Themes
 

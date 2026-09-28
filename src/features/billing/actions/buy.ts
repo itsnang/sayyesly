@@ -5,9 +5,10 @@ import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth/session";
 import { createPayment, khqrImageUrl } from "@/lib/cutluy/client";
 import { db } from "@/lib/db";
-import { ownsTheme } from "@/lib/db/queries";
+import { themeAccess } from "@/lib/db/queries";
 import { purchases, themes, type Purchase } from "@/lib/db/schema";
 import { rateLimit } from "@/lib/rate-limit";
+import { isThemeUsable } from "@/lib/theme-access";
 import { idSchema } from "@/lib/validation";
 import type { CheckoutResult, PurchaseStatusResult } from "../types";
 import { centsToDollars } from "../utils/cutluy-webhook";
@@ -36,12 +37,13 @@ export async function buyTheme(themeId: string): Promise<CheckoutResult> {
   if (!rateLimit(`buy:${user.id}`, 6, 60_000)) return { error: "Too many tries. Please wait a minute." };
 
   // Independent reads, so they share one round trip's worth of waiting.
-  const [theme, owned] = await Promise.all([
+  const [theme, access] = await Promise.all([
     db.query.themes.findFirst({ where: eq(themes.id, themeId) }),
-    ownsTheme(user.id, themeId),
+    themeAccess(user.id),
   ]);
   if (!theme?.isActive) return { error: "That theme isn't available." };
-  if (theme.priceCents === 0 || owned) return { owned: true };
+  // Free, already owned, or a Tester: nothing to pay.
+  if (isThemeUsable(theme, access)) return { owned: true };
 
   // One checkout at a time per Creator and Theme: a second tap waits here, then
   // finds the first tap's still-valid QR instead of creating another payment.
