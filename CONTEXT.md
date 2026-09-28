@@ -79,8 +79,12 @@ _Avoid_: order, transaction, payment
 ### Answers
 
 **Answer**:
-The Recipient's single, final reply to an Invite: either **Yes** (with a chosen Time slot or Custom time) or **Maybe later**. There is deliberately no "No" answer, and an Answer cannot be changed.
+The Recipient's single, final reply to an Invite: either **Yes** (with a chosen Time slot or Custom time) or **Maybe later**. There is deliberately no "No" answer, and the Recipient cannot change an Answer; only the Creator can clear it by Reopening the Invite.
 _Avoid_: response, reply, RSVP
+
+**Reopen**:
+The Creator clearing an Invite's Answer so the Recipient can answer again on the same link. The cleared Answer is gone for good; the next Answer is reported like the first.
+_Avoid_: revoke, reset, undo
 
 **Maybe later**:
 The polite way out. A Theme with a runaway "No" offers it after enough Dodges; a Theme without one offers it from the start.
