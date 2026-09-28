@@ -290,8 +290,13 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
     <span className="text-[13px] text-muted">Unsaved changes</span>
   ) : null;
 
+  // Unlocking buys the Theme, not the invite, so it opens checkout without checking the form's fields.
   const primary =
-    themeLocked && selectedTheme ? (
+    themeLocked && selectedTheme && onUnlockTheme ? (
+      <Button type="button" size="sm" onClick={() => unlock(selectedTheme)}>
+        Unlock {formatUsd(selectedTheme.priceCents)}
+      </Button>
+    ) : themeLocked && selectedTheme ? (
       <Button type="submit" form="invite-form" size="sm">
         Unlock {formatUsd(selectedTheme.priceCents)}
       </Button>
