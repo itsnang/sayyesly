@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { runAction } from "@/lib/query/action";
-import { deleteInvite, duplicateInvite, saveInvite } from "../actions";
+import { deleteInvite, duplicateInvite, reopenInvite, saveInvite } from "../actions";
 import type { InviteFormValues } from "../schemas";
 
 // The Creator's changes to their Invites, as mutations. Each one calls its
@@ -25,6 +25,15 @@ export function useDeleteInvite() {
   return useMutation({
     mutationFn: (inviteId: string) => runAction(() => deleteInvite(inviteId)),
     onSuccess: () => router.push("/dashboard"),
+  });
+}
+
+/** Clears the Invite's Answer so the Recipient can answer again, then reloads the studio (now unlocked). */
+export function useReopenInvite() {
+  const router = useRouter();
+  return useMutation({
+    mutationFn: (inviteId: string) => runAction(() => reopenInvite(inviteId)),
+    onSuccess: () => router.refresh(),
   });
 }
 

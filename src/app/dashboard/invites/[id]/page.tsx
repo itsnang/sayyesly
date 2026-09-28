@@ -3,6 +3,7 @@ import { InviteStudio } from "../_components/invite-studio";
 import { Note } from "@/components/shared/ui";
 import { DeleteInviteButton } from "@/features/invites/components/dashboard/delete-invite-button";
 import { DuplicateInviteButton } from "@/features/invites/components/dashboard/duplicate-invite-button";
+import { ReopenInviteButton } from "@/features/invites/components/dashboard/reopen-invite-button";
 import { SharePanel } from "@/features/invites/components/dashboard/share-panel";
 import { getMyInvite } from "@/features/invites/server/dashboard-data";
 import { getThemeChoices } from "@/features/invites/server/theme-access";
@@ -56,7 +57,10 @@ export default async function EditInvitePage({ params, searchParams }: PageProps
       }
       footer={
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <DuplicateInviteButton inviteId={invite.id} />
+          <div className="flex flex-wrap items-center gap-3">
+            {invite.answered && <ReopenInviteButton inviteId={invite.id} recipientName={invite.values.recipientName} />}
+            <DuplicateInviteButton inviteId={invite.id} />
+          </div>
           <DeleteInviteButton inviteId={invite.id} />
         </div>
       }

@@ -166,9 +166,9 @@ export async function saveInvite(inviteId: string | null, input: InviteFormValue
 /**
  * Copies one of the Creator's Invites into a brand-new one: same question,
  * Plan and Theme, but a fresh link, no Time slots (the old ones would be in
- * the past) and no Answer. The original Invite is untouched — an Answer can
- * never change, so reusing one by resetting it isn't an option; this makes a
- * new Invite instead, for sending again or to someone else.
+ * the past) and no Answer. The original Invite is untouched: this makes a new
+ * Invite with its own link, for sending to someone else (to ask the same
+ * Recipient again on the same link, reopen it instead).
  */
 export async function duplicateInvite(inviteId: string): Promise<DuplicateResult> {
   const user = await getCurrentUser();
@@ -217,6 +217,35 @@ export async function duplicateInvite(inviteId: string): Promise<DuplicateResult
 
   revalidatePath("/dashboard");
   return { id: created.id, themeSwapped: !stillOwns };
+}
+
+/**
+ * Reopens one of the Creator's Invites: clears its Answer, so the Recipient
+ * sees the question again and can answer anew (and the Creator is told again
+ * when they do). Only the Creator can do this; the Recipient can't change an
+ * Answer. Already open is fine, not an error.
+ */
+export async function reopenInvite(inviteId: string): Promise<{ error?: string }> {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Please log in again." };
+  if (!idSchema.safeParse(inviteId).success) return { error: "Invite not found." };
+
+  const slug = await db.transaction(async (tx) => {
+    // Same lock as saving an Answer, so an Answer can't land halfway through.
+    const [locked] = await tx
+      .select({ slug: invites.slug })
+      .from(invites)
+      .where(and(eq(invites.id, inviteId), eq(invites.creatorId, user.id)))
+      .for("update");
+    if (!locked) return null;
+    await tx.delete(answers).where(eq(answers.inviteId, inviteId));
+    return locked.slug;
+  });
+  if (!slug) return { error: "Invite not found." };
+
+  revalidatePath("/dashboard");
+  revalidatePath(`/invite/${slug}`);
+  return {};
 }
 
 /** Permanently deletes one of the Creator's Invites, with its Answer and Linked groups. */
