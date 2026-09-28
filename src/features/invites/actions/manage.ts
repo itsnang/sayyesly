@@ -11,7 +11,7 @@ import { inviteFormSchema, type InviteFormValues } from "../schemas";
 import { canUseTheme } from "../server/theme-access";
 import { DEFAULT_THEME_ID } from "../themes";
 import { newInviteSlug, newLinkCode } from "../utils";
-import { recognizeSong } from "../utils/song";
+import { songFromUrl } from "../utils/song";
 
 type SaveResult = {
   error?: string;
@@ -23,10 +23,7 @@ type DuplicateResult = { error?: string; id?: string; /** The copy uses the free
 
 const emptyToNull = (v: string) => (v === "" ? null : v);
 // Saved in one form whatever was pasted (youtu.be, Shorts, ?si=…), so it compares and plays the same.
-const canonicalSongUrl = (v: string) => {
-  const song = v === "" ? null : recognizeSong(v);
-  return song?.ok ? song.song.url : null;
-};
+const canonicalSongUrl = (v: string) => songFromUrl(v)?.url ?? null;
 
 /**
  * Creates (`inviteId` null) or updates one of the Creator's Invites. Once the

@@ -51,6 +51,8 @@ function LiveFrame({ values, title, virtualWidth }: { values: InviteFormValues; 
           ref={frame}
           src="/preview/theme"
           title={title}
+          // A Theme's Song player may start by itself once the Creator taps the preview.
+          allow="autoplay; encrypted-media; fullscreen"
           className="absolute top-0 left-0 origin-top-left border-0"
           style={{ width: size.w / scale, height: size.h / scale, transform: `scale(${scale})` }}
         />

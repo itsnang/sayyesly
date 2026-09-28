@@ -445,7 +445,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
                     </Field>
                   )}
                   {content.song && (
-                    <Field label="Song" optional hint="One song on YouTube or Spotify: Share → Copy link." error={errors.songUrl?.message}>
+                    <Field label="Song" optional hint="Plays softly while they read. In Spotify: Share → Copy song link." error={errors.songUrl?.message}>
                       <Input {...register("songUrl")} type="url" inputMode="url" placeholder="https://open.spotify.com/track/…" />
                     </Field>
                   )}
