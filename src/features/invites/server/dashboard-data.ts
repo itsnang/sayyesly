@@ -83,6 +83,8 @@ export async function getMyInvite(inviteId: string, userId: string): Promise<Edi
       planNotes: row.planNotes ?? "",
       planPhotos: row.planPhotos.map((p) => ({ url: p.url, alt: p.alt, caption: p.caption ?? "" })),
       songUrl: row.songUrl ?? "",
+      songStart: row.songStart,
+      songLength: row.songLength,
       timezone: row.timezone,
       // Older Invites could offer times and a calendar at once; they open as
       // "I'll pick the times" (and keep both for Recipients until saved again).

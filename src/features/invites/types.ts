@@ -1,4 +1,4 @@
-import type { SongLink } from "./utils/song";
+import type { SongClip } from "./utils/song";
 import type { PlanPhoto } from "@/lib/db/schema";
 import type { TimeOfDay } from "@/lib/time/time-of-day";
 import type { AnswerInput } from "./utils/answer";
@@ -47,8 +47,8 @@ export type PublicInvite = {
   allowCustomTime: boolean;
   /** Sets the times a Recipient can tap when picking their own */
   timeOfDay: TimeOfDay;
-  /** The Song, already recognised; null when there's none */
-  song: SongLink | null;
+  /** The Song and the part of it that plays, already recognised; null when there's none */
+  song: SongClip | null;
   /** The Answer, once given; themes show it instead of asking again */
   answer: PublicAnswer | null;
   expired: boolean;

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Controller, useFieldArray, useForm, useWatch, type FieldErrors, type FieldPath } from "react-hook-form";
 import { Wordmark } from "@/components/shared/studio";
@@ -25,8 +25,9 @@ import { DesktopMock, DeviceToggle, PhoneMock, PreviewSheet, type Device } from 
 import { QuestionField } from "./question-field";
 import { isThemeLocked, ThemeField } from "./theme-field";
 import { PhotosField } from "./photos-field";
-import { recognizeSong } from "../../../utils/song";
+import { DEFAULT_SONG_LENGTH, recognizeSong, songFromUrl } from "../../../utils/song";
 import { SongDetails } from "./song-details";
+import { SongPartPicker } from "./song-part-picker";
 import { TimesField } from "./times-field";
 import { TimeZoneSelect } from "./time-zone-select";
 
@@ -225,6 +226,21 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
   // A paid Theme can be tried on the preview before buying; it has to be unlocked to save.
   const selectedTheme = themes.find((t) => t.id === values.themeId);
   const themeLocked = isThemeLocked(selectedTheme, defaults.themeId);
+  // The Song and the part of it that plays: a different song starts from its beginning again.
+  const songLink = songFromUrl(values.songUrl);
+  const songId = songLink?.id ?? null;
+  const lastSongId = useRef(songId);
+  useEffect(() => {
+    if (songId && lastSongId.current && songId !== lastSongId.current) setValue("songStart", 0, { shouldDirty: true });
+    lastSongId.current = songId ?? lastSongId.current;
+  }, [songId, setValue]);
+  const setSongPart = useCallback(
+    (start: number, length: number, byCreator: boolean) => {
+      setValue("songStart", start, { shouldDirty: byCreator });
+      setValue("songLength", length, { shouldDirty: byCreator });
+    },
+    [setValue],
+  );
   const unlock = (theme: ThemeChoice) => onUnlockTheme?.(theme, () => setValue("themeId", theme.id, { shouldDirty: true }));
   const title = isNew ? "New invite" : inviteTitle(values.recipientName ?? "", values.question ?? "");
   const lockNote = "Locked, because they've already answered.";
@@ -457,6 +473,15 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
                       <div className="grid gap-2">
                         <Input {...register("songUrl")} type="url" inputMode="url" placeholder="https://youtu.be/…" />
                         <SongDetails songUrl={values.songUrl ?? ""} />
+                        {songLink && (
+                          <SongPartPicker
+                            key={songLink.id}
+                            song={songLink}
+                            start={values.songStart ?? 0}
+                            length={values.songLength ?? DEFAULT_SONG_LENGTH}
+                            onChange={setSongPart}
+                          />
+                        )}
                       </div>
                     </Field>
                   )}

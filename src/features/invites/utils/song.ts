@@ -9,6 +9,9 @@ export type SongLink = {
   url: string;
 };
 
+/** The Song as it plays: which video, and the part of it (from `start`, for `length` seconds, repeating). */
+export type SongClip = SongLink & { start: number; length: number };
+
 export type RecognizedSong = { ok: true; song: SongLink } | { ok: false; reason: string };
 
 const YOUTUBE_ID = /^[\w-]{11}$/;
@@ -56,4 +59,27 @@ export function songFromUrl(url: string | null | undefined): SongLink | null {
   if (!url) return null;
   const song = recognizeSong(url);
   return song.ok ? song.song : null;
+}
+
+/** How long the part of the Song that plays can be, in seconds. */
+export const SONG_LENGTHS = [15, 30, 60] as const;
+export type SongLength = (typeof SONG_LENGTHS)[number];
+export const DEFAULT_SONG_LENGTH: SongLength = 30;
+
+/**
+ * Where the chosen part of the Song starts, in whole seconds, kept inside the
+ * song: a start too late moves back so the whole part fits. `duration` is null
+ * until the player has said how long the song is.
+ */
+export function clipStart(start: number, length: number, duration: number | null): number {
+  const latest = duration === null ? Infinity : Math.max(0, duration - length);
+  return Math.floor(Math.max(0, Math.min(start, latest)));
+}
+
+/** The Song on an Invite as it plays, from what's saved (or typed in the studio), or null when there's none. */
+export function songClip(url: string | null | undefined, start: number | undefined, length: number | undefined): SongClip | null {
+  const song = songFromUrl(url);
+  if (!song) return null;
+  const clipLength = (SONG_LENGTHS as readonly number[]).includes(length ?? 0) ? length! : DEFAULT_SONG_LENGTH;
+  return { ...song, start: clipStart(start ?? 0, clipLength, null), length: clipLength };
 }

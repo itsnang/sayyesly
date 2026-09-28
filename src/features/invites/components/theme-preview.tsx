@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { zonedTimeToUtc } from "@/lib/time";
-import { songFromUrl } from "../utils/song";
+import { songClip } from "../utils/song";
 import { safeHttpUrl } from "@/lib/validation";
 import type { InviteFormValues } from "../schemas";
 import { DEFAULT_THEME_ID, getTheme } from "../themes";
@@ -42,7 +42,7 @@ function toPreviewInvite(values: InviteFormValues, exampleQuestion: string): Pub
     timeSlots,
     allowCustomTime: values.allowCustomTime,
     timeOfDay: values.timeOfDay ?? DEFAULT_TIME_OF_DAY,
-    song: songFromUrl(values.songUrl),
+    song: songClip(values.songUrl, values.songStart, values.songLength),
     answer: null,
     expired: false,
   };

@@ -1,5 +1,22 @@
 import { describe, expect, test } from "bun:test";
-import { recognizeSong, songFromUrl } from "./song";
+import { clipStart, recognizeSong, songFromUrl } from "./song";
+
+describe("clipStart", () => {
+  test("the chosen part stays inside the song: a start too late moves back so the whole part fits", () => {
+    expect(clipStart(45, 30, 212)).toBe(45);
+    expect(clipStart(200, 30, 212)).toBe(182);
+    expect(clipStart(-5, 15, 212)).toBe(0);
+  });
+
+  test("a part longer than the song starts at the beginning", () => {
+    expect(clipStart(10, 60, 40)).toBe(0);
+  });
+
+  test("before the length of the song is known, only the start is kept sane", () => {
+    expect(clipStart(75, 30, null)).toBe(75);
+    expect(clipStart(12.7, 30, null)).toBe(12);
+  });
+});
 
 const SONG = { id: "dQw4w9WgXcQ", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" };
 

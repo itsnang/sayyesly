@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { isValidTimeZone } from "@/lib/time";
 import { TIMES_OF_DAY } from "@/lib/time/time-of-day";
-import { recognizeSong } from "../utils/song";
+import { recognizeSong, SONG_LENGTHS } from "../utils/song";
 
 // Form values are plain strings/booleans (empty string = not set) so the same
 // schema drives React Hook Form in the browser and validation on the server.
@@ -60,6 +60,9 @@ export const inviteFormSchema = z
       )
       .max(MAX_PLAN_PHOTOS),
     songUrl,
+    // Which part of the Song plays: its start (seconds) and length (15, 30 or 60).
+    songStart: z.number().int().min(0).max(3 * 60 * 60),
+    songLength: z.number().refine((n) => (SONG_LENGTHS as readonly number[]).includes(n), "Pick 15, 30 or 60 seconds"),
     timezone: z.string().refine(isValidTimeZone, "Pick a real time zone, e.g. Asia/Phnom_Penh"),
     // The When section's mode: true is "Let them pick" (a calendar, no Time slots),
     // false is "I'll pick the times" (only the Time slots below).
