@@ -1,8 +1,14 @@
 import type { PlanPhoto } from "../../types";
 
-/** Photos of an example dinner plan, for Themes' examples (the studio preview and /demo). */
+/**
+ * Drawn placeholder photos of an example plan, for Themes' examples (the studio
+ * preview and /demo). Illustrations on purpose: no real place is shown or promoted.
+ */
 export const EXAMPLE_PLAN_PHOTOS: PlanPhoto[] = [
-  { url: "/pasted-1780505948966-1.png", alt: "restaurant exterior", caption: "" },
-  { url: "/pasted-1780505892491-0.png", alt: "neon sign", caption: "the vibe ✦" },
-  { url: "/pasted-1780505849218-0.png", alt: "a steak", caption: "the steak ✦" },
+  { url: "/examples/place.png", alt: "a small café front", caption: "" },
+  { url: "/examples/vibe.png", alt: "string lights over a table", caption: "the vibe ✦" },
+  { url: "/examples/food.png", alt: "a plate of food", caption: "the food ✦" },
 ];
+
+/** A drawn placeholder for the picture a Theme shows beside the question. */
+export const EXAMPLE_PICTURE = "/examples/photo.png";
