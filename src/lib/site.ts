@@ -30,3 +30,10 @@ export const BASE_TWITTER = {
   title: SITE_HOME_TITLE,
   description: SITE_DESCRIPTION,
 } satisfies Metadata["twitter"];
+
+/** Where people ask for help, a refund or their data deleted: the owner on Telegram. */
+export const SUPPORT_URL = "https://t.me/itsamnang";
+export const SUPPORT_HANDLE = "@itsamnang";
+
+/** When the Terms, Privacy and Refunds pages last changed (shown on them). */
+export const LEGAL_UPDATED = "28 September 2026";

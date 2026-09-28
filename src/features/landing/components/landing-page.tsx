@@ -54,6 +54,9 @@ export function LandingPage({ envelopePrice }: { envelopePrice: number | undefin
             <Link href="/login" className="py-2 hover:text-ink">Log in</Link>
             <Link href="/dashboard" className="py-2 hover:text-ink">Dashboard</Link>
             <a href="#faq" className="py-2 hover:text-ink">FAQ</a>
+            <Link href="/terms" className="py-2 hover:text-ink">Terms</Link>
+            <Link href="/privacy" className="py-2 hover:text-ink">Privacy</Link>
+            <Link href="/refunds" className="py-2 hover:text-ink">Refunds</Link>
           </nav>
         </div>
       </footer>

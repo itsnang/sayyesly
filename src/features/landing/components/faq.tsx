@@ -32,6 +32,10 @@ const QUESTIONS = [
     a: "You pay once per Theme with any banking app that scans KHQR. It unlocks as soon as the payment is confirmed, and it's yours for every invite after that.",
   },
   {
+    q: "Can I get a refund?",
+    a: "An unlocked Theme isn't refunded, since it's yours to keep. If you paid and it didn't unlock, message @itsamnang on Telegram within 7 days and we'll unlock it or refund you in full. The Refunds page has the details.",
+  },
+  {
     q: "Can I change the plan after they say yes?",
     a: "Yes. Place, map link, dress code, notes and photos stay editable. The question, the times and the Theme lock once they've answered, since that's what they said yes to.",
   },
