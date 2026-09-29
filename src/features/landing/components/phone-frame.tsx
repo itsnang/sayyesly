@@ -7,6 +7,8 @@ const pct = (n: number, of: number) => `${(n / of) * 100}%`;
 /**
  * A screenshot of an invite in the same iPhone frame the studio's live preview
  * uses, so the landing shows exactly what a Creator sees. Size it with `className`.
+ * `beforeSrc` stacks a second screenshot on top, hidden, for an animation to
+ * show first and then fade into `src` (the studio's demo reel).
  */
 export function PhoneFrame({
   src,
@@ -14,12 +16,14 @@ export function PhoneFrame({
   className,
   sizes = "280px",
   priority = false,
+  beforeSrc,
 }: {
   src: string;
   alt: string;
   className?: string;
   sizes?: string;
   priority?: boolean;
+  beforeSrc?: string;
 }) {
   return (
     <div className={cx("relative aspect-[433/882] drop-shadow-[0_22px_26px_rgba(60,30,20,0.18)]", className)}>
@@ -36,6 +40,7 @@ export function PhoneFrame({
       >
         {/* The screenshots are 390 × 780; the screen is a little taller, so crop from the top. */}
         <Image src={src} alt={alt} fill sizes={sizes} priority={priority} className="object-cover object-top" />
+        {beforeSrc && <Image data-screen-before="" src={beforeSrc} alt="" fill sizes={sizes} className="object-cover object-top opacity-0" />}
       </div>
       <span
         aria-hidden

@@ -1,3 +1,5 @@
+import { FaqMotion } from "./closing-motion";
+
 const QUESTIONS = [
   {
     q: "Can they say no?",
@@ -18,6 +20,10 @@ const QUESTIONS = [
   {
     q: "Can I invite a group, or only one person?",
     a: "One invite is for one person and takes one answer, the first one sent. To ask several people, make one invite each; Duplicate copies an invite in a tap. You can still link a group chat so your friends hear the answer as it comes in.",
+  },
+  {
+    q: "Can I add music?",
+    a: "Yes, on every Theme, for free. Paste a YouTube link to a song and pick the part that plays: 15, 30 or 60 seconds. It starts in the background the moment they open your invite, and loops that part.",
   },
   {
     q: "What if none of my times work for them?",
@@ -51,6 +57,7 @@ export function Faq() {
       <h2 id="faq-title" className="text-center font-display text-[clamp(28px,3.6vw,40px)] text-ink">
         Things people ask
       </h2>
+      <FaqMotion>
       <div className="mt-10 border-t-[1.5px] border-ink">
         {QUESTIONS.map(({ q, a }) => (
           <details key={q} className="group border-b border-ink/15">
@@ -60,10 +67,13 @@ export function Faq() {
                 +
               </span>
             </summary>
-            <p className="max-w-[62ch] pb-6 text-[15px] leading-relaxed text-muted">{a}</p>
+            <div data-answer="" className="overflow-hidden">
+              <p className="max-w-[62ch] pb-6 text-[15px] leading-relaxed text-muted">{a}</p>
+            </div>
           </details>
         ))}
       </div>
+      </FaqMotion>
     </section>
   );
 }
