@@ -10,8 +10,9 @@ export type AnswerableInvite = {
   timeSlots: { id: string; startsAt: Date }[];
 };
 
+/** An Answer checked against its Invite, ready to save (fields named as the database names them). */
 export type ResolvedAnswer = {
-  answer: AnswerKind;
+  kind: AnswerKind;
   timeSlotId: string | null;
   startsAt: Date | null;
   note: string | null;
@@ -69,7 +70,7 @@ export function resolveAnswer(invite: AnswerableInvite, raw: unknown, now: Date)
   if (input.answer === AnswerKind.MaybeLater) {
     return {
       ok: true,
-      value: { answer: AnswerKind.MaybeLater, timeSlotId: null, startsAt: null, note: input.note, noDodges: input.noDodges },
+      value: { kind: AnswerKind.MaybeLater, timeSlotId: null, startsAt: null, note: input.note, noDodges: input.noDodges },
     };
   }
   const { choice } = input;
@@ -81,7 +82,7 @@ export function resolveAnswer(invite: AnswerableInvite, raw: unknown, now: Date)
     if (startsAt.getTime() <= now.getTime()) return { ok: false, error: "That time has already passed." };
     return {
       ok: true,
-      value: { answer: AnswerKind.Yes, timeSlotId: null, startsAt, note: input.note, noDodges: input.noDodges },
+      value: { kind: AnswerKind.Yes, timeSlotId: null, startsAt, note: input.note, noDodges: input.noDodges },
     };
   }
 
@@ -91,7 +92,7 @@ export function resolveAnswer(invite: AnswerableInvite, raw: unknown, now: Date)
   return {
     ok: true,
     value: {
-      answer: AnswerKind.Yes,
+      kind: AnswerKind.Yes,
       timeSlotId: slot.id,
       startsAt: slot.startsAt,
       note: input.note,

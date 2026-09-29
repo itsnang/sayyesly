@@ -1,7 +1,7 @@
 import { InviteStudio } from "../_components/invite-studio";
 import type { InviteFormValues } from "@/features/invites/schemas";
 import { DEFAULT_SONG_LENGTH } from "@/features/invites/utils/song";
-import { getThemeChoices } from "@/features/invites/server/theme-access";
+import { getThemeChoices } from "@/features/invites/server/theme-choices";
 import { DEFAULT_THEME_ID } from "@/features/invites/themes";
 import { DEFAULT_TIME_OF_DAY } from "@/features/invites/utils/time-of-day";
 import { requireUser } from "@/lib/auth/session";

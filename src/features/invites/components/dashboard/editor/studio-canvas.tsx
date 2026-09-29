@@ -5,7 +5,7 @@ import { buttonClass } from "@/components/shared/ui";
 import { formatUsd } from "@/lib/format";
 import { PreviewDevice } from "../../../enums";
 import type { InviteFormValues } from "../../../schemas";
-import type { ThemeChoice } from "../../../server/theme-access";
+import type { ThemeChoice } from "../../../server/theme-choices";
 import { useStudio } from "../../../stores/studio-store";
 import { DesktopMock, DeviceToggle, PhoneMock } from "./live-preview";
 

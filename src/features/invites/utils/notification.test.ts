@@ -14,7 +14,7 @@ describe("answerNotification", () => {
   test("a yes names the Recipient, the place, the date and time in the Invite's zone, and the dodges", () => {
     const text = answerNotification({
       ...base,
-      answer: "yes",
+      kind: "yes",
       startsAt: new Date("2026-09-25T12:00:00Z"), // Fri 19:00 in Phnom Penh
     });
     expect(text).toBe(
@@ -31,13 +31,13 @@ describe("answerNotification", () => {
   });
 
   test("no dodge line when the Recipient never tried No, and singular for one try", () => {
-    const yes = { ...base, answer: "yes" as const, startsAt: new Date("2026-09-25T12:00:00Z") };
+    const yes = { ...base, kind: "yes" as const, startsAt: new Date("2026-09-25T12:00:00Z") };
     expect(answerNotification({ ...yes, noDodges: 0 })).not.toContain("tried to click No");
     expect(answerNotification({ ...yes, noDodges: 1 })).toContain("(Sreyneang tried to click No once 😂)");
   });
 
   test("maybe later is a gentle message, with no YES, no plan and no dodge teasing", () => {
-    const text = answerNotification({ ...base, answer: "maybe_later", startsAt: null, noDodges: 9 });
+    const text = answerNotification({ ...base, kind: "maybe_later", startsAt: null, noDodges: 9 });
     expect(text).toBe(
       [
         "💌 <b>Sreyneang said maybe another time.</b>",
@@ -48,8 +48,8 @@ describe("answerNotification", () => {
   });
 
   test("the Recipient's Note is quoted in both kinds of message", () => {
-    const yes = answerNotification({ ...base, answer: "yes", startsAt: new Date("2026-09-25T12:00:00Z"), note: "hi :)" });
-    const later = answerNotification({ ...base, answer: "maybe_later", startsAt: null, note: "busy month" });
+    const yes = answerNotification({ ...base, kind: "yes", startsAt: new Date("2026-09-25T12:00:00Z"), note: "hi :)" });
+    const later = answerNotification({ ...base, kind: "maybe_later", startsAt: null, note: "busy month" });
     expect(yes).toContain('💬 <i>"hi :)"</i>');
     expect(later).toContain('💬 <i>"busy month"</i>');
   });
@@ -58,7 +58,7 @@ describe("answerNotification", () => {
     const text = answerNotification({
       ...base,
       recipientName: "<b>Bo</b>",
-      answer: "yes",
+      kind: "yes",
       startsAt: null,
       place: "A & B's",
       note: "</i><a href='x'>click</a>",
@@ -69,7 +69,7 @@ describe("answerNotification", () => {
   });
 
   test("an Invite with no Recipient name still reads naturally", () => {
-    const yes = answerNotification({ ...base, recipientName: "  ", answer: "yes", startsAt: null, noDodges: 2 });
+    const yes = answerNotification({ ...base, recipientName: "  ", kind: "yes", startsAt: null, noDodges: 2 });
     expect(yes).toBe(
       [
         "🎉 <b>They said YES!</b>",
@@ -80,7 +80,7 @@ describe("answerNotification", () => {
         "(They tried to click No 2 times 😂)",
       ].join("\n"),
     );
-    const later = answerNotification({ ...base, recipientName: "", answer: "maybe_later", startsAt: null });
+    const later = answerNotification({ ...base, recipientName: "", kind: "maybe_later", startsAt: null });
     expect(later.split("\n")[0]).toBe("💌 <b>They said maybe another time.</b>");
   });
 });

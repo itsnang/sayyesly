@@ -6,7 +6,7 @@ import { DuplicateInviteButton } from "@/features/invites/components/dashboard/d
 import { ReopenInviteButton } from "@/features/invites/components/dashboard/reopen-invite-button";
 import { SharePanel } from "@/features/invites/components/dashboard/share-panel";
 import { getMyInvite } from "@/features/invites/server/dashboard-data";
-import { getThemeChoices } from "@/features/invites/server/theme-access";
+import { getThemeChoices } from "@/features/invites/server/theme-choices";
 import { requireUser } from "@/lib/auth/session";
 import { SITE_URL } from "@/lib/site";
 import { isUploadConfigured } from "@/lib/storage/r2";

@@ -6,7 +6,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { invites } from "@/lib/db/schema";
 import { idSchema } from "@/lib/validation";
-import { canUseTheme } from "../server/theme-access";
+import { canUseTheme } from "../server/theme-choices";
 import { DEFAULT_THEME_ID } from "../themes";
 import { newInviteSlug, newLinkCode } from "../utils";
 

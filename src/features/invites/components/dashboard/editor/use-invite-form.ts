@@ -8,7 +8,7 @@ import { track } from "@/lib/analytics/track";
 import { errorMessage } from "@/lib/query/action";
 import { useSaveInvite } from "../../../hooks/use-invite-mutations";
 import { inviteFormSchema, type InviteFormValues } from "../../../schemas";
-import type { ThemeChoice } from "../../../server/theme-access";
+import type { ThemeChoice } from "../../../server/theme-choices";
 import { useStudio } from "../../../stores/studio-store";
 import { ALL_CONTENT, hasError, MAIN_FIELDS, sectionsWithErrors } from "./sections";
 import { isThemeLocked } from "./theme-field";

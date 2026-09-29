@@ -4,7 +4,7 @@ import { useMemo, type ReactNode } from "react";
 import { FormProvider } from "react-hook-form";
 import { Button, Note } from "@/components/shared/ui";
 import type { InviteFormValues } from "../../../schemas";
-import type { ThemeChoice } from "../../../server/theme-access";
+import type { ThemeChoice } from "../../../server/theme-choices";
 import { useStudio } from "../../../stores/studio-store";
 import { inviteTitle } from "../../../utils";
 import { withExample } from "../../../utils/example";

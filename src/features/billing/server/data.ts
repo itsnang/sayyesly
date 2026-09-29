@@ -12,5 +12,5 @@ export async function listThemesForSale(userId: string): Promise<ThemeForSale[]>
     db.select().from(themes).where(eq(themes.isActive, true)).orderBy(asc(themes.sortOrder), asc(themes.name)),
     themeAccess(userId),
   ]);
-  return rows.map((t) => ({ id: t.id, name: t.name, priceCents: t.priceCents, owned: isThemeUsable(t, access) }));
+  return rows.map((t) => ({ id: t.id, name: t.name, priceCents: t.priceCents, usable: isThemeUsable(t, access) }));
 }

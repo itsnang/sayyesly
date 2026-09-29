@@ -3,7 +3,7 @@
 import { Controller, useFormContext } from "react-hook-form";
 import { Field, FieldError, Input } from "@/components/shared/ui";
 import type { InviteFormValues } from "../../../schemas";
-import type { ThemeChoice } from "../../../server/theme-access";
+import type { ThemeChoice } from "../../../server/theme-choices";
 import type { ThemeContent } from "../../../themes";
 import { QuestionField } from "./question-field";
 import { ThemeField } from "./theme-field";

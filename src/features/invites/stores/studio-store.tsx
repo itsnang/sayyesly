@@ -5,7 +5,7 @@ import { useStore } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 import { PreviewDevice, StudioSection } from "../enums";
-import type { ThemeChoice } from "../server/theme-access";
+import type { ThemeChoice } from "../server/theme-choices";
 
 /*
  * The studio's screen state, shared by its parts (docs/adr/0003): which

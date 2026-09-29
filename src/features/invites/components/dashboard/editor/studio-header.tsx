@@ -7,7 +7,7 @@ import { Wordmark } from "@/components/shared/studio";
 import { Button, buttonClass } from "@/components/shared/ui";
 import { formatUsd } from "@/lib/format";
 import type { InviteFormValues } from "../../../schemas";
-import type { ThemeChoice } from "../../../server/theme-access";
+import type { ThemeChoice } from "../../../server/theme-choices";
 import { useStudio } from "../../../stores/studio-store";
 
 /** The studio's only bar: back to the list, the invite's name, save status, Share and the main action. */

@@ -8,7 +8,7 @@ import { answers, invites, inviteTimeSlots } from "@/lib/db/schema";
 import { idSchema } from "@/lib/validation";
 import type { InviteFormValues } from "../schemas";
 import { readInviteForm, toInviteColumns, wantedTimeSlots } from "../server/invite-form";
-import { canUseTheme } from "../server/theme-access";
+import { canUseTheme } from "../server/theme-choices";
 import { newInviteSlug, newLinkCode } from "../utils";
 import { diffTimeSlots } from "../utils/time-slots";
 

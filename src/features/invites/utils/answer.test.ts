@@ -22,7 +22,7 @@ describe("resolveAnswer", () => {
     expect(result).toEqual({
       ok: true,
       value: {
-        answer: "yes",
+        kind: "yes",
         timeSlotId: "fri",
         startsAt: new Date("2026-09-25T12:00:00Z"),
         note: null,
@@ -58,7 +58,7 @@ describe("resolveAnswer", () => {
     // 19:00 in Phnom Penh (UTC+7) is 12:00 UTC
     expect(result).toEqual({
       ok: true,
-      value: { answer: "yes", timeSlotId: null, startsAt: new Date("2026-09-25T12:00:00Z"), note: "hi", noDodges: 0 },
+      value: { kind: "yes", timeSlotId: null, startsAt: new Date("2026-09-25T12:00:00Z"), note: "hi", noDodges: 0 },
     });
   });
 
@@ -102,7 +102,7 @@ describe("resolveAnswer", () => {
     const result = resolveAnswer(invite, { answer: "maybe_later", note: null, noDodges: 7 }, NOW);
     expect(result).toEqual({
       ok: true,
-      value: { answer: "maybe_later", timeSlotId: null, startsAt: null, note: null, noDodges: 7 },
+      value: { kind: "maybe_later", timeSlotId: null, startsAt: null, note: null, noDodges: 7 },
     });
   });
 

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { buttonClass, cx } from "@/components/shared/ui";
 import { formatUsd } from "@/lib/format";
-import type { ThemeChoice } from "../../../server/theme-access";
+import type { ThemeChoice } from "../../../server/theme-choices";
 
 type ThemeFieldProps = {
   themes: ThemeChoice[];
