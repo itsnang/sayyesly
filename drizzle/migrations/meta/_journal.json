@@ -50,6 +50,13 @@
       "when": 1790590976335,
       "tag": "0006_creator-tester",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790675668107,
+      "tag": "0007_rate-limit-hits",
+      "breakpoints": true
     }
   ]
 }

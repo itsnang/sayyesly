@@ -1,6 +1,7 @@
 import "server-only";
 import { env } from "@/env";
-import { createMemoryStore, createRateLimiter, type RateLimitRule } from "./limiter";
+import { createRateLimiter, type RateLimitRule } from "./limiter";
+import { createPostgresStore } from "./postgres-store";
 
 const MINUTE = 60_000;
 
@@ -24,7 +25,7 @@ export const RateLimit = {
 } as const satisfies Record<string, RateLimitRule>;
 
 const limiter = createRateLimiter({
-  store: createMemoryStore(),
+  store: createPostgresStore(),
   secret: env.SESSION_SECRET ?? "sayyesly-dev-rate-limit",
 });
 

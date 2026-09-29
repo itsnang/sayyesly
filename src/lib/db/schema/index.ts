@@ -50,3 +50,4 @@ export * from "./invite-time-slot.table";
 export * from "./answer.table";
 export * from "./linked-group.table";
 export * from "./purchase.table";
+export * from "./rate-limit-hit.table";
