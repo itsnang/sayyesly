@@ -1,4 +1,5 @@
 export { submitAnswer } from "./answer";
+export { isInviteAnswered } from "./answer-state";
 export { deleteInvite } from "./delete";
 export { duplicateInvite } from "./duplicate";
 export { reopenInvite } from "./reopen";
