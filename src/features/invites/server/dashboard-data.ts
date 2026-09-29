@@ -49,6 +49,8 @@ export type EditableInvite = {
   answered: boolean;
   /** Which Answer it has, if any */
   answerKind: AnswerKind | null;
+  /** ISO instant of the time they agreed to, for a Yes */
+  answerAt: string | null;
   /** Every Time slot has passed and no Custom time is allowed: without an Answer, it couldn't be answered */
   expired: boolean;
   /** Group chats that hear the Answer, newest last */
@@ -62,7 +64,7 @@ export async function getMyInvite(inviteId: string, userId: string): Promise<Edi
     where: and(eq(invites.id, inviteId), eq(invites.creatorId, userId)),
     with: {
       timeSlots: { orderBy: asc(inviteTimeSlots.startsAt) },
-      answer: { columns: { kind: true } },
+      answer: { columns: { kind: true, startsAt: true } },
       linkedGroups: { columns: { id: true, chatTitle: true }, orderBy: asc(linkedGroups.createdAt) },
     },
   });
@@ -75,6 +77,7 @@ export async function getMyInvite(inviteId: string, userId: string): Promise<Edi
     linkCode: row.linkCode,
     answered: !!row.answer,
     answerKind: row.answer?.kind ?? null,
+    answerAt: row.answer?.startsAt?.toISOString() ?? null,
     expired: isExpired(row, new Date(now)),
     linkedGroups: row.linkedGroups.map((g) => ({ id: g.id, title: g.chatTitle })),
     values: {
