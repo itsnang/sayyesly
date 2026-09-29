@@ -64,6 +64,8 @@ export default async function EditInvitePage({ params, searchParams }: PageProps
                 recipientName={invite.values.recipientName}
                 themeId={invite.values.themeId}
                 answerKind={invite.answerKind}
+                answerAt={invite.answerAt}
+                timezone={invite.values.timezone}
                 expired={invite.expired}
               />
             )}
