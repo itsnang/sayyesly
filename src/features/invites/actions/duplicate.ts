@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { invites } from "@/lib/db/schema";
+import { RateLimit, rateLimitError } from "@/lib/rate-limit";
 import { idSchema } from "@/lib/validation";
 import { canUseTheme } from "../server/theme-choices";
 import { DEFAULT_THEME_ID } from "../themes";
@@ -22,6 +23,8 @@ type DuplicateResult = { error?: string; id?: string; /** The copy uses the free
 export async function duplicateInvite(inviteId: string): Promise<DuplicateResult> {
   const user = await getCurrentUser();
   if (!user) return { error: "Please log in again." };
+  const limited = await rateLimitError(RateLimit.DuplicateInvite, user.id);
+  if (limited) return { error: limited };
   if (!idSchema.safeParse(inviteId).success) return { error: "Invite not found." };
 
   const source = await db.query.invites.findFirst({

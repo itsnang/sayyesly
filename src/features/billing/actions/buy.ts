@@ -8,7 +8,7 @@ import { db } from "@/lib/db";
 import { themeAccess } from "@/lib/db/queries";
 import { purchases, themes, type Purchase } from "@/lib/db/schema";
 import { PurchaseStatus } from "@/lib/enums";
-import { rateLimit } from "@/lib/rate-limit";
+import { RateLimit, rateLimitError } from "@/lib/rate-limit";
 import { isThemeUsable } from "@/lib/theme-access";
 import { idSchema } from "@/lib/validation";
 import type { CheckoutResult, PurchaseStatusResult } from "../types";
@@ -35,7 +35,8 @@ export async function buyTheme(themeId: string): Promise<CheckoutResult> {
   const user = await getCurrentUser();
   if (!user) return { error: "Please log in again." };
   if (!themeIdSchema.safeParse(themeId).success) return { error: "Unknown theme." };
-  if (!rateLimit(`buy:${user.id}`, 6, 60_000)) return { error: "Too many tries. Please wait a minute." };
+  const limited = await rateLimitError(RateLimit.BuyTheme, user.id);
+  if (limited) return { error: limited };
 
   // Independent reads, so they share one round trip's worth of waiting.
   const [theme, access] = await Promise.all([

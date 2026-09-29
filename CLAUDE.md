@@ -19,7 +19,7 @@ bun run r2:check                  # verify R2 uploads (CORS, signed PUT, public 
 bun test             # unit tests (bun's built-in runner, *.test.ts next to the code)
 ```
 
-Quality gate: `bun run typecheck && bun run lint && bun test && bun run build`. Unit tests cover the agreed seams only: answer rules (`features/invites/utils/answer.ts`), what saving Time slots changes (`features/invites/utils/time-slots.ts`), recognising a Song link (`features/invites/utils/song.ts`), Telegram message text and command parsing, the CutLuy webhook signature/amount check, the Server Action → TanStack Query adapter (`lib/query/action.ts`), when the Theme purchase poll stops (`features/billing/utils/purchase-phase.ts`), who may use a Theme (`lib/theme-access.ts`), the post-login redirect check (`lib/auth/next-path.ts`), the same-origin (CSRF) check (`lib/auth/same-origin.ts`) and what analytics may send (`lib/analytics/sanitize.ts`).
+Quality gate: `bun run typecheck && bun run lint && bun test && bun run build`. Unit tests cover the agreed seams only: answer rules (`features/invites/utils/answer.ts`), what saving Time slots changes (`features/invites/utils/time-slots.ts`), recognising a Song link (`features/invites/utils/song.ts`), Telegram message text and command parsing, the CutLuy webhook signature/amount check, the Server Action → TanStack Query adapter (`lib/query/action.ts`), when the Theme purchase poll stops (`features/billing/utils/purchase-phase.ts`), who may use a Theme (`lib/theme-access.ts`), when a rate limit blocks (`lib/rate-limit/limiter.ts`), the post-login redirect check (`lib/auth/next-path.ts`), the same-origin (CSRF) check (`lib/auth/same-origin.ts`) and what analytics may send (`lib/analytics/sanitize.ts`).
 
 Copy `.env.example` to `.env.local`. Locally, point `DATABASE_URL` at a separate dev database, never production.
 
@@ -54,7 +54,7 @@ src/
   lib/                 shared code: db/ (+ db/queries for cross-slice reads), auth/, telegram/,
                        cutluy/, storage/, time/, format/, query/ (TanStack Query provider + runAction),
                        analytics/ (PostHog events, sanitiser, track()),
-                       enums.ts, validation.ts, rate-limit.ts, site.ts, theme-ids.ts, theme-access.ts
+                       enums.ts, validation.ts, rate-limit/, site.ts, theme-ids.ts, theme-access.ts
   env.ts               server-only, zod-validated env; use requireEnv() for optional vars
 ```
 
@@ -76,6 +76,7 @@ Themes are code: `src/features/invites/themes/<id>/` exports a `ThemeDefinition`
 - Changes to an Invite's lockable fields (question, Time slots, time zone, Custom time, Theme) and saving an Answer both take `SELECT … FOR UPDATE` on the invite row, so they can't interleave
 - `revalidatePath()` / `revalidateTag()` only **after** the mutation commits
 - Actions return `{ error?: string }` on failure instead of throwing
+- Every action a script could hammer is rate limited: `rateLimitError()` (or `allow()` where there's no message to show) with a rule from the `RateLimit` table in `lib/rate-limit`, keyed by Creator id, IP or chat. Each rule has a generous burst window (a person spamming a bit waits a minute) and an hourly cap (a script that keeps going is shut out). Limits live only in that table
 - Absolute URLs and redirects are built from `NEXT_PUBLIC_APP_URL`; secrets never go in `NEXT_PUBLIC_*`
 - Escape user text with `escapeHtml()` before sending it in Telegram HTML messages
 - Security headers live in `next.config.ts`; the Content-Security-Policy (per-request script nonce) lives in `src/proxy.ts`. Every page renders per request so it gets the nonce. Adding a third-party script, iframe or upload host means updating that policy

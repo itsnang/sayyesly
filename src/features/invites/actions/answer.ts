@@ -7,7 +7,7 @@ import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { answers, invites, inviteTimeSlots } from "@/lib/db/schema";
-import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { clientIp, RateLimit, rateLimitError } from "@/lib/rate-limit";
 import { getInviteForAnswer, toPublicAnswer } from "../server/data";
 import { notifyAnswer } from "../server/notify";
 import type { SubmitAnswerResult } from "../types";
@@ -28,9 +28,8 @@ export async function submitAnswer(slug: string, input: unknown): Promise<Submit
 
   // Per-address and per-invite limits, so spoofing addresses can't flood one invite.
   const ip = clientIp(await headers());
-  if (!rateLimit(`answer:ip:${ip}`, 20, 60_000) || !rateLimit(`answer:invite:${slug}`, 30, 60_000)) {
-    return { error: "Too many tries. Take a breath and try again in a minute." };
-  }
+  const limited = (await rateLimitError(RateLimit.AnswerByIp, ip)) ?? (await rateLimitError(RateLimit.AnswerByInvite, slug));
+  if (limited) return { error: limited };
 
   const invite = await getInviteForAnswer(slug);
   if (!invite) return { error: "This invite no longer exists." };
