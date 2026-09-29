@@ -77,7 +77,7 @@ export function Hero() {
         </div>
         <div className="mb-1 flex items-end gap-2">
           <Heart className="mb-5 size-4 -rotate-12 text-rose" />
-          <span data-hero-envelope="" data-burst="" className="pointer-events-auto inline-block">
+          <span data-hero-envelope="" data-burst="" data-burst-jump="" className="pointer-events-auto inline-block">
             <Envelope className="w-14 rotate-[-8deg] text-ink sm:w-16" />
           </span>
         </div>

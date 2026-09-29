@@ -4,6 +4,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useRef, type ReactNode } from "react";
 import { Heart } from "@/components/shared/doodles";
+import { liftOnHover, undrawn, visible, whenSeen } from "./motion-kit";
 
 gsap.registerPlugin(useGSAP);
 
@@ -11,12 +12,13 @@ gsap.registerPlugin(useGSAP);
  * The scrapbook collage as a little scene, played once when it comes into
  * view: the phone drops onto the page, the paper cards slap down, the tape
  * stretches over them, the note types itself and its arrow draws, and the
- * Telegram messages fly out of the phone one by one. Then it stays alive: the
+ * Song's "now playing" card, then the Telegram messages, fly out of the phone
+ * one by one (the Song's equalizer keeps bouncing). Then it stays alive: the
  * phone bobs and tilts towards the cursor, a message pings every few seconds
  * with a heart from the phone, and a card straightens and lifts under the cursor.
  *
  * Parts are found by data attributes on the server-rendered collage:
- *   [data-sb="phone" | "card" | "tape" | "notif" | "doodle" | "note"]
+ *   [data-sb="phone" | "card" | "tape" | "song" | "notif" | "doodle" | "note"], [data-eq] bars
  * Only the ones actually shown (the layout differs on phones) are animated.
  * Nothing moves with "reduce motion" on.
  */
@@ -33,25 +35,23 @@ export function ScrapbookMotion({ children }: { children: ReactNode }) {
         const { motion, fine } = context.conditions as { motion: boolean; fine: boolean };
         if (!motion || !root.current) return;
         const el: HTMLElement = root.current;
-        const shown = (name: string) => [...el.querySelectorAll<HTMLElement>(`[data-sb="${name}"]`)].filter((n) => n.getClientRects().length > 0);
+        const shown = (name: string) => visible([...el.querySelectorAll<HTMLElement>(`[data-sb="${name}"]`)]);
 
         const [found] = shown("phone");
         if (!found) return;
         const phone: HTMLElement = found;
         const cards = shown("card");
         const tapes = shown("tape");
-        const notifs = shown("notif");
+        // The Song arrives first, then the messages it leads to.
+        const notifs = [...shown("song"), ...shown("notif")];
+        const bars = visible([...el.querySelectorAll<HTMLElement>("[data-eq] > span")]);
         const doodles = shown("doodle");
         const notes = shown("note");
-        const arrowStrokes = notes.flatMap((n) => [...n.querySelectorAll<SVGGeometryElement>("path")]);
+        const arrowStrokes = undrawn(notes.flatMap((n) => [...n.querySelectorAll("svg")]));
 
         // Hidden until the scene plays (the collage is below the fold, so nobody sees this step).
         gsap.set([phone, ...cards, ...tapes, ...notifs, ...doodles], { autoAlpha: 0 });
         gsap.set(notes.map((n) => n.querySelector("p")), { clipPath: "inset(0 100% 0 0)" });
-        for (const s of arrowStrokes) {
-          const length = s.getTotalLength();
-          gsap.set(s, { strokeDasharray: length, strokeDashoffset: length });
-        }
 
         const cleanups: (() => void)[] = [];
         const play = () => {
@@ -94,6 +94,10 @@ export function ScrapbookMotion({ children }: { children: ReactNode }) {
 
         function stayAlive() {
           gsap.to(phone, { y: "-=8", duration: 2.4, ease: "sine.inOut", yoyo: true, repeat: -1 });
+          // The Song playing: each bar of the equalizer bounces at its own pace.
+          for (const bar of bars) {
+            gsap.fromTo(bar, { scaleY: 0.25 }, { scaleY: 1, transformOrigin: "50% 100%", duration: gsap.utils.random(0.25, 0.5), ease: "sine.inOut", yoyo: true, repeat: -1 });
+          }
           for (const d of doodles) gsap.to(d, { rotation: `+=${gsap.utils.random(-14, 14)}`, duration: gsap.utils.random(1.8, 3), ease: "sine.inOut", yoyo: true, repeat: -1 });
           if (notifs.length) cleanups.push(pingNotifications(el, phone, notifs));
           if (fine) {
@@ -102,26 +106,8 @@ export function ScrapbookMotion({ children }: { children: ReactNode }) {
           }
         }
 
-        // Without a way to know when it's seen, play at once rather than leave the collage hidden.
-        if (typeof IntersectionObserver === "undefined") {
-          play();
-          return () => cleanups.forEach((c) => c());
-        }
-        const seen = new IntersectionObserver(
-          (entries) => {
-            if (entries.some((e) => e.isIntersecting)) {
-              seen.disconnect();
-              play();
-            }
-          },
-          { threshold: 0.3 },
-        );
-        seen.observe(el);
-
-        return () => {
-          seen.disconnect();
-          cleanups.forEach((c) => c());
-        };
+        cleanups.push(whenSeen(el, play));
+        return () => cleanups.forEach((c) => c());
       });
     },
     { scope: root },
@@ -186,21 +172,4 @@ function tiltTowardsCursor(root: HTMLElement, phone: HTMLElement): () => void {
     root.removeEventListener("pointermove", onMove);
     root.removeEventListener("pointerleave", onLeave);
   };
-}
-
-/** A paper card straightens and lifts off the page under the cursor, then settles back. */
-function liftOnHover(cards: HTMLElement[]): () => void {
-  const handlers = cards.map((card) => {
-    // Held up it's straight; let go, it falls back to its own tilt (GSAP has taken over the CSS `rotate`).
-    const tilt = Number(gsap.getProperty(card, "rotation")) || 0;
-    const up = () => gsap.to(card, { rotation: 0, y: -14, scale: 1.06, zIndex: 10, boxShadow: "0 26px 40px -18px rgba(60,30,20,0.55)", duration: 0.35, ease: "back.out(2)" });
-    const down = () => gsap.to(card, { rotation: tilt, y: 0, scale: 1, zIndex: 0, boxShadow: "0 12px 24px -14px rgba(60,30,20,0.5)", duration: 0.45, ease: "power3.out" });
-    card.addEventListener("pointerenter", up);
-    card.addEventListener("pointerleave", down);
-    return () => {
-      card.removeEventListener("pointerenter", up);
-      card.removeEventListener("pointerleave", down);
-    };
-  });
-  return () => handlers.forEach((h) => h());
 }

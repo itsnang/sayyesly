@@ -17,6 +17,29 @@ function PaperCard({ src, alt, position, className }: { src: string; alt: string
   );
 }
 
+/** The Song on the Invite, as a little "now playing" card: it starts when they open it and loops your part. */
+function NowPlaying({ className }: { className: string }) {
+  return (
+    <div data-sb="song" className={`w-[240px] rounded-[12px] border border-hairline bg-card p-3 text-left shadow-[0_10px_24px_-12px_rgba(60,30,20,0.35)] ${className}`}>
+      <div className="flex items-center gap-2.5">
+        <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-[8px] bg-ink text-[18px] text-rose">
+          ♪
+        </span>
+        <div className="min-w-0">
+          <p className="font-mono text-[10.5px] tracking-wide text-muted uppercase">now playing</p>
+          <p className="truncate text-[13px] font-semibold text-ink">your song · 0:42 – 1:12</p>
+        </div>
+        <span data-eq="" aria-hidden="true" className="ml-auto flex h-5 items-end gap-[3px]">
+          {[0.5, 0.9, 0.6, 1, 0.7].map((h, i) => (
+            <span key={i} className="w-[3px] rounded-full bg-rose" style={{ height: `${h * 100}%` }} />
+          ))}
+        </span>
+      </div>
+      <p className="mt-2 text-[12px] leading-snug text-muted">Starts the moment they open it, looping the part you picked.</p>
+    </div>
+  );
+}
+
 export function Scrapbook() {
   return (
     <section id="preview" aria-labelledby="scrapbook-title" className="relative mt-24 scroll-mt-24">
@@ -36,7 +59,7 @@ export function Scrapbook() {
 
           {/* The collage */}
           <ScrapbookMotion>
-          <div className="relative mx-auto mt-12 h-[720px] max-w-[980px] lg:h-[640px]">
+          <div className="relative mx-auto mt-12 h-[820px] max-w-[980px] lg:h-[640px]">
             <PaperCard
               src="/landing/envelope-card.png"
               alt="the envelope, with the question on the card inside"
@@ -71,12 +94,14 @@ export function Scrapbook() {
             <NotifCard data-sb="notif" title="💌 Dara said maybe another time." time="2d ago" className="absolute top-[4%] right-0 rotate-2 max-lg:hidden">
               Not a no, just not now. Be kind to yourself 🌷
             </NotifCard>
+            <NowPlaying className="absolute top-[31%] left-[3%] rotate-1 max-lg:hidden" />
             <NotifCard data-sb="notif" title="Linked ✓" time="18:15" className="absolute top-[36%] right-[5%] -rotate-1 max-lg:hidden">
               This group will hear the moment Sreyneang answers 💌
             </NotifCard>
 
-            {/* On phones: two messages under the phone instead of around it */}
+            {/* On phones: the Song and two messages under the phone instead of around it */}
             <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 lg:hidden">
+              <NowPlaying className="rotate-1" />
               <NotifCard data-sb="notif" title="🎉 Sreyneang said YES!" className="-rotate-1">
                 Saturday, September 26 · 7:30 PM
               </NotifCard>

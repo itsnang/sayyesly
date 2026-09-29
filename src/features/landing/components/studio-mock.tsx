@@ -11,16 +11,15 @@ function Chevron() {
   );
 }
 
-function ThemeCard({ src, name, price, selected }: { src: string; name: string; price: string; selected?: boolean }) {
+function ThemeCard({ id, src, name, price, selected }: { id: string; src: string; name: string; price: string; selected?: boolean }) {
   return (
     <div className="w-[76px]">
-      <div
-        className={cx(
-          "relative aspect-[3/4] overflow-hidden rounded-[6px] border border-hairline bg-surface",
-          selected && "ring-2 ring-ink ring-offset-2 ring-offset-card",
-        )}
-      >
-        <Image src={src} alt="" fill sizes="76px" className="object-cover object-[50%_30%]" />
+      <div className="relative aspect-[3/4] rounded-[6px] border border-hairline bg-surface">
+        <span className="absolute inset-0 overflow-hidden rounded-[6px]">
+          <Image src={src} alt="" fill sizes="76px" className="object-cover object-[50%_30%]" />
+        </span>
+        {/* The selection ring, its own element so the demo reel can move it between cards */}
+        <span data-ring={id} className={cx("pointer-events-none absolute -inset-[4px] rounded-[9px] border-2 border-ink", !selected && "opacity-0")} />
       </div>
       <p className="mt-2 text-[12px] leading-tight text-ink">{name}</p>
       <p className="text-[11px] text-muted">{price}</p>
@@ -28,9 +27,13 @@ function ThemeCard({ src, name, price, selected }: { src: string; name: string; 
   );
 }
 
+/** Bar heights of the song's little waveform, like the studio's Song part picker. */
+const WAVE = [0.4, 0.7, 0.5, 0.9, 0.6, 1, 0.7, 0.45, 0.8, 0.55, 0.95, 0.6, 0.75, 0.5, 0.85, 0.4, 0.65, 0.9, 0.5, 0.7];
+
 /**
  * The invite studio as a Creator sees it, drawn with the studio's own parts
- * (inputs, Theme cards, rows, the iPhone preview on the grey stage).
+ * (inputs, Theme cards, rows, the Song's part picker, the iPhone preview on
+ * the grey stage). Its `data-studio` parts are what StudioMotion's demo reel animates.
  */
 export function StudioMock({ envelopePrice, className }: { envelopePrice: number | undefined; className?: string }) {
   const words = ["will", "you", "have", "dinner", "with", "me?"];
@@ -39,7 +42,7 @@ export function StudioMock({ envelopePrice, className }: { envelopePrice: number
   return (
     <div
       role="img"
-      aria-label="The sayyesly studio: your question with one word highlighted, the Theme picker, and the invite previewed on a phone"
+      aria-label="The sayyesly studio: your question with one word highlighted, the Theme picker, a song with the part that plays, and the invite previewed on a phone"
       className={cx(
         "overflow-hidden rounded-[14px] border border-hairline bg-card shadow-[0_40px_80px_-40px_rgba(60,30,20,0.35)]",
         className,
@@ -57,15 +60,18 @@ export function StudioMock({ envelopePrice, className }: { envelopePrice: number
           <div className="p-4">
             <p className="text-[12.5px] font-medium text-ink">Question</p>
             <div className="mt-2 rounded-[7px] border border-ink/20 bg-white px-3 py-2 text-[13px] text-ink">
-              will you have dinner with me?
+              <span data-studio="typed" className="inline-block">
+                will you have dinner with me?
+              </span>
             </div>
             <p className="mt-2.5 text-[11px] text-muted">Tap a word to highlight it</p>
             <div className="mt-1.5 flex flex-wrap gap-0.5 text-[12.5px] text-ink">
               {words.map((w) => (
                 <span
                   key={w}
+                  data-studio={w === "dinner" ? "highlight" : undefined}
                   className={cx(
-                    "rounded-[5px] px-1 py-0.5",
+                    "inline-block rounded-[5px] px-1 py-0.5",
                     w === "dinner" && "bg-rose-soft text-rose-deep underline decoration-rose decoration-2 underline-offset-4",
                   )}
                 >
@@ -81,8 +87,26 @@ export function StudioMock({ envelopePrice, className }: { envelopePrice: number
               <p className="text-[11px] text-muted">Tap to try one on</p>
             </div>
             <div className="mt-3 flex gap-3">
-              <ThemeCard src="/landing/step-ask.png" name="Kitten Soft" price="Free" selected={!showEnvelope} />
-              {showEnvelope && <ThemeCard src="/landing/envelope-card.png" name="Envelope" price={formatUsd(envelopePrice)} selected />}
+              <ThemeCard id="kitten" src="/landing/step-ask.png" name="Kitten Soft" price="Free" selected={!showEnvelope} />
+              {showEnvelope && <ThemeCard id="envelope" src="/landing/envelope-card.png" name="Envelope" price={formatUsd(envelopePrice)} selected />}
+            </div>
+          </div>
+
+          {/* The Song: a waveform, the chosen part as a window over it, and the playhead running through it */}
+          <div data-studio="song" className="border-t border-hairline p-4">
+            <div className="flex items-baseline justify-between">
+              <p className="text-[12.5px] font-medium text-ink">Song</p>
+              <p className="text-[11px] text-muted">♪ plays 0:42 – 1:12</p>
+            </div>
+            <div className="relative mt-2.5 h-9 rounded-[6px] bg-ink/[0.06]">
+              <div className="absolute inset-x-2 top-1/2 flex h-5 -translate-y-1/2 items-center justify-between">
+                {WAVE.map((h, i) => (
+                  <span key={i} className="w-[3px] rounded-full bg-ink/25" style={{ height: `${h * 100}%` }} />
+                ))}
+              </div>
+              <div data-studio="part" className="absolute inset-y-0 left-[38%] w-[30%] rounded-[6px] border-2 border-ink bg-ink/10">
+                <span data-studio="playhead" className="absolute inset-y-0 left-0 w-[2px] bg-rose" />
+              </div>
             </div>
           </div>
 
@@ -106,6 +130,7 @@ export function StudioMock({ envelopePrice, className }: { envelopePrice: number
           </div>
           <PhoneFrame
             src={showEnvelope ? "/landing/envelope-letter.png" : "/landing/step-ask.png"}
+            {...(showEnvelope ? { beforeSrc: "/landing/step-ask.png" } : {})}
             alt=""
             sizes="220px"
             className="mt-5 -mb-16 w-[210px] sm:w-[220px]"

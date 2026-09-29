@@ -3,7 +3,7 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useRef, type ReactNode } from "react";
-import { Heart, Sparkle, Star } from "@/components/shared/doodles";
+import { burstOn, Particles, undrawn, visible } from "./motion-kit";
 
 gsap.registerPlugin(useGSAP);
 
@@ -18,13 +18,10 @@ gsap.registerPlugin(useGSAP);
  *   [data-hero-line]    written in, one after another
  *   [data-hero-cta]     settles in after the headline
  *   [data-hero-envelope] skids in and wobbles
- *   [data-burst]        bursts on hover / tap
+ *   [data-burst]        bursts on hover / tap ([data-burst-jump] also jumps)
  * Nothing moves with "reduce motion" on; globals.css shows everything if this never runs.
  */
 
-const PARTICLES = 28;
-/** Pieces thrown out per burst. */
-const PER_BURST = 14;
 const REPEL_RADIUS = 160;
 const REPEL_PUSH = 46;
 
@@ -43,15 +40,10 @@ export function HeroMotion({ children }: { children: ReactNode }) {
         const q = gsap.utils.selector(el);
 
         // Doodles hidden by the layout (e.g. the wide-screen arc on phones) are skipped.
-        const doodles = (q("[data-doodles] svg") as unknown as SVGSVGElement[]).filter((d) => d.getClientRects().length > 0);
-        const strokes = doodles.flatMap((d) => [...d.querySelectorAll<SVGGeometryElement>("path, circle, ellipse")]);
+        const doodles = visible(q("[data-doodles] svg") as unknown as SVGSVGElement[]);
+        const strokes = undrawn(doodles);
         // Coloured blobs carry their fill on the path; it washes in once the outline is drawn.
         const filled = strokes.filter((s) => (s.getAttribute("fill") ?? "none") !== "none");
-
-        for (const s of strokes) {
-          const length = s.getTotalLength();
-          gsap.set(s, { strokeDasharray: length, strokeDashoffset: length });
-        }
         gsap.set(filled, { fillOpacity: 0 });
 
         // GSAP folds the page's own CSS tilt (e.g. the envelope's -8°) into its rotation, so
@@ -84,7 +76,7 @@ export function HeroMotion({ children }: { children: ReactNode }) {
             });
           }
           if (fine) cleanups.push(repelFromCursor(el, doodles));
-          cleanups.push(burstOn(el, q("[data-burst]"), q("[data-particle]")));
+          cleanups.push(burstOn(el, q("[data-burst]")));
         }
 
         return () => cleanups.forEach((c) => c());
@@ -96,12 +88,7 @@ export function HeroMotion({ children }: { children: ReactNode }) {
   return (
     <div ref={root} className="relative">
       {children}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-20 overflow-visible">
-        {Array.from({ length: PARTICLES }, (_, i) => {
-          const Shape = i % 3 === 0 ? Sparkle : i % 3 === 1 ? Heart : Star;
-          return <Shape key={i} data-particle="" className={`invisible absolute top-0 left-0 size-6 ${i % 3 === 1 ? "text-rose" : "text-ink"}`} />;
-        })}
-      </div>
+      <Particles />
     </div>
   );
 }
@@ -143,57 +130,4 @@ function repelFromCursor(root: HTMLElement, doodles: SVGSVGElement[]): () => voi
     root.removeEventListener("pointermove", onMove);
     root.removeEventListener("pointerleave", onLeave);
   };
-}
-
-/** Hovering (or tapping) a [data-burst] element throws hearts and sparkles out of it. Returns the cleanup. */
-function burstOn(root: HTMLElement, targets: Element[], particles: Element[]): () => void {
-  let next = 0;
-  const last = new WeakMap<Element, number>();
-
-  const burst = (target: Element) => {
-    const now = performance.now();
-    if (now - (last.get(target) ?? 0) < 700) return;
-    last.set(target, now);
-
-    const box = root.getBoundingClientRect();
-    const r = target.getBoundingClientRect();
-    const cx = r.left + r.width / 2 - box.left;
-    const cy = r.top + r.height / 2 - box.top;
-    for (let i = 0; i < PER_BURST; i++) {
-      const p = particles[next++ % particles.length]!;
-      const angle = (i / PER_BURST) * Math.PI * 2 + gsap.utils.random(-0.25, 0.25);
-      const distance = gsap.utils.random(80, 170);
-      const duration = gsap.utils.random(1, 1.4);
-      gsap.killTweensOf(p);
-      gsap.fromTo(
-        p,
-        { x: cx, y: cy, xPercent: -50, yPercent: -50, scale: 0, rotation: 0, autoAlpha: 1 },
-        {
-          x: cx + Math.cos(angle) * distance,
-          y: cy + Math.sin(angle) * distance - 30,
-          scale: gsap.utils.random(0.8, 1.5),
-          rotation: gsap.utils.random(-160, 160),
-          duration,
-          ease: "expo.out",
-        },
-      );
-      // Flies out at full strength, then fades as it slows.
-      gsap.to(p, { autoAlpha: 0, duration: 0.45, delay: duration - 0.45, ease: "power1.in" });
-    }
-    // The envelope also gives a little jump.
-    if (target.matches("[data-hero-envelope]")) {
-      gsap.fromTo(target, { y: 0 }, { y: -10, duration: 0.15, yoyo: true, repeat: 1, ease: "power2.out" });
-    }
-  };
-
-  const handlers = targets.map((t) => {
-    const onEnter = () => burst(t);
-    t.addEventListener("pointerenter", onEnter);
-    t.addEventListener("pointerdown", onEnter);
-    return () => {
-      t.removeEventListener("pointerenter", onEnter);
-      t.removeEventListener("pointerdown", onEnter);
-    };
-  });
-  return () => handlers.forEach((h) => h());
 }
