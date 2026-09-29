@@ -31,6 +31,7 @@ Copy `.env.example` to `.env.local`. Locally, point `DATABASE_URL` at a separate
 - **PostgreSQL** + **Drizzle ORM** (`postgres` driver); migrations in `drizzle/migrations/`
 - **Auth**: Telegram OpenID Connect + our own `jose`-signed session cookie; no better-auth (see `docs/adr/0001-telegram-oidc-instead-of-better-auth.md`)
 - **Package manager**: bun
+- **Rate limits**: counted in Upstash Redis (`@upstash/redis`), see `docs/adr/0004-rate-limits-counted-in-upstash-redis.md`
 
 Domain vocabulary (Creator, Recipient, Invite, Answer, Theme…) is defined in `CONTEXT.md`. Use those terms in code, UI copy and messages.
 
