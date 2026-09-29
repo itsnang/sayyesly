@@ -25,6 +25,10 @@ const serverSchema = z.object({
   R2_SECRET_ACCESS_KEY: optional(z.string()),
   R2_BUCKET: optional(z.string()),
   R2_PUBLIC_URL: optional(z.string().regex(/^https:\/\//, "must start with https://")),
+  // Upstash Redis (console.upstash.com → your database → REST API) for rate limit counts.
+  // Without them each server instance counts on its own.
+  UPSTASH_REDIS_REST_URL: optional(z.url()),
+  UPSTASH_REDIS_REST_TOKEN: optional(z.string()),
   // Meta app id for the fb:app_id tag in link previews (developers.facebook.com → My Apps). Optional.
   FACEBOOK_APP_ID: optional(z.string().regex(/^\d+$/, "must be the numeric App ID")),
 });

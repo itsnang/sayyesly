@@ -12,12 +12,15 @@ export type RateLimitRule = { name: string; windows: readonly RateLimitWindow[] 
 
 export type RateLimitResult = { ok: true } | { ok: false; retryInMs: number };
 
+/** One hit in one fixed window: `key` is already hashed and names the rule, window length and subject. */
+export type WindowHit = { key: string; windowStart: number; windowMs: number };
+
 /**
- * Where hits are counted. `increment` adds one hit to `key` in the fixed
- * window starting at `windowStart` and returns the window's count so far.
+ * Where hits are counted. `increment` adds one hit to each window, in one
+ * round trip, and returns each window's count so far, in the same order.
  */
 export interface RateLimitStore {
-  increment(key: string, windowStart: number, windowMs: number): Promise<number>;
+  increment(hits: readonly WindowHit[]): Promise<number[]>;
 }
 
 type LimiterOptions = {
@@ -25,32 +28,46 @@ type LimiterOptions = {
   /** Keys are HMAC'd with this, so the store never holds an IP or id. */
   secret: string;
   now?: () => number;
+  /** The most a check may add to an action; a slower store is treated as failed. */
+  timeoutMs?: number;
   onError?: (error: unknown) => void;
 };
 
 /**
  * Fixed-window rate limiting. Every window counts every hit, blocked ones too,
- * so hammering doesn't help. A window the store fails to count is let through:
- * a limiter problem must never be the thing that stops a Recipient answering.
+ * so hammering doesn't help. When the store fails or is slow the action goes
+ * ahead: a limiter problem must never block a Recipient or slow the app down.
  */
-export function createRateLimiter({ store, secret, now = Date.now, onError = console.error }: LimiterOptions) {
+export function createRateLimiter({ store, secret, now = Date.now, timeoutMs = 300, onError = console.error }: LimiterOptions) {
   return {
     async check(rule: RateLimitRule, subject: string): Promise<RateLimitResult> {
       const at = now();
-      const retries = await Promise.all(
-        rule.windows.map(async ({ limit, windowMs }) => {
-          const key = createHmac("sha256", secret).update(`${rule.name}:${windowMs}:${subject}`).digest("hex");
-          const windowStart = Math.floor(at / windowMs) * windowMs;
-          try {
-            const count = await store.increment(key, windowStart, windowMs);
-            return count > limit ? windowStart + windowMs - at : 0;
-          } catch (error) {
-            onError(error);
-            return 0;
-          }
-        }),
+      const hits = rule.windows.map(({ windowMs }) => ({
+        key: createHmac("sha256", secret).update(`${rule.name}:${windowMs}:${subject}`).digest("hex"),
+        windowStart: Math.floor(at / windowMs) * windowMs,
+        windowMs,
+      }));
+
+      let counts: number[];
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try {
+        counts = await Promise.race([
+          store.increment(hits),
+          new Promise<never>((_, reject) => {
+            timer = setTimeout(() => reject(new Error(`rate limit store took over ${timeoutMs}ms`)), timeoutMs);
+          }),
+        ]);
+      } catch (error) {
+        onError(error);
+        return { ok: true };
+      } finally {
+        clearTimeout(timer);
+      }
+
+      const retryInMs = Math.max(
+        0,
+        ...hits.map((hit, i) => ((counts[i] ?? 0) > rule.windows[i]!.limit ? hit.windowStart + hit.windowMs - at : 0)),
       );
-      const retryInMs = Math.max(0, ...retries);
       return retryInMs > 0 ? { ok: false, retryInMs } : { ok: true };
     },
   };
@@ -58,22 +75,22 @@ export function createRateLimiter({ store, secret, now = Date.now, onError = con
 
 export type RateLimiter = ReturnType<typeof createRateLimiter>;
 
-/** Counts in this server's memory: lost on redeploy and not shared between replicas. */
+/** Counts in this server's memory: lost on redeploy and not shared between instances. */
 export function createMemoryStore(): RateLimitStore {
   const windows = new Map<string, { windowStart: number; expiresAt: number; count: number }>();
   let lastSweep = 0;
 
-  return {
-    async increment(key, windowStart, windowMs) {
-      // Window starts only move forward, so anything that ended before this one is gone for good.
-      if (windowStart - lastSweep >= 60_000) {
-        lastSweep = windowStart;
-        for (const [k, w] of windows) if (w.expiresAt <= windowStart) windows.delete(k);
-      }
-      const current = windows.get(key);
-      const count = current && current.windowStart === windowStart ? current.count + 1 : 1;
-      windows.set(key, { windowStart, expiresAt: windowStart + windowMs, count });
-      return count;
-    },
-  };
+  function incrementOne({ key, windowStart, windowMs }: WindowHit): number {
+    // Window starts only move forward, so anything that ended before this one is gone for good.
+    if (windowStart - lastSweep >= 60_000) {
+      lastSweep = windowStart;
+      for (const [k, w] of windows) if (w.expiresAt <= windowStart) windows.delete(k);
+    }
+    const current = windows.get(key);
+    const count = current && current.windowStart === windowStart ? current.count + 1 : 1;
+    windows.set(key, { windowStart, expiresAt: windowStart + windowMs, count });
+    return count;
+  }
+
+  return { increment: async (hits) => hits.map(incrementOne) };
 }
