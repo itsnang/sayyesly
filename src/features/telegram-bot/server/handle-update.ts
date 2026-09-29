@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { env } from "@/env";
 import { db } from "@/lib/db";
 import { invites, linkedGroups, users } from "@/lib/db/schema";
+import { allow, RateLimit } from "@/lib/rate-limit";
 import { escapeHtml, getBotUsername, sendMessage } from "@/lib/telegram";
 import { ChatType, MemberStatus, type Chat, type Update } from "../types";
 import { Command, GroupAction, interpretGroupCommand, parseCommand } from "../utils/commands";
@@ -46,6 +47,9 @@ async function handleMessage(message: NonNullable<Update["message"]>) {
   if (!message.text) return;
   const parsed = parseCommand(message.text, await getBotUsername());
   if (!parsed) return;
+  // Every command gets a reply, so a chat spamming commands (or guessing Link
+  // codes) could use up the bot's sending limits. Past the limit it stays quiet.
+  if (!(await allow(RateLimit.BotCommandByChat, String(chat.id)))) return;
 
   if (isGroup(chat)) {
     const meaning = interpretGroupCommand(parsed);

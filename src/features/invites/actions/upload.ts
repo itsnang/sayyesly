@@ -3,7 +3,7 @@
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth/session";
-import { rateLimit } from "@/lib/rate-limit";
+import { RateLimit, rateLimitError } from "@/lib/rate-limit";
 import { isUploadConfigured, presignUpload } from "@/lib/storage/r2";
 
 const EXTENSIONS: Record<string, string> = {
@@ -26,7 +26,8 @@ export async function createImageUpload(input: { contentType: string; size: numb
   const user = await getCurrentUser();
   if (!user) return { error: "Please log in again." };
   if (!isUploadConfigured()) return { error: "Uploads aren't set up yet. Paste an image link instead." };
-  if (!rateLimit(`upload:${user.id}`, 30, 10 * 60_000)) return { error: "That's a lot of uploads. Please wait a few minutes." };
+  const limited = await rateLimitError(RateLimit.Upload, user.id);
+  if (limited) return { error: limited };
 
   const parsed = uploadRequestSchema.safeParse(input);
   if (!parsed.success) return { error: "Use a JPG, PNG, WebP or GIF under 5 MB." };

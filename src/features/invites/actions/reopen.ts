@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { answers, invites } from "@/lib/db/schema";
+import { RateLimit, rateLimitError } from "@/lib/rate-limit";
 import { idSchema } from "@/lib/validation";
 
 /**
@@ -16,6 +17,8 @@ import { idSchema } from "@/lib/validation";
 export async function reopenInvite(inviteId: string): Promise<{ error?: string }> {
   const user = await getCurrentUser();
   if (!user) return { error: "Please log in again." };
+  const limited = await rateLimitError(RateLimit.ReopenInvite, user.id);
+  if (limited) return { error: limited };
   if (!idSchema.safeParse(inviteId).success) return { error: "Invite not found." };
 
   const slug = await db.transaction(async (tx) => {
