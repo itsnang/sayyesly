@@ -608,7 +608,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
                     Time zone: <b className="font-medium text-ink">{values.timezone.replace(/_/g, " ")}</b>
                   </span>
                   {!answered && (
-                    <button type="button" onClick={() => toggleEditingZone} className="text-ink underline underline-offset-4">
+                    <button type="button" onClick={toggleEditingZone} className="text-ink underline underline-offset-4">
                       {editingZone ? "Done" : "Change"}
                     </button>
                   )}
