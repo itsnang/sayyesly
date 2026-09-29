@@ -76,7 +76,7 @@ Themes are code: `src/features/invites/themes/<id>/` exports a `ThemeDefinition`
 - Changes to an Invite's lockable fields (question, Time slots, time zone, Custom time, Theme) and saving an Answer both take `SELECT … FOR UPDATE` on the invite row, so they can't interleave
 - `revalidatePath()` / `revalidateTag()` only **after** the mutation commits
 - Actions return `{ error?: string }` on failure instead of throwing
-- Every action a script could hammer is rate limited: `rateLimitError()` (or `allow()` where there's no message to show) with a rule from the `RateLimit` table in `lib/rate-limit`, keyed by Creator id, IP or chat. Limits live only in that table
+- Every action a script could hammer is rate limited: `rateLimitError()` (or `allow()` where there's no message to show) with a rule from the `RateLimit` table in `lib/rate-limit`, keyed by Creator id, IP or chat. Each rule has a generous burst window (a person spamming a bit waits a minute) and an hourly cap (a script that keeps going is shut out). Limits live only in that table
 - Absolute URLs and redirects are built from `NEXT_PUBLIC_APP_URL`; secrets never go in `NEXT_PUBLIC_*`
 - Escape user text with `escapeHtml()` before sending it in Telegram HTML messages
 - Security headers live in `next.config.ts`; the Content-Security-Policy (per-request script nonce) lives in `src/proxy.ts`. Every page renders per request so it gets the nonce. Adding a third-party script, iframe or upload host means updating that policy
