@@ -4,24 +4,37 @@ import { createRateLimiter, type RateLimitRule } from "./limiter";
 import { createPostgresStore } from "./postgres-store";
 
 const MINUTE = 60_000;
+const HOUR = 60 * MINUTE;
+
+/** A burst window (a person spamming a bit waits it out) plus an hourly cap (a script that keeps going is shut out). */
+const rule = (name: string, burst: number, perHour: number, burstMs = MINUTE): RateLimitRule => ({
+  name,
+  windows: [
+    { limit: burst, windowMs: burstMs },
+    { limit: perHour, windowMs: HOUR },
+  ],
+});
 
 /**
- * Every limit in one place. Generous enough that a person never meets them;
- * they stop scripts and stuck loops. Keyed by Creator id unless it says otherwise.
+ * Every limit in one place, keyed by Creator id unless it says otherwise. The
+ * bursts are generous enough that a person never meets them in normal use;
+ * the hourly caps are about ten real sessions' worth.
  */
 export const RateLimit = {
-  AnswerByIp: { name: "answer:ip", limit: 20, windowMs: MINUTE },
-  AnswerByInvite: { name: "answer:invite", limit: 30, windowMs: MINUTE },
-  AnswerCheckByIp: { name: "answer-check:ip", limit: 60, windowMs: MINUTE },
-  SaveInvite: { name: "save", limit: 30, windowMs: MINUTE },
-  DuplicateInvite: { name: "duplicate", limit: 10, windowMs: MINUTE },
-  ReopenInvite: { name: "reopen", limit: 10, windowMs: MINUTE },
-  DeleteInvite: { name: "delete", limit: 20, windowMs: MINUTE },
-  ShareState: { name: "share-state", limit: 60, windowMs: MINUTE },
-  SongDetails: { name: "song-details", limit: 30, windowMs: MINUTE },
-  Upload: { name: "upload", limit: 30, windowMs: 10 * MINUTE },
-  BuyTheme: { name: "buy", limit: 6, windowMs: MINUTE },
-  LinkGroupByChat: { name: "link:chat", limit: 10, windowMs: MINUTE },
+  // Per IP; many phones can share one carrier address, so these stay roomy.
+  AnswerByIp: rule("answer:ip", 20, 200),
+  AnswerByInvite: rule("answer:invite", 30, 120),
+  AnswerCheckByIp: rule("answer-check:ip", 60, 600),
+  SaveInvite: rule("save", 30, 300),
+  DuplicateInvite: rule("duplicate", 10, 60),
+  ReopenInvite: rule("reopen", 10, 60),
+  DeleteInvite: rule("delete", 20, 200),
+  ShareState: rule("share-state", 60, 600),
+  SongDetails: rule("song-details", 30, 300),
+  Upload: rule("upload", 30, 100, 10 * MINUTE),
+  BuyTheme: rule("buy", 6, 30),
+  // Per Telegram chat: every command the bot answers, so spam can't use up the bot's own sending limits.
+  BotCommandByChat: rule("bot-command:chat", 10, 60),
 } as const satisfies Record<string, RateLimitRule>;
 
 const limiter = createRateLimiter({
@@ -30,14 +43,16 @@ const limiter = createRateLimiter({
 });
 
 /** Records a hit; false when `subject` has used up `rule` for now. */
-export function allow(rule: RateLimitRule, subject: string): Promise<boolean> {
-  return limiter.allow(rule, subject);
+export async function allow(rule: RateLimitRule, subject: string): Promise<boolean> {
+  return (await limiter.check(rule, subject)).ok;
 }
 
 /** For actions: the message to return when `subject` has used up `rule`, else undefined. */
 export async function rateLimitError(rule: RateLimitRule, subject: string): Promise<string | undefined> {
-  if (await limiter.allow(rule, subject)) return undefined;
-  return rule.windowMs > MINUTE ? "Too many tries. Please wait a few minutes." : "Too many tries. Please wait a minute.";
+  const result = await limiter.check(rule, subject);
+  if (result.ok) return undefined;
+  const minutes = Math.ceil(result.retryInMs / MINUTE);
+  return minutes <= 1 ? "Too many tries. Please wait a minute." : `Too many tries. Please try again in ${minutes} minutes.`;
 }
 
 /**

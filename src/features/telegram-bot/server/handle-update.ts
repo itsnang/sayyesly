@@ -47,6 +47,9 @@ async function handleMessage(message: NonNullable<Update["message"]>) {
   if (!message.text) return;
   const parsed = parseCommand(message.text, await getBotUsername());
   if (!parsed) return;
+  // Every command gets a reply, so a chat spamming commands (or guessing Link
+  // codes) could use up the bot's sending limits. Past the limit it stays quiet.
+  if (!(await allow(RateLimit.BotCommandByChat, String(chat.id)))) return;
 
   if (isGroup(chat)) {
     const meaning = interpretGroupCommand(parsed);
@@ -83,8 +86,6 @@ async function handleMessage(message: NonNullable<Update["message"]>) {
  * delivers the membership update in, and is harmless to repeat.
  */
 async function linkGroup(chat: Chat, code: string) {
-  // Stops a group guessing Link codes: past the limit the bot stays quiet until the minute is up.
-  if (!(await allow(RateLimit.LinkGroupByChat, String(chat.id)))) return;
   const invite = await db.query.invites.findFirst({
     where: eq(invites.linkCode, code),
     columns: { id: true, recipientName: true },
