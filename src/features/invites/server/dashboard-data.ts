@@ -1,12 +1,12 @@
 import "server-only";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { invites, inviteTimeSlots, linkedGroups, type AnswerKind } from "@/lib/db/schema";
+import { invites, inviteTimeSlots, linkedGroups } from "@/lib/db/schema";
+import type { AnswerKind } from "@/lib/enums";
 import { utcToZonedParts } from "@/lib/time";
+import { InviteStatus } from "../enums";
 import type { InviteFormValues } from "../schemas";
 import { isExpired } from "../utils";
-
-export type InviteStatus = "yes" | "maybe_later" | "expired" | "waiting";
 
 export type InviteSummary = {
   themeId: string;
@@ -35,7 +35,7 @@ export async function listMyInvites(userId: string): Promise<InviteSummary[]> {
     slug: row.slug,
     recipientName: row.recipientName,
     question: row.question.replace(/\*/g, ""),
-    status: row.answer ? row.answer.kind : isExpired(row, now) ? "expired" : "waiting",
+    status: row.answer ? row.answer.kind : isExpired(row, now) ? InviteStatus.Expired : InviteStatus.Waiting,
     agreedAt: row.answer?.startsAt?.toISOString() ?? null,
     timezone: row.timezone,
     createdAt: row.createdAt.toISOString(),

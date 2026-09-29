@@ -1,11 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
 import { useRef } from "react";
 import { track } from "@/lib/analytics/track";
+import { AnswerKind } from "@/lib/enums";
 import { ActionError, errorMessage, runAction } from "@/lib/query/action";
 import type { InviteThemeProps } from "../themes/types";
 import type { AnswerInput } from "../types";
 
-export type PlanChoice = Extract<AnswerInput, { answer: "yes" }>["choice"];
+export type PlanChoice = Extract<AnswerInput, { answer: typeof AnswerKind.Yes }>["choice"];
 
 /**
  * Saving the Recipient's Answer, whatever the Theme looks like, as a mutation.
@@ -44,7 +45,7 @@ export function useInviteAnswer({ invite, submitAnswer }: InviteThemeProps) {
     busy: mutation.isPending,
     error: errorMessage(mutation.error),
     sayYes: (choice: PlanChoice, note: string, noDodges = 0) =>
-      send({ answer: "yes", choice, note: note.trim() || null, noDodges }),
-    sayMaybeLater: (noDodges = 0) => send({ answer: "maybe_later", note: null, noDodges }),
+      send({ answer: AnswerKind.Yes, choice, note: note.trim() || null, noDodges }),
+    sayMaybeLater: (noDodges = 0) => send({ answer: AnswerKind.MaybeLater, note: null, noDodges }),
   };
 }

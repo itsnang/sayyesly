@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { TimeChoiceKind } from "../../enums";
 import type { PublicInvite } from "../../types";
 import type { PlanChoice } from "../../hooks/use-invite-answer";
 
@@ -42,9 +43,9 @@ export function usePlanSelection(invite: PublicInvite) {
   const firstWeekday = new Date(viewYear, viewMonth, 1).getDay();
 
   const choice: PlanChoice | null = sel.slotId
-    ? { kind: "slot", timeSlotId: sel.slotId }
+    ? { kind: TimeChoiceKind.Slot, timeSlotId: sel.slotId }
     : sel.date && sel.time
-      ? { kind: "custom", date: sel.date, time: sel.time }
+      ? { kind: TimeChoiceKind.Custom, date: sel.date, time: sel.time }
       : null;
 
   return {

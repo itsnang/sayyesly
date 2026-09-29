@@ -1,4 +1,5 @@
 import { Arrow, Sparkle } from "@/components/shared/doodles";
+import { CtaLocation } from "@/lib/analytics/events";
 import { trackClick } from "@/lib/analytics/track";
 import { InkButton } from "@/components/shared/studio";
 import { StudioMock } from "./studio-mock";
@@ -37,7 +38,7 @@ export function StudioShowcase({ envelopePrice }: { envelopePrice: number | unde
       </div>
 
       <div className="mt-10 flex justify-center">
-        <InkButton href="/dashboard/invites/new" {...trackClick("make_invite_clicked", { location: "studio" })}>
+        <InkButton href="/dashboard/invites/new" {...trackClick("make_invite_clicked", { location: CtaLocation.Studio })}>
           Make an invite
         </InkButton>
       </div>

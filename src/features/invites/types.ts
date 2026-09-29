@@ -1,6 +1,6 @@
 import type { SongClip } from "./utils/song";
 import type { PlanPhoto } from "@/lib/db/schema";
-import type { TimeOfDay } from "@/lib/time/time-of-day";
+import type { AnswerKind, TimeOfDay } from "@/lib/enums";
 import type { AnswerInput } from "./utils/answer";
 
 export type { PlanPhoto, AnswerInput };
@@ -25,7 +25,7 @@ export type TimeSlot = {
 
 /** A saved Answer, as the Recipient may see it again. */
 export type PublicAnswer = {
-  answer: "yes" | "maybe_later";
+  answer: AnswerKind;
   /** ISO 8601 instant; null for maybe_later */
   startsAt: string | null;
   note: string | null;

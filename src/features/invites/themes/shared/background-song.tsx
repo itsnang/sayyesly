@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { SongClip } from "../../utils/song";
-import { listenToPlayer, PLAYER_STATE, playerCommand, playerSrc } from "../../utils/youtube-player";
+import { listenToPlayer, PlayerCommand, PlayerState, playerCommand, playerSrc } from "../../utils/youtube-player";
 
 /*
  * The Song as background audio: a YouTube player kept out of sight, started by
@@ -40,21 +40,21 @@ export function BackgroundSong({ song, playing }: { song: SongClip; playing: boo
     if (!loaded) return;
     const end = song.start + song.length;
     const repeat = () => {
-      playerCommand(frame.current, "seekTo", [song.start, true]);
-      playerCommand(frame.current, "playVideo");
+      playerCommand(frame.current, PlayerCommand.SeekTo, [song.start, true]);
+      playerCommand(frame.current, PlayerCommand.Play);
     };
     return listenToPlayer(frame.current, (info) => {
-      if (info.playerState === PLAYER_STATE.playing) started.current = true;
+      if (info.playerState === PlayerState.Playing) started.current = true;
       if (!started.current) return;
-      if (info.playerState === PLAYER_STATE.ended || (info.currentTime !== undefined && info.currentTime >= end)) repeat();
+      if (info.playerState === PlayerState.Ended || (info.currentTime !== undefined && info.currentTime >= end)) repeat();
     });
   }, [loaded, song.start, song.length]);
 
   useEffect(() => {
     if (!playing || !loaded) return;
     const play = () => {
-      playerCommand(frame.current, "unMute");
-      playerCommand(frame.current, "playVideo");
+      playerCommand(frame.current, PlayerCommand.UnMute);
+      playerCommand(frame.current, PlayerCommand.Play);
     };
     play();
     const until = Date.now() + RETRY_FOR_MS;
@@ -68,7 +68,7 @@ export function BackgroundSong({ song, playing }: { song: SongClip; playing: boo
   // Stop when they leave the tab or app; carry on when they come back.
   useEffect(() => {
     if (!playing) return;
-    const onVisibility = () => playerCommand(frame.current, document.hidden ? "pauseVideo" : "playVideo");
+    const onVisibility = () => playerCommand(frame.current, document.hidden ? PlayerCommand.Pause : PlayerCommand.Play);
     document.addEventListener("visibilitychange", onVisibility);
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, [playing]);

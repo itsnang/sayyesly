@@ -1,9 +1,17 @@
 import { z } from "zod";
+import { enumValues, type EnumValue } from "@/lib/enums";
+
+/** The kinds of Telegram chat. */
+export const ChatType = { Private: "private", Group: "group", Supergroup: "supergroup", Channel: "channel" } as const;
+export type ChatType = EnumValue<typeof ChatType>;
+
+/** The bot's membership in a chat, as `my_chat_member` reports it (the ones the bot acts on). */
+export const MemberStatus = { Member: "member", Left: "left", Kicked: "kicked" } as const;
 
 // Only the parts of Telegram's Update object the bot reads. Unknown fields pass through.
 const chatSchema = z.object({
   id: z.number(),
-  type: z.enum(["private", "group", "supergroup", "channel"]),
+  type: z.enum(enumValues(ChatType)),
   title: z.string().optional(),
 });
 

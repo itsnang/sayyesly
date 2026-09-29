@@ -1,9 +1,10 @@
 import { sql } from "drizzle-orm";
 import { index, integer, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { enumValues, PurchaseStatus } from "../../enums";
 import { themes } from "./theme.table";
 import { users } from "./user.table";
 
-export const purchaseStatusEnum = pgEnum("purchase_status", ["pending", "paid", "expired", "failed"]);
+export const purchaseStatusEnum = pgEnum("purchase_status", enumValues(PurchaseStatus));
 
 // One attempt to buy a Paid theme, mapped one-to-one to a CutLuy payment.
 // `amountCents` is copied from the Theme on the server when the attempt starts.
@@ -18,7 +19,7 @@ export const purchases = pgTable(
       .notNull()
       .references(() => themes.id, { onDelete: "restrict" }),
     amountCents: integer("amount_cents").notNull(),
-    status: purchaseStatusEnum("status").notNull().default("pending"),
+    status: purchaseStatusEnum("status").notNull().default(PurchaseStatus.Pending),
     cutluyPaymentId: text("cutluy_payment_id").unique(),
     qrString: text("qr_string"),
     checkoutUrl: text("checkout_url"),
@@ -38,4 +39,3 @@ export const purchases = pgTable(
 
 export type Purchase = typeof purchases.$inferSelect;
 export type NewPurchase = typeof purchases.$inferInsert;
-export type PurchaseStatus = (typeof purchaseStatusEnum.enumValues)[number];

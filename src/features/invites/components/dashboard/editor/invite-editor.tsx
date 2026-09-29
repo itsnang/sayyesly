@@ -31,13 +31,14 @@ import { SongPartPicker } from "./song-part-picker";
 import { TimesField } from "./times-field";
 import { TimeZoneSelect } from "./time-zone-select";
 import { useShallow } from "zustand/react/shallow";
-import { useStudio, type SectionId } from "../../../stores/studio-store";
+import { useStudio } from "../../../stores/studio-store";
+import { PreviewDevice, StudioSection } from "../../../enums";
 
 // The optional layer: every field here already has a working default.
-const SECTIONS: { id: SectionId; title: string; fields: FieldPath<InviteFormValues>[] }[] = [
-  { id: "plan", title: "Plan", fields: ["planPlace", "planActivity", "planMapUrl", "planDressCode", "planNotes", "planPhotos"] },
-  { id: "when", title: "When", fields: ["timezone", "timeSlots", "allowCustomTime", "timeOfDay"] },
-  { id: "extras", title: "Extras", fields: ["message", "imageUrl", "songUrl"] },
+const SECTIONS: { id: StudioSection; title: string; fields: FieldPath<InviteFormValues>[] }[] = [
+  { id: StudioSection.Plan, title: "Plan", fields: ["planPlace", "planActivity", "planMapUrl", "planDressCode", "planNotes", "planPhotos"] },
+  { id: StudioSection.When, title: "When", fields: ["timezone", "timeSlots", "allowCustomTime", "timeOfDay"] },
+  { id: StudioSection.Extras, title: "Extras", fields: ["message", "imageUrl", "songUrl"] },
 ];
 const MAIN_FIELDS: FieldPath<InviteFormValues>[] = ["question", "recipientName", "themeId"];
 
@@ -75,21 +76,21 @@ const useIsClient = () =>
 const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 /** One short line saying what the Recipient gets from a section right now. */
-function summarise(id: SectionId, v: InviteFormValues, content: ThemeContent): string {
+function summarise(id: StudioSection, v: InviteFormValues, content: ThemeContent): string {
   switch (id) {
-    case "plan": {
+    case StudioSection.Plan: {
       const main = [v.planPlace?.trim(), v.planActivity?.trim()].filter(Boolean).join(" · ");
       const photos = content.planPhotos ? (v.planPhotos?.length ?? 0) : 0;
       const extras = [v.planMapUrl, v.planDressCode, v.planNotes].filter((x) => x?.trim()).length + photos;
       if (main) return extras ? `${main} +${extras}` : main;
       return extras ? count(extras, "detail", "details") : "A surprise";
     }
-    case "when": {
+    case StudioSection.When: {
       if (v.allowCustomTime) return `They pick · ${TIME_OF_DAY_LABELS[v.timeOfDay ?? DEFAULT_TIME_OF_DAY]}`;
       const n = v.timeSlots?.length ?? 0;
       return n === 0 ? "Needs a time" : count(n, "time", "times");
     }
-    case "extras": {
+    case StudioSection.Extras: {
       const parts: string[] = [];
       if (content.note && v.message?.trim()) parts.push(`“${v.message.trim()}”`);
       if (content.picture) {
@@ -250,10 +251,10 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
   const title = isNew ? "New invite" : inviteTitle(values.recipientName ?? "", values.question ?? "");
   const lockNote = "Locked, because they've already answered.";
 
-  const section = (id: SectionId) => {
+  const section = (id: StudioSection) => {
     const s = SECTIONS.find((x) => x.id === id)!;
     return {
-      title: id === "extras" && extras ? extras : s.title,
+      title: id === StudioSection.Extras && extras ? extras : s.title,
       summary: summarise(id, values, content),
       open: openSections.includes(id),
       invalid: hasError(errors, s.fields),
@@ -366,7 +367,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
             )}
           </div>
           <div className="grid min-h-0 flex-1 place-items-center px-8">
-            {device === "phone" ? (
+            {device === PreviewDevice.Phone ? (
               <PhoneMock values={preview.values} className="h-full max-h-[780px]" />
             ) : (
               <DesktopMock values={preview.values} className="w-[min(100%,1100px,calc((100dvh-10rem)*1.6))]" />
@@ -439,7 +440,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
           {/* Right after the Theme, which decides whether there's a note or picture at all */}
           {extras && (
             <div id="section-extras">
-              <Section {...section("extras")}>
+              <Section {...section(StudioSection.Extras)}>
                 <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
                   {content.note && (
                     <Field label="Note under the question" optional error={errors.message?.message}>
@@ -483,7 +484,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
           )}
 
           <div id="section-plan">
-            <Section {...section("plan")}>
+            <Section {...section(StudioSection.Plan)}>
               <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
                 <p className="text-[13px] text-muted">Shown after they say yes. Leave it empty to keep it a surprise.</p>
                 <Field label="Where" optional error={errors.planPlace?.message}>
@@ -526,7 +527,7 @@ export function InviteEditor({ inviteId, defaults, answered, themes, uploadsEnab
           </div>
 
           <div id="section-when">
-            <Section {...section("when")} locked={answered}>
+            <Section {...section(StudioSection.When)} locked={answered}>
               <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
                 <Controller
                   control={control}

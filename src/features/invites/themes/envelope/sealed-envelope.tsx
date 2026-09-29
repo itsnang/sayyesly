@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import type { EnumValue } from "@/lib/enums";
 import type { PublicInvite } from "../../types";
 import { sizeForQuestion } from "./lettering";
 import { FIBRES, GRAIN } from "./ornaments";
 
-type Stage = "sealed" | "opening" | "leaving";
+/** Opening the envelope: sealed until tapped, the flap lifting, then the envelope sliding away. */
+const Stage = { Sealed: "sealed", Opening: "opening", Leaving: "leaving" } as const;
+type Stage = EnumValue<typeof Stage>;
 
 // Long enough after the card is out to read the question on it.
 const LEAVE_AFTER_MS = 2900;
@@ -26,8 +29,8 @@ export function SealedEnvelope({
   /** The letter is ready to show, once the envelope has opened */
   onRead: () => void;
 }) {
-  const [stage, setStage] = useState<Stage>("sealed");
-  const lifted = stage !== "sealed";
+  const [stage, setStage] = useState<Stage>(Stage.Sealed);
+  const lifted = stage !== Stage.Sealed;
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
@@ -36,11 +39,11 @@ export function SealedEnvelope({
   }, []);
 
   function open() {
-    if (stage !== "sealed") return;
-    setStage("opening");
+    if (stage !== Stage.Sealed) return;
+    setStage(Stage.Opening);
     onOpen?.();
     timers.current.push(
-      setTimeout(() => setStage("leaving"), LEAVE_AFTER_MS),
+      setTimeout(() => setStage(Stage.Leaving), LEAVE_AFTER_MS),
       setTimeout(onRead, LEAVE_AFTER_MS + FADE_MS),
     );
   }
@@ -58,7 +61,7 @@ export function SealedEnvelope({
         justifyContent: "center",
         padding: "120px 20px 48px",
         background: `${GRAIN}, var(--env-table)`,
-        opacity: stage === "leaving" ? 0 : 1,
+        opacity: stage === Stage.Leaving ? 0 : 1,
         transition: `opacity ${FADE_MS}ms ease`,
       }}
     >
@@ -66,7 +69,7 @@ export function SealedEnvelope({
         type="button"
         onClick={open}
         aria-label="Open the envelope"
-        disabled={stage !== "sealed"}
+        disabled={stage !== Stage.Sealed}
         style={{
           position: "relative",
           width: "min(330px, 84vw)",
@@ -74,7 +77,7 @@ export function SealedEnvelope({
           border: "none",
           background: "none",
           padding: 0,
-          cursor: stage === "sealed" ? "pointer" : "default",
+          cursor: stage === Stage.Sealed ? "pointer" : "default",
           perspective: 1000,
           animation: "env-rise .8s ease-out both",
         }}
@@ -190,7 +193,7 @@ export function SealedEnvelope({
           fontSize: 24,
           color: "var(--env-ink)",
           minHeight: 30,
-          opacity: stage === "sealed" ? 1 : 0,
+          opacity: stage === Stage.Sealed ? 1 : 0,
           transition: "opacity .3s ease",
         }}
       >

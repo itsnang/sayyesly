@@ -3,17 +3,18 @@ import Link from "next/link";
 import { Envelope, Sparkle } from "@/components/shared/doodles";
 import { InkButton } from "@/components/shared/studio";
 import { Stamp } from "@/components/shared/ui";
-import type { InviteStatus, InviteSummary } from "../../server/dashboard-data";
+import { InviteStatus } from "../../enums";
+import type { InviteSummary } from "../../server/dashboard-data";
 import { getTheme } from "../../themes";
 import { inviteTitle } from "../../utils";
 import { CopyButton } from "./copy-button";
 import { DuplicateInviteButton } from "./duplicate-invite-button";
 
 const STATUS: Record<InviteStatus, { label: string; tone: "rose" | "green" | "amber" | "grey" }> = {
-  yes: { label: "Said yes", tone: "green" },
-  maybe_later: { label: "Maybe later", tone: "amber" },
-  expired: { label: "Expired", tone: "grey" },
-  waiting: { label: "Waiting", tone: "rose" },
+  [InviteStatus.Yes]: { label: "Said yes", tone: "green" },
+  [InviteStatus.MaybeLater]: { label: "Maybe later", tone: "amber" },
+  [InviteStatus.Expired]: { label: "Expired", tone: "grey" },
+  [InviteStatus.Waiting]: { label: "Waiting", tone: "rose" },
 };
 
 function agreedLabel(iso: string, timeZone: string) {
@@ -70,7 +71,7 @@ export function InviteList({ invites, siteUrl }: { invites: InviteSummary[]; sit
                 <Stamp tone={status.tone}>{status.label}</Stamp>
               </div>
               <p className="mt-1 truncate text-[14px] text-muted">
-                {invite.status === "yes" && invite.agreedAt ? (
+                {invite.status === InviteStatus.Yes && invite.agreedAt ? (
                   <span className="text-ink">{agreedLabel(invite.agreedAt, invite.timezone)}</span>
                 ) : invite.recipientName.trim() ? (
                   invite.question

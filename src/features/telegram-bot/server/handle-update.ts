@@ -4,10 +4,10 @@ import { env } from "@/env";
 import { db } from "@/lib/db";
 import { invites, linkedGroups, users } from "@/lib/db/schema";
 import { escapeHtml, getBotUsername, sendMessage } from "@/lib/telegram";
-import type { Chat, Update } from "../types";
-import { interpretGroupCommand, parseCommand } from "../utils/commands";
+import { ChatType, MemberStatus, type Chat, type Update } from "../types";
+import { Command, GroupAction, interpretGroupCommand, parseCommand } from "../utils/commands";
 
-const isGroup = (chat: Chat) => chat.type === "group" || chat.type === "supergroup";
+const isGroup = (chat: Chat) => chat.type === ChatType.Group || chat.type === ChatType.Supergroup;
 
 function reply(chat: Chat, text: string) {
   return sendMessage(chat.id, text, { parseMode: "HTML", disablePreview: true });
@@ -49,17 +49,17 @@ async function handleMessage(message: NonNullable<Update["message"]>) {
 
   if (isGroup(chat)) {
     const meaning = interpretGroupCommand(parsed);
-    if (meaning?.kind === "link") await linkGroup(chat, meaning.code);
-    else if (meaning?.kind === "link-usage")
+    if (meaning?.kind === GroupAction.Link) await linkGroup(chat, meaning.code);
+    else if (meaning?.kind === GroupAction.LinkUsage)
       await reply(chat, "Send it like this: <code>/link K7PQ2XRM</code>. The code is on your invite in the dashboard.");
-    else if (meaning?.kind === "hint") await reply(chat, "Send <code>/link CODE</code> here to get invite news in this group 💌");
+    else if (meaning?.kind === GroupAction.Hint) await reply(chat, "Send <code>/link CODE</code> here to get invite news in this group 💌");
     return;
   }
 
   switch (parsed.command) {
-    case "start":
-    case "help": {
-      if (chat.type === "private" && message.from) {
+    case Command.Start:
+    case Command.Help: {
+      if (chat.type === ChatType.Private && message.from) {
         // Talking to the bot means it may message this Creator again.
         await db
           .update(users)
@@ -69,7 +69,7 @@ async function handleMessage(message: NonNullable<Update["message"]>) {
       await reply(chat, helpText());
       return;
     }
-    case "link": {
+    case Command.Link: {
       await reply(chat, "Add me to a group first, then send <code>/link CODE</code> in that group.");
       return;
     }
@@ -102,14 +102,14 @@ async function linkGroup(chat: Chat, code: string) {
 
 async function handleMembership(change: NonNullable<Update["my_chat_member"]>) {
   const { chat, new_chat_member: member } = change;
-  const gone = member.status === "left" || member.status === "kicked";
+  const gone = member.status === MemberStatus.Left || member.status === MemberStatus.Kicked;
 
   if (isGroup(chat) && gone) {
     await db.delete(linkedGroups).where(eq(linkedGroups.chatId, BigInt(chat.id)));
     return;
   }
 
-  if (chat.type === "private") {
+  if (chat.type === ChatType.Private) {
     // "kicked" in a private chat means the user blocked the bot; "member" means they (re)started it.
     await db
       .update(users)

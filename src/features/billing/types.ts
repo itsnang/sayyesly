@@ -1,4 +1,4 @@
-import type { PurchaseStatus } from "@/lib/db/schema";
+import type { PurchaseStatus } from "@/lib/enums";
 
 export type CheckoutResult = {
   error?: string;

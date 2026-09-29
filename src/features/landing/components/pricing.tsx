@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CtaLocation } from "@/lib/analytics/events";
 import { trackClick } from "@/lib/analytics/track";
 import type { ReactNode } from "react";
 import { Heart, Smiley, Sparkle } from "@/components/shared/doodles";
@@ -67,7 +68,7 @@ export function Pricing({ envelopePrice }: { envelopePrice: number | undefined }
           <p className="mt-4 text-center text-[12px] text-muted">no card. they don&apos;t need an account.</p>
           <Link
             href="/dashboard/invites/new"
-            {...trackClick("make_invite_clicked", { location: "pricing" })}
+            {...trackClick("make_invite_clicked", { location: CtaLocation.Pricing })}
             className="mt-5 block rounded-[4px] border-[1.5px] border-ink py-2 text-center text-[12.5px] tracking-[0.08em] uppercase transition hover:bg-ink hover:text-canvas"
           >
             Make an invite
