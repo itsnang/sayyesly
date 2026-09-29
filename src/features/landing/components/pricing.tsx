@@ -27,7 +27,7 @@ function Line({ item, price, strong }: { item: string; price: string; strong?: b
   );
 }
 
-function Receipt({ title, number, stamp, children, className }: { title: string; number: string; stamp: string; children: ReactNode; className?: string }) {
+function Receipt({ title, number, children, className }: { title: string; number: string; children: ReactNode; className?: string }) {
   return (
     <div data-receipt="" className={`relative w-full max-w-[340px] bg-card px-6 pt-6 pb-8 font-mono text-[13.5px] text-ink shadow-[0_18px_30px_-18px_rgba(60,30,20,0.45)] ${className ?? ""}`}>
       <p className="text-center tracking-[0.18em] uppercase">{title}</p>
@@ -36,14 +36,6 @@ function Receipt({ title, number, stamp, children, className }: { title: string;
       </p>
       <p aria-hidden="true" className="my-4 overflow-hidden text-ink/40 whitespace-nowrap">- - - - - - - - - - - - - - - - - - - - - - - -</p>
       {children}
-      {/* A rubber stamp across the total */}
-      <span
-        data-receipt-stamp=""
-        aria-hidden="true"
-        className="pointer-events-none absolute right-5 bottom-24 rotate-[-12deg] rounded-[5px] border-2 border-rose px-2 py-0.5 text-[15px] font-bold tracking-[0.14em] text-rose uppercase opacity-80"
-      >
-        {stamp}
-      </span>
       <ZigZag />
     </div>
   );
@@ -63,7 +55,7 @@ export function Pricing({ envelopePrice }: { envelopePrice: number | undefined }
 
       <PricingMotion>
       <div className="relative mt-14 flex flex-col items-center gap-14 md:flex-row md:items-start md:justify-center md:gap-12">
-        <Receipt title="Everything you need" number="0001" stamp="free!" className="-rotate-[1.5deg]">
+        <Receipt title="Everything you need" number="0001" className="-rotate-[1.5deg]">
           <ul className="space-y-2">
             <Line item="invites" price="unlimited" />
             <Line item="plan, photos, calendar" price="free" />
@@ -87,7 +79,7 @@ export function Pricing({ envelopePrice }: { envelopePrice: number | undefined }
         </Receipt>
 
         {envelopePrice !== undefined && (
-        <Receipt title="Paid themes" number="0002" stamp="once" className="rotate-[1.2deg] md:mt-10">
+        <Receipt title="Paid themes" number="0002" className="rotate-[1.2deg] md:mt-10">
           <ul className="space-y-2">
             <Line item="envelope theme" price={formatUsd(envelopePrice)} />
             <Line item="sealed envelope" price="incl." />
