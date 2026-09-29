@@ -7,6 +7,7 @@ import { createPayment, khqrImageUrl } from "@/lib/cutluy/client";
 import { db } from "@/lib/db";
 import { themeAccess } from "@/lib/db/queries";
 import { purchases, themes, type Purchase } from "@/lib/db/schema";
+import { PurchaseStatus } from "@/lib/enums";
 import { rateLimit } from "@/lib/rate-limit";
 import { isThemeUsable } from "@/lib/theme-access";
 import { idSchema } from "@/lib/validation";
@@ -54,7 +55,7 @@ export async function buyTheme(themeId: string): Promise<CheckoutResult> {
       where: and(
         eq(purchases.userId, user.id),
         eq(purchases.themeId, themeId),
-        eq(purchases.status, "pending"),
+        eq(purchases.status, PurchaseStatus.Pending),
         gt(purchases.expiresAt, new Date(Date.now() + 30_000)),
       ),
       orderBy: desc(purchases.createdAt),
@@ -78,7 +79,7 @@ export async function buyTheme(themeId: string): Promise<CheckoutResult> {
     });
 
     if (!payment?.qr_string) {
-      await tx.update(purchases).set({ status: "failed", updatedAt: new Date() }).where(eq(purchases.id, purchase.id));
+      await tx.update(purchases).set({ status: PurchaseStatus.Failed, updatedAt: new Date() }).where(eq(purchases.id, purchase.id));
       return { error: "The payment service didn't respond. Please try again in a moment." };
     }
 
@@ -109,6 +110,6 @@ export async function getPurchaseStatus(purchaseId: string): Promise<PurchaseSta
   });
   if (!purchase) return { error: "Unknown payment." };
 
-  const lapsed = purchase.status === "pending" && !!purchase.expiresAt && purchase.expiresAt.getTime() < Date.now();
-  return { status: lapsed ? "expired" : purchase.status };
+  const lapsed = purchase.status === PurchaseStatus.Pending && !!purchase.expiresAt && purchase.expiresAt.getTime() < Date.now();
+  return { status: lapsed ? PurchaseStatus.Expired : purchase.status };
 }

@@ -1,23 +1,24 @@
-import { TIMES_OF_DAY, type TimeOfDay } from "@/lib/time/time-of-day";
+import { enumValues, TimeOfDay } from "@/lib/enums";
 
-export { TIMES_OF_DAY, type TimeOfDay };
+/** Every Part of the day, in order (morning first), for pickers. */
+export const TIMES_OF_DAY = enumValues(TimeOfDay);
 
-export const DEFAULT_TIME_OF_DAY: TimeOfDay = "evening";
+export const DEFAULT_TIME_OF_DAY: TimeOfDay = TimeOfDay.Evening;
 
 export const TIME_OF_DAY_LABELS: Record<TimeOfDay, string> = {
-  morning: "Morning",
-  lunch: "Lunch",
-  afternoon: "Afternoon",
-  evening: "Evening",
+  [TimeOfDay.Morning]: "Morning",
+  [TimeOfDay.Lunch]: "Lunch",
+  [TimeOfDay.Afternoon]: "Afternoon",
+  [TimeOfDay.Evening]: "Evening",
 };
 
 // Five half-hour times each (HH:mm, in the Invite's time zone): the ones a
 // Recipient taps when they pick, and the studio's quick times.
 const TIMES: Record<TimeOfDay, readonly string[]> = {
-  morning: ["08:00", "08:30", "09:00", "09:30", "10:00"],
-  lunch: ["11:30", "12:00", "12:30", "13:00", "13:30"],
-  afternoon: ["15:00", "15:30", "16:00", "16:30", "17:00"],
-  evening: ["18:30", "19:00", "19:30", "20:00", "20:30"],
+  [TimeOfDay.Morning]: ["08:00", "08:30", "09:00", "09:30", "10:00"],
+  [TimeOfDay.Lunch]: ["11:30", "12:00", "12:30", "13:00", "13:30"],
+  [TimeOfDay.Afternoon]: ["15:00", "15:30", "16:00", "16:30", "17:00"],
+  [TimeOfDay.Evening]: ["18:30", "19:00", "19:30", "20:00", "20:30"],
 };
 
 /** The times offered around a part of the day, earliest first (Evening's if it's missing). */

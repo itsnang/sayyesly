@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AnswerKind } from "@/lib/enums";
 import { zonedTimeToUtc } from "@/lib/time";
 import { safeHttpUrl } from "@/lib/validation";
+import { TimeChoiceKind } from "../enums";
 import type { InviteFormValues } from "../schemas";
 import { DEFAULT_THEME_ID, getTheme } from "../themes";
 import type { AnswerInput, PublicInvite, SubmitAnswerResult } from "../types";
@@ -72,12 +74,12 @@ export function ThemePreview({ fixedValues }: { fixedValues?: InviteFormValues }
   const invite = toPreviewInvite(values, theme.content.example.question);
 
   async function submitAnswer(input: AnswerInput): Promise<SubmitAnswerResult> {
-    if (input.answer === "maybe_later") return { preview: true, answer: { answer: "maybe_later", startsAt: null, note: null } };
+    if (input.answer === AnswerKind.MaybeLater) return { preview: true, answer: { answer: AnswerKind.MaybeLater, startsAt: null, note: null } };
     const startsAt =
-      input.choice.kind === "slot"
+      input.choice.kind === TimeChoiceKind.Slot
         ? invite.timeSlots.find((s) => s.id === (input.choice as { timeSlotId: string }).timeSlotId)?.startsAt ?? null
         : zonedTimeToUtc(input.choice.date, input.choice.time, invite.timezone)?.toISOString() ?? null;
-    return { preview: true, answer: { answer: "yes", startsAt, note: input.note?.trim() || null } };
+    return { preview: true, answer: { answer: AnswerKind.Yes, startsAt, note: input.note?.trim() || null } };
   }
 
   // Remount when the theme changes so each theme starts from its first screen.

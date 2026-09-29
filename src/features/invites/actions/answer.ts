@@ -40,7 +40,7 @@ export async function submitAnswer(slug: string, input: unknown): Promise<Submit
   if (viewer?.id === invite.creatorId) {
     const preview = resolveAnswer(invite, input, new Date());
     if (!preview.ok) return { error: preview.error };
-    return { preview: true, answer: toPublicAnswer({ kind: preview.value.answer, ...preview.value }) };
+    return { preview: true, answer: toPublicAnswer(preview.value) };
   }
 
   const outcome = await db.transaction(async (tx): Promise<{ saved: ResolvedAnswer } | { error: string } | null> => {
@@ -63,10 +63,9 @@ export async function submitAnswer(slug: string, input: unknown): Promise<Submit
     const resolved = resolveAnswer({ ...locked, timeSlots }, input, new Date());
     if (!resolved.ok) return { error: resolved.error };
 
-    const { answer: kind, ...rest } = resolved.value;
     const [row] = await tx
       .insert(answers)
-      .values({ inviteId: invite.id, kind, ...rest })
+      .values({ inviteId: invite.id, ...resolved.value })
       .onConflictDoNothing({ target: answers.inviteId })
       .returning({ id: answers.id });
     return row ? { saved: resolved.value } : null;
@@ -80,5 +79,5 @@ export async function submitAnswer(slug: string, input: unknown): Promise<Submit
   if ("error" in outcome) return { error: outcome.error };
 
   after(() => notifyAnswer(invite.id));
-  return { answer: toPublicAnswer({ kind: outcome.saved.answer, ...outcome.saved }) };
+  return { answer: toPublicAnswer(outcome.saved) };
 }

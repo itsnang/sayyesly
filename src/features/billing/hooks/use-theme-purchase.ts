@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { ActionError, errorMessage, runAction } from "@/lib/query/action";
 import { buyTheme, getPurchaseStatus } from "../actions";
 import type { CheckoutResult } from "../types";
-import { isPurchaseSettled, waitingPhase, type PurchasePhase } from "../utils/purchase-phase";
+import { isPurchaseSettled, PurchasePhase, waitingPhase } from "../utils/purchase-phase";
 
 export type Ticket = { purchaseId: string; qrImageUrl: string; checkoutUrl: string | null; expiresAt: string; amountCents: number };
 
@@ -68,16 +68,16 @@ export function useThemePurchase(themeId: string, onPaid?: () => void) {
   const statusRefused = status.error instanceof ActionError && !status.error.network;
 
   let phase: PurchasePhase;
-  if (start.isError) phase = "error";
-  else if (!start.data) phase = "starting";
-  else if (start.data.owned) phase = "paid";
-  else if (!ticket || statusRefused) phase = "error";
+  if (start.isError) phase = PurchasePhase.Error;
+  else if (!start.data) phase = PurchasePhase.Starting;
+  else if (start.data.owned) phase = PurchasePhase.Paid;
+  else if (!ticket || statusRefused) phase = PurchasePhase.Error;
   else phase = waitingPhase(status.data?.status, countdown.expired);
 
   const alreadyOwned = start.data?.owned === true;
   const paidOnce = useRef(false);
   useEffect(() => {
-    if (phase !== "paid" || paidOnce.current) return;
+    if (phase !== PurchasePhase.Paid || paidOnce.current) return;
     paidOnce.current = true;
     // Already owned means nothing was bought this time.
     if (!alreadyOwned) track("theme_paid", { theme: themeId });
@@ -89,7 +89,7 @@ export function useThemePurchase(themeId: string, onPaid?: () => void) {
     phase,
     ticket,
     countdown: countdown.label,
-    error: phase === "error" ? (errorMessage(start.error) ?? errorMessage(status.error) ?? "Couldn't start the payment. Please try again.") : null,
+    error: phase === PurchasePhase.Error ? (errorMessage(start.error) ?? errorMessage(status.error) ?? "Couldn't start the payment. Please try again.") : null,
     /** Start a fresh payment after one failed, lapsed or errored */
     retry: () => {
       queryClient.removeQueries({ queryKey: [STATUS_KEY] });

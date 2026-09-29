@@ -1,8 +1,9 @@
+import { AnswerKind } from "@/lib/enums";
 import { escapeHtml } from "@/lib/telegram/html";
 
 export type AnswerNotificationInput = {
   recipientName: string;
-  answer: "yes" | "maybe_later";
+  kind: AnswerKind;
   startsAt: Date | null;
   timezone: string;
   place: string | null;
@@ -17,7 +18,7 @@ export function answerNotification(input: AnswerNotificationInput): string {
   const name = input.recipientName.trim() ? escapeHtml(input.recipientName.trim()) : "They";
   const note = input.note ? `💬 <i>"${escapeHtml(input.note)}"</i>` : null;
 
-  if (input.answer === "maybe_later") {
+  if (input.kind === AnswerKind.MaybeLater) {
     const lines = [`💌 <b>${name} said maybe another time.</b>`, ""];
     if (note) lines.push(note, "");
     lines.push("Not a no, just not now. Be kind to yourself 🌷");

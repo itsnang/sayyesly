@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { isValidTimeZone } from "@/lib/time";
-import { TIMES_OF_DAY } from "@/lib/time/time-of-day";
+import { enumValues, TimeOfDay } from "@/lib/enums";
 import { recognizeSong, SONG_LENGTHS } from "../utils/song";
 
 // Form values are plain strings/booleans (empty string = not set) so the same
@@ -68,7 +68,7 @@ export const inviteFormSchema = z
     // false is "I'll pick the times" (only the Time slots below).
     allowCustomTime: z.boolean(),
     // A form from before this field existed (a tab left open across a deploy) still saves, as Evening.
-    timeOfDay: z.enum(TIMES_OF_DAY).catch("evening"),
+    timeOfDay: z.enum(enumValues(TimeOfDay)).catch(TimeOfDay.Evening),
     timeSlots: z
       .array(
         z.object({

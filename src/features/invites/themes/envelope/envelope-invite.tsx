@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
+import { AnswerKind } from "@/lib/enums";
 import type { InviteThemeProps } from "../types";
 import { useInviteAnswer } from "../../hooks/use-invite-answer";
 import { MaybeLaterScreen, YesScreen } from "./answered-screens";
@@ -27,9 +28,9 @@ export function EnvelopeInvite(props: InviteThemeProps) {
   const [justAnswered, setJustAnswered] = useState(false);
 
   let screen;
-  if (answering.answer?.answer === "yes") {
+  if (answering.answer?.answer === AnswerKind.Yes) {
     screen = <YesScreen answer={answering.answer} plan={invite.plan} timezone={invite.timezone} justAnswered={justAnswered} />;
-  } else if (answering.answer?.answer === "maybe_later") {
+  } else if (answering.answer?.answer === AnswerKind.MaybeLater) {
     screen = <MaybeLaterScreen justAnswered={justAnswered} />;
   } else if (!reading) {
     screen = <SealedEnvelope invite={invite} onOpen={() => setOpened(true)} onRead={() => setReading(true)} />;

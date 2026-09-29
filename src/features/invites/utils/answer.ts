@@ -1,5 +1,7 @@
 import { z } from "zod";
+import { AnswerKind } from "@/lib/enums";
 import { zonedTimeToUtc } from "@/lib/time";
+import { TimeChoiceKind } from "../enums";
 
 /** What the answer rules need to know about an Invite. */
 export type AnswerableInvite = {
@@ -8,8 +10,9 @@ export type AnswerableInvite = {
   timeSlots: { id: string; startsAt: Date }[];
 };
 
+/** An Answer checked against its Invite, ready to save (fields named as the database names them). */
 export type ResolvedAnswer = {
-  answer: "yes" | "maybe_later";
+  kind: AnswerKind;
   timeSlotId: string | null;
   startsAt: Date | null;
   note: string | null;
@@ -35,16 +38,16 @@ const noDodgesSchema = z
 
 const answerInputSchema = z.discriminatedUnion("answer", [
   z.object({
-    answer: z.literal("yes"),
+    answer: z.literal(AnswerKind.Yes),
     choice: z.discriminatedUnion("kind", [
-      z.object({ kind: z.literal("slot"), timeSlotId: z.string().max(64) }),
-      z.object({ kind: z.literal("custom"), date: z.string().max(10), time: z.string().max(5) }),
+      z.object({ kind: z.literal(TimeChoiceKind.Slot), timeSlotId: z.string().max(64) }),
+      z.object({ kind: z.literal(TimeChoiceKind.Custom), date: z.string().max(10), time: z.string().max(5) }),
     ]),
     note: noteSchema,
     noDodges: noDodgesSchema,
   }),
   z.object({
-    answer: z.literal("maybe_later"),
+    answer: z.literal(AnswerKind.MaybeLater),
     note: noteSchema,
     noDodges: noDodgesSchema,
   }),
@@ -64,22 +67,22 @@ export function resolveAnswer(invite: AnswerableInvite, raw: unknown, now: Date)
   const parsed = answerInputSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, error: "That answer doesn't look right." };
   const input = parsed.data;
-  if (input.answer === "maybe_later") {
+  if (input.answer === AnswerKind.MaybeLater) {
     return {
       ok: true,
-      value: { answer: "maybe_later", timeSlotId: null, startsAt: null, note: input.note, noDodges: input.noDodges },
+      value: { kind: AnswerKind.MaybeLater, timeSlotId: null, startsAt: null, note: input.note, noDodges: input.noDodges },
     };
   }
   const { choice } = input;
 
-  if (choice.kind === "custom") {
+  if (choice.kind === TimeChoiceKind.Custom) {
     if (!invite.allowCustomTime) return { ok: false, error: "Please pick one of the offered times." };
     const startsAt = zonedTimeToUtc(choice.date, choice.time, invite.timezone);
     if (!startsAt) return { ok: false, error: "That date doesn't look right." };
     if (startsAt.getTime() <= now.getTime()) return { ok: false, error: "That time has already passed." };
     return {
       ok: true,
-      value: { answer: "yes", timeSlotId: null, startsAt, note: input.note, noDodges: input.noDodges },
+      value: { kind: AnswerKind.Yes, timeSlotId: null, startsAt, note: input.note, noDodges: input.noDodges },
     };
   }
 
@@ -89,7 +92,7 @@ export function resolveAnswer(invite: AnswerableInvite, raw: unknown, now: Date)
   return {
     ok: true,
     value: {
-      answer: "yes",
+      kind: AnswerKind.Yes,
       timeSlotId: slot.id,
       startsAt: slot.startsAt,
       note: input.note,

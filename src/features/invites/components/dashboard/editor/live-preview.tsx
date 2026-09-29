@@ -4,10 +4,11 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Iphone15Pro } from "@/components/shared/mockups/iphone-15-pro";
 import { Safari } from "@/components/shared/mockups/safari";
 import { buttonClass, chipClass, cx } from "@/components/shared/ui";
+import { enumValues } from "@/lib/enums";
+import { PreviewDevice } from "../../../enums";
 import type { InviteFormValues } from "../../../schemas";
 import { PREVIEW_MESSAGE, PREVIEW_READY } from "../../theme-preview-protocol";
 
-export type Device = "phone" | "desktop";
 
 /** Percent of a mockup's own coordinates, for laying the live screen over its SVG. */
 const pct = (n: number, of: number) => `${(n / of) * 100}%`;
@@ -62,10 +63,10 @@ function LiveFrame({ values, title, virtualWidth }: { values: InviteFormValues; 
 }
 
 /** Phone / Desktop switch for the preview. */
-export function DeviceToggle({ value, onChange }: { value: Device; onChange: (device: Device) => void }) {
+export function DeviceToggle({ value, onChange }: { value: PreviewDevice; onChange: (device: PreviewDevice) => void }) {
   return (
     <div role="radiogroup" aria-label="Preview on" className="inline-flex rounded-[7px] border border-ink/20 bg-card p-0.5">
-      {(["phone", "desktop"] as const).map((device) => (
+      {enumValues(PreviewDevice).map((device) => (
         <button
           key={device}
           type="button"
@@ -74,7 +75,7 @@ export function DeviceToggle({ value, onChange }: { value: Device; onChange: (de
           onClick={() => onChange(device)}
           className={chipClass(value === device, "border-transparent px-3 py-1 text-[13px] font-medium")}
         >
-          {device === "phone" ? "Phone" : "Desktop"}
+          {device === PreviewDevice.Phone ? "Phone" : "Desktop"}
         </button>
       ))}
     </div>
@@ -132,7 +133,7 @@ export function DesktopMock({ values, className }: { values: InviteFormValues; c
 
 /** Full-screen preview for small screens, where there's no room for a canvas beside the fields. */
 export function PreviewSheet({ values, note, onClose }: { values: InviteFormValues; note?: ReactNode; onClose: () => void }) {
-  const [device, setDevice] = useState<Device>("phone");
+  const [device, setDevice] = useState<PreviewDevice>(PreviewDevice.Phone);
   return (
     <div role="dialog" aria-modal="true" aria-label="Preview" className="fixed inset-0 z-50 flex flex-col bg-canvas">
       <div className="flex items-center justify-between gap-3 border-b border-ink/15 bg-card px-4 py-2.5">
@@ -142,7 +143,7 @@ export function PreviewSheet({ values, note, onClose }: { values: InviteFormValu
         </button>
       </div>
       {note && <div className="flex justify-center border-b border-ink/10 bg-card px-4 py-2">{note}</div>}
-      {device === "phone" ? (
+      {device === PreviewDevice.Phone ? (
         <div className="flex-1">
           <LiveFrame values={values} title="Invite preview" />
         </div>

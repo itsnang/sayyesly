@@ -4,8 +4,8 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { useStore } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
-import type { Device } from "../components/dashboard/editor/live-preview";
-import type { ThemeChoice } from "../server/theme-access";
+import { PreviewDevice, StudioSection } from "../enums";
+import type { ThemeChoice } from "../server/theme-choices";
 
 /*
  * The studio's screen state, shared by its parts (docs/adr/0003): which
@@ -18,22 +18,20 @@ import type { ThemeChoice } from "../server/theme-access";
  * remembered between visits.
  */
 
-export type SectionId = "plan" | "when" | "extras";
-
 type Checkout = { theme: ThemeChoice; select: () => void };
 
 type StudioState = {
-  openSections: SectionId[];
-  device: Device;
+  openSections: StudioSection[];
+  device: PreviewDevice;
   previewOpen: boolean;
   sharing: boolean;
   editingZone: boolean;
   /** The Paid theme being unlocked, and what to do once it's paid (select it on the Invite) */
   checkout: Checkout | null;
-  toggleSection: (id: SectionId) => void;
+  toggleSection: (id: StudioSection) => void;
   /** Opens these sections too (e.g. the ones with a problem), leaving the others as they are */
-  revealSections: (ids: SectionId[]) => void;
-  setDevice: (device: Device) => void;
+  revealSections: (ids: StudioSection[]) => void;
+  setDevice: (device: PreviewDevice) => void;
   setPreviewOpen: (open: boolean) => void;
   setSharing: (open: boolean) => void;
   toggleEditingZone: () => void;
@@ -45,8 +43,8 @@ function createStudioStore({ sharing }: { sharing: boolean }) {
   return createStore<StudioState>()(
     persist(
       (set) => ({
-        openSections: ["extras"],
-        device: "phone",
+        openSections: [StudioSection.Extras],
+        device: PreviewDevice.Phone,
         previewOpen: false,
         sharing,
         editingZone: false,

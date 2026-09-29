@@ -4,17 +4,21 @@
  * Song's background player (Recipients) and the part picker (studio).
  */
 
+import type { EnumValue } from "@/lib/enums";
+
 export const PLAYER_ORIGIN = "https://www.youtube-nocookie.com";
 
 /** The player's state as it reports it: -1 unstarted, 0 ended, 1 playing, 2 paused, 3 buffering. */
-export const PLAYER_STATE = { ended: 0, playing: 1 } as const;
+export const PlayerState = { Ended: 0, Playing: 1 } as const;
 
 export type PlayerInfo = { playerState?: number; currentTime?: number; duration?: number };
 
-type Command = "playVideo" | "pauseVideo" | "unMute" | "seekTo";
+/** The player functions we call. */
+export const PlayerCommand = { Play: "playVideo", Pause: "pauseVideo", UnMute: "unMute", SeekTo: "seekTo" } as const;
+export type PlayerCommand = EnumValue<typeof PlayerCommand>;
 
 /** Sends a command to the player in `frame`; a no-op until it has loaded. */
-export function playerCommand(frame: HTMLIFrameElement | null, func: Command, args: unknown[] = []): void {
+export function playerCommand(frame: HTMLIFrameElement | null, func: PlayerCommand, args: unknown[] = []): void {
   frame?.contentWindow?.postMessage(JSON.stringify({ event: "command", func, args }), PLAYER_ORIGIN);
 }
 

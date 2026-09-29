@@ -3,6 +3,14 @@ export const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
+export const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+/** A picked calendar day (`2026-09-26`): its year, 0-based month, day and weekday (0 = Sunday). */
+export function parseIsoDate(iso: string) {
+  const [year = 0, month = 1, day = 1] = iso.split("-").map(Number);
+  return { year, month: month - 1, day, weekday: new Date(Date.UTC(year, month - 1, day)).getUTCDay() };
+}
+
 /** A picked time (`19:30`), as `7:30 PM`. */
 export function timeLabel(value: string) {
   const [h = 0, m = 0] = value.split(":").map(Number);

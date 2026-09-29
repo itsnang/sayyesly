@@ -19,7 +19,7 @@ export async function notifyAnswer(inviteId: string): Promise<void> {
 
   const text = answerNotification({
     recipientName: invite.recipientName,
-    answer: invite.answer.kind,
+    kind: invite.answer.kind,
     startsAt: invite.answer.startsAt,
     timezone: invite.timezone,
     place: invite.planPlace,

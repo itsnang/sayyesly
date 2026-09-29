@@ -19,7 +19,7 @@ bun run r2:check                  # verify R2 uploads (CORS, signed PUT, public 
 bun test             # unit tests (bun's built-in runner, *.test.ts next to the code)
 ```
 
-Quality gate: `bun run typecheck && bun run lint && bun test && bun run build`. Unit tests cover the agreed seams only: answer rules (`features/invites/utils/answer.ts`), recognising a Song link (`features/invites/utils/song.ts`), Telegram message text and command parsing, the CutLuy webhook signature/amount check, the Server Action → TanStack Query adapter (`lib/query/action.ts`), when the Theme purchase poll stops (`features/billing/utils/purchase-phase.ts`), who may use a Theme (`lib/theme-access.ts`), the post-login redirect check (`lib/auth/next-path.ts`), the same-origin (CSRF) check (`lib/auth/same-origin.ts`) and what analytics may send (`lib/analytics/sanitize.ts`).
+Quality gate: `bun run typecheck && bun run lint && bun test && bun run build`. Unit tests cover the agreed seams only: answer rules (`features/invites/utils/answer.ts`), what saving Time slots changes (`features/invites/utils/time-slots.ts`), recognising a Song link (`features/invites/utils/song.ts`), Telegram message text and command parsing, the CutLuy webhook signature/amount check, the Server Action → TanStack Query adapter (`lib/query/action.ts`), when the Theme purchase poll stops (`features/billing/utils/purchase-phase.ts`), who may use a Theme (`lib/theme-access.ts`), the post-login redirect check (`lib/auth/next-path.ts`), the same-origin (CSRF) check (`lib/auth/same-origin.ts`) and what analytics may send (`lib/analytics/sanitize.ts`).
 
 Copy `.env.example` to `.env.local`. Locally, point `DATABASE_URL` at a separate dev database, never production.
 
@@ -54,7 +54,7 @@ src/
   lib/                 shared code: db/ (+ db/queries for cross-slice reads), auth/, telegram/,
                        cutluy/, storage/, time/, format/, query/ (TanStack Query provider + runAction),
                        analytics/ (PostHog events, sanitiser, track()),
-                       validation.ts, rate-limit.ts, site.ts, theme-ids.ts, theme-access.ts
+                       enums.ts, validation.ts, rate-limit.ts, site.ts, theme-ids.ts, theme-access.ts
   env.ts               server-only, zod-validated env; use requireEnv() for optional vars
 ```
 
@@ -82,6 +82,7 @@ Themes are code: `src/features/invites/themes/<id>/` exports a `ThemeDefinition`
 - Links a Creator typed that end up in an `href` go through `safeHttpUrl()`. Route handlers that change state from a form check `isSameOriginRequest()` (Server Actions get this from Next.js)
 - Analytics events are declared in `lib/analytics/events.ts` and sent with `track()` (or `trackClick()` on server-rendered links). Properties are ids and enums only, never free text (names, questions, notes); every event passes through the sanitiser, which hides Invite slugs and drops titles and query strings. PostHog loads after the page (`src/instrumentation-client.ts`), is off without `NEXT_PUBLIC_POSTHOG_KEY`, and is reached through the `/ingest` rewrite
 - Browser state has three homes (docs/adr/0003): server data in TanStack Query hooks, form values in React Hook Form, and screen state shared by several components in a slice's Zustand store (created per tree in a provider, never at module level). State used by one component stays in its `useState`
+- A fixed set of values (Answer kind, Purchase status, a screen's stage…) is an enum-style constant, `export const AnswerKind = { Yes: "yes", MaybeLater: "maybe_later" } as const` plus `export type AnswerKind = EnumValue<typeof AnswerKind>`, never bare string literals in code. Not the TypeScript `enum` keyword: its members don't accept the plain strings the database, zod and JSON return. Domain ones live in `lib/enums.ts` and feed `pgEnum`/`z.enum` through `enumValues()`; a slice's own go in `features/<slice>/enums.ts` or next to their one user
 - Files are kebab-case (`ask-screen.tsx`); exported components stay PascalCase
 - Mobile-first; check layouts at 375px width
 
