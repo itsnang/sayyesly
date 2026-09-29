@@ -29,12 +29,17 @@ function todayIn(timeZone: string) {
 
 /**
  * What the Recipient has picked on the Plan screen: one of the Creator's Time
- * slots, or (with Custom time) their own date and time. Picking a slot clears a
- * custom pick and vice versa. `choice` is set once the pick is complete.
+ * slots, or (with Custom time) their own date and time, tapped from the
+ * suggestions or typed as "another time". Picking a slot clears a custom pick
+ * and vice versa. `choice` is set once the pick is complete.
  */
 export function usePlanSelection(invite: PublicInvite) {
   const [sel, setSel] = useState<Selection>({ slotId: null, date: null, time: null });
   const [monthOffset, setMonthOffset] = useState(0);
+  // What's typed in the "another time" box, kept apart so tapping a suggestion can empty it.
+  const [otherTime, setOtherTime] = useState("");
+
+  const pickTime = (value: string | null) => setSel((prev) => ({ slotId: null, date: prev.slotId ? null : prev.date, time: value }));
 
   const today = todayIn(invite.timezone);
   const viewMonth = (today.month + monthOffset) % 12;
@@ -56,8 +61,17 @@ export function usePlanSelection(invite: PublicInvite) {
     choice,
     pickSlot: (id: string) => setSel({ slotId: id, date: null, time: null }),
     pickDate: (iso: string) => setSel((prev) => ({ slotId: null, date: iso, time: prev.slotId ? null : prev.time })),
-    pickTime: (value: string | null) =>
-      setSel((prev) => ({ slotId: null, date: prev.slotId ? null : prev.date, time: value })),
+    /** A suggested time was tapped: it replaces anything typed in "another time". */
+    pickTime: (value: string) => {
+      setOtherTime("");
+      pickTime(value);
+    },
+    otherTime,
+    /** "Another time" was typed (empty clears the time). */
+    typeOtherTime: (value: string) => {
+      setOtherTime(value);
+      pickTime(value || null);
+    },
     calendar: {
       year: viewYear,
       month: viewMonth,
@@ -73,3 +87,6 @@ export function usePlanSelection(invite: PublicInvite) {
     },
   };
 }
+
+/** What `usePlanSelection` returns: the pick so far, the calendar, and the ways to change them. */
+export type PlanSelection = ReturnType<typeof usePlanSelection>;
