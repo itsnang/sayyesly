@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth/session";
-import { rateLimit } from "@/lib/rate-limit";
+import { RateLimit, rateLimitError } from "@/lib/rate-limit";
 import { safeHttpUrl } from "@/lib/validation";
 import { songFromUrl } from "../utils/song";
 import type { SongDetails } from "../types";
@@ -17,9 +17,8 @@ const oembedSchema = z.object({ title: z.string(), author_name: z.string().optio
 export async function getSongDetails(url: string): Promise<SongDetails & { error?: string }> {
   const user = await getCurrentUser();
   if (!user) return { error: "Please log in again.", title: "", by: null, coverUrl: null };
-  if (!rateLimit(`song-details:${user.id}`, 30, 60_000)) {
-    return { error: "Too many songs at once. Try again in a minute.", title: "", by: null, coverUrl: null };
-  }
+  const limited = await rateLimitError(RateLimit.SongDetails, user.id);
+  if (limited) return { error: limited, title: "", by: null, coverUrl: null };
   const song = songFromUrl(typeof url === "string" ? url : null);
   if (!song) return { error: "That's not a YouTube link.", title: "", by: null, coverUrl: null };
 

@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { env } from "@/env";
 import { db } from "@/lib/db";
 import { invites, linkedGroups, users } from "@/lib/db/schema";
+import { allow, RateLimit } from "@/lib/rate-limit";
 import { escapeHtml, getBotUsername, sendMessage } from "@/lib/telegram";
 import { ChatType, MemberStatus, type Chat, type Update } from "../types";
 import { Command, GroupAction, interpretGroupCommand, parseCommand } from "../utils/commands";
@@ -82,6 +83,8 @@ async function handleMessage(message: NonNullable<Update["message"]>) {
  * delivers the membership update in, and is harmless to repeat.
  */
 async function linkGroup(chat: Chat, code: string) {
+  // Stops a group guessing Link codes: past the limit the bot stays quiet until the minute is up.
+  if (!(await allow(RateLimit.LinkGroupByChat, String(chat.id)))) return;
   const invite = await db.query.invites.findFirst({
     where: eq(invites.linkCode, code),
     columns: { id: true, recipientName: true },

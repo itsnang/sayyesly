@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { answers, invites, inviteTimeSlots } from "@/lib/db/schema";
+import { RateLimit, rateLimitError } from "@/lib/rate-limit";
 import { idSchema } from "@/lib/validation";
 import type { InviteFormValues } from "../schemas";
 import { readInviteForm, toInviteColumns, wantedTimeSlots } from "../server/invite-form";
@@ -29,6 +30,8 @@ const PAST_ERROR = { error: "Times you add need to be in the future." };
 export async function saveInvite(inviteId: string | null, input: InviteFormValues): Promise<SaveResult> {
   const user = await getCurrentUser();
   if (!user) return { error: "Please log in again." };
+  const limited = await rateLimitError(RateLimit.SaveInvite, user.id);
+  if (limited) return { error: limited };
   if (inviteId !== null && !idSchema.safeParse(inviteId).success) return { error: "Invite not found." };
 
   const form = readInviteForm(input);

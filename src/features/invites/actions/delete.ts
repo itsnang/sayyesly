@@ -5,12 +5,15 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { invites } from "@/lib/db/schema";
+import { RateLimit, rateLimitError } from "@/lib/rate-limit";
 import { idSchema } from "@/lib/validation";
 
 /** Permanently deletes one of the Creator's Invites, with its Answer and Linked groups. */
 export async function deleteInvite(inviteId: string): Promise<{ error?: string }> {
   const user = await getCurrentUser();
   if (!user) return { error: "Please log in again." };
+  const limited = await rateLimitError(RateLimit.DeleteInvite, user.id);
+  if (limited) return { error: limited };
   if (!idSchema.safeParse(inviteId).success) return { error: "Invite not found." };
 
   const [deleted] = await db

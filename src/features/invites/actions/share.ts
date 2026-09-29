@@ -4,6 +4,7 @@ import { and, asc, eq } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { invites, linkedGroups } from "@/lib/db/schema";
+import { RateLimit, rateLimitError } from "@/lib/rate-limit";
 import { isId } from "@/lib/validation";
 import type { ShareState } from "../types";
 
@@ -15,6 +16,8 @@ import type { ShareState } from "../types";
 export async function getShareState(inviteId: string): Promise<ShareState & { error?: string }> {
   const user = await getCurrentUser();
   if (!user) return { error: "Please log in again.", canDm: false, linkedGroups: [] };
+  const limited = await rateLimitError(RateLimit.ShareState, user.id);
+  if (limited) return { error: limited, canDm: false, linkedGroups: [] };
   if (!isId(inviteId)) return { error: "Invite not found.", canDm: false, linkedGroups: [] };
 
   const invite = await db.query.invites.findFirst({
