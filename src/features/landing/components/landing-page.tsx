@@ -3,6 +3,7 @@ import { CtaLocation } from "@/lib/analytics/events";
 import { trackClick } from "@/lib/analytics/track";
 import { Heart, Sparkle } from "@/components/shared/doodles";
 import { InkButton, Wordmark } from "@/components/shared/studio";
+import { ClosingMotion } from "./closing-motion";
 import { Faq } from "./faq";
 import { Hero } from "./hero";
 import { HowItGoes } from "./how-it-goes";
@@ -12,6 +13,8 @@ import { SiteNav } from "./site-nav";
 import { Story } from "./story";
 import { StudioShowcase } from "./studio-showcase";
 import { ThemesBoard } from "./themes-board";
+
+const CLOSING = "Go on. Ask them.";
 
 /** `envelopePrice` is undefined while Envelope isn't on sale; the page then leaves it out. */
 export function LandingPage({ envelopePrice }: { envelopePrice: number | undefined }) {
@@ -29,16 +32,30 @@ export function LandingPage({ envelopePrice }: { envelopePrice: number | undefin
         <Faq />
 
         <section className="relative mx-auto mt-28 max-w-6xl px-5 text-center sm:px-8">
-          <Sparkle aria-hidden className="mx-auto size-7 text-ink" />
-          <h2 className="mt-4 font-display text-[clamp(32px,4.6vw,52px)] leading-[1.1] text-ink">
-            Go on. Ask them.
-          </h2>
-          <p className="mt-3 text-[15px] text-muted">It takes about a minute, and Kitten Soft is free.</p>
-          <div className="mt-7 flex justify-center">
-            <InkButton href="/dashboard/invites/new" {...trackClick("make_invite_clicked", { location: CtaLocation.Closing })}>
-              Make an invite <Heart className="size-3.5 text-rose" strokeWidth={2.4} />
-            </InkButton>
-          </div>
+          <ClosingMotion>
+            <Sparkle aria-hidden data-closing-sparkle="" className="mx-auto size-7 text-ink" />
+            <h2 aria-label={CLOSING} className="mt-4 font-display text-[clamp(32px,4.6vw,52px)] leading-[1.1] text-ink">
+              {/* Letter by letter, so they can bounce in; words stay unbroken */}
+              {CLOSING.split(" ").map((word, w) => (
+                <span key={w} aria-hidden="true" className="inline-block whitespace-nowrap">
+                  {[...word].map((ch, i) => (
+                    <span key={i} data-letter="" className="inline-block">
+                      {ch}
+                    </span>
+                  ))}
+                  {w < CLOSING.split(" ").length - 1 && " "}
+                </span>
+              ))}
+            </h2>
+            <p className="mt-3 text-[15px] text-muted">It takes about a minute, and Kitten Soft is free. Add a song if you like.</p>
+            <div className="mt-7 flex justify-center">
+              <span data-burst="">
+                <InkButton href="/dashboard/invites/new" {...trackClick("make_invite_clicked", { location: CtaLocation.Closing })}>
+                  Make an invite <Heart className="size-3.5 text-rose" strokeWidth={2.4} />
+                </InkButton>
+              </span>
+            </div>
+          </ClosingMotion>
         </section>
       </main>
 

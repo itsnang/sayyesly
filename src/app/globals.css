@@ -94,6 +94,19 @@
   50% { transform: translateY(-8px) rotate(0.5deg); }
 }
 
+/* The landing hero's intro (hero-motion.tsx): what it animates starts hidden,
+   so nothing flashes before GSAP takes over. If the script never runs, the
+   fallback shows it all after 2.5s. With "reduce motion" nothing is hidden. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-doodles] svg, [data-hero-line], [data-hero-cta], [data-hero-envelope] {
+    visibility: hidden;
+    animation: hero-fallback 0s 2.5s forwards;
+  }
+}
+@keyframes hero-fallback {
+  to { visibility: visible; opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }

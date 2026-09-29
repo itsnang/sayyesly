@@ -4,6 +4,7 @@ import { trackClick } from "@/lib/analytics/track";
 import type { ReactNode } from "react";
 import { Heart, Smiley, Sparkle } from "@/components/shared/doodles";
 import { formatUsd } from "@/lib/format";
+import { PricingMotion } from "./pricing-motion";
 
 /** Zig-zag paper edge along the bottom of a receipt. */
 function ZigZag() {
@@ -28,7 +29,7 @@ function Line({ item, price, strong }: { item: string; price: string; strong?: b
 
 function Receipt({ title, number, children, className }: { title: string; number: string; children: ReactNode; className?: string }) {
   return (
-    <div className={`relative w-full max-w-[340px] bg-card px-6 pt-6 pb-8 font-mono text-[13.5px] text-ink shadow-[0_18px_30px_-18px_rgba(60,30,20,0.45)] ${className ?? ""}`}>
+    <div data-receipt="" className={`relative w-full max-w-[340px] bg-card px-6 pt-6 pb-8 font-mono text-[13.5px] text-ink shadow-[0_18px_30px_-18px_rgba(60,30,20,0.45)] ${className ?? ""}`}>
       <p className="text-center tracking-[0.18em] uppercase">{title}</p>
       <p className="mt-1 text-center text-[11.5px] text-muted">
         no. {number}
@@ -52,11 +53,13 @@ export function Pricing({ envelopePrice }: { envelopePrice: number | undefined }
         </p>
       </div>
 
+      <PricingMotion>
       <div className="relative mt-14 flex flex-col items-center gap-14 md:flex-row md:items-start md:justify-center md:gap-12">
         <Receipt title="Everything you need" number="0001" className="-rotate-[1.5deg]">
           <ul className="space-y-2">
             <Line item="invites" price="unlimited" />
             <Line item="plan, photos, calendar" price="free" />
+            <Line item="your song ♪" price="free" />
             <Line item="answers on telegram" price="free" />
             <Line item="group chat pings" price="free" />
             <Line item="kitten soft theme" price="free" />
@@ -103,10 +106,11 @@ export function Pricing({ envelopePrice }: { envelopePrice: number | undefined }
         </Receipt>
         )}
 
-        <Smiley aria-hidden className="absolute top-2 left-[14%] size-10 -rotate-12 max-lg:hidden" />
-        <Sparkle aria-hidden className="absolute right-[14%] bottom-10 size-7 text-ink max-lg:hidden" />
-        <Heart aria-hidden className="absolute top-24 right-[18%] size-6 text-rose max-lg:hidden" />
+        <Smiley aria-hidden data-pop="" className="absolute top-2 left-[14%] size-10 -rotate-12 max-lg:hidden" />
+        <Sparkle aria-hidden data-pop="" className="absolute right-[14%] bottom-10 size-7 text-ink max-lg:hidden" />
+        <Heart aria-hidden data-pop="" className="absolute top-24 right-[18%] size-6 text-rose max-lg:hidden" />
       </div>
+      </PricingMotion>
     </section>
   );
 }

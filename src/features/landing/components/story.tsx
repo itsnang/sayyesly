@@ -1,4 +1,5 @@
 import { Cloud, Envelope, Flower, Heart, Leaf, Sparkle } from "@/components/shared/doodles";
+import { StoryMotion } from "./closing-motion";
 
 export function Story() {
   return (
@@ -15,14 +16,14 @@ export function Story() {
         </p>
       </div>
 
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 max-md:opacity-40">
-        <Envelope className="absolute bottom-10 left-[4%] w-28 -rotate-6 text-ink lg:w-36" />
-        <Heart className="absolute top-10 left-[16%] size-6 text-rose" />
-        <Cloud fill="var(--color-sky)" className="absolute top-4 left-[3%] w-14 text-ink" />
-        <Flower fill="var(--color-rose-soft)" className="absolute top-8 right-[8%] w-12 text-ink" />
-        <Leaf fill="var(--color-sage)" className="absolute right-[18%] bottom-16 w-10 text-ink" />
-        <Sparkle className="absolute right-[5%] bottom-8 size-8 text-ink" />
-      </div>
+      <StoryMotion className="pointer-events-none absolute inset-0 max-md:opacity-40">
+          <Envelope data-story-envelope="" className="absolute bottom-10 left-[4%] w-28 -rotate-6 text-ink lg:w-36" />
+          <Heart data-story-doodle="" className="absolute top-10 left-[16%] size-6 text-rose" />
+          <Cloud data-story-doodle="" fill="var(--color-sky)" className="absolute top-4 left-[3%] w-14 text-ink" />
+          <Flower data-story-doodle="" fill="var(--color-rose-soft)" className="absolute top-8 right-[8%] w-12 text-ink" />
+          <Leaf data-story-doodle="" fill="var(--color-sage)" className="absolute right-[18%] bottom-16 w-10 text-ink" />
+          <Sparkle data-story-doodle="" className="absolute right-[5%] bottom-8 size-8 text-ink" />
+      </StoryMotion>
     </section>
   );
 }
