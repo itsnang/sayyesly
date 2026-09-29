@@ -54,6 +54,11 @@ export function HeroMotion({ children }: { children: ReactNode }) {
         }
         gsap.set(filled, { fillOpacity: 0 });
 
+        // GSAP folds the page's own CSS tilt (e.g. the envelope's -8°) into its rotation, so
+        // everything moves relative to where it rests rather than back to 0.
+        const envelope = q("[data-hero-envelope]");
+        const envelopeTilt = Number(gsap.getProperty(envelope[0] ?? {}, "rotation")) || 0;
+
         const intro = gsap.timeline({ defaults: { ease: "power3.out" }, onComplete: startIdle });
         intro
           .set([...doodles, ...q("[data-hero-envelope]")], { autoAlpha: 1 }, 0)
@@ -61,8 +66,8 @@ export function HeroMotion({ children }: { children: ReactNode }) {
           .to(filled, { fillOpacity: 1, duration: 0.45, stagger: 0.05 }, 0.55)
           .fromTo(q("[data-hero-line]"), { y: 28, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.8, stagger: 0.14 }, 0.1)
           .fromTo(q("[data-hero-cta]"), { y: 16, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6 }, 0.5)
-          .fromTo(q("[data-hero-envelope]"), { x: 140, rotation: 28 }, { x: 0, rotation: 0, duration: 0.8, ease: "back.out(1.7)" }, 0.65)
-          .to(q("[data-hero-envelope]"), { rotation: -7, duration: 0.1, yoyo: true, repeat: 3, ease: "sine.inOut" });
+          .from(envelope, { x: "+=140", rotation: "+=28", duration: 0.8, ease: "back.out(1.7)" }, 0.65)
+          .to(envelope, { rotation: envelopeTilt - 7, duration: 0.1, yoyo: true, repeat: 3, ease: "sine.inOut" });
 
         // After the intro: a gentle float on every doodle, and on a mouse they drift away from the cursor.
         const cleanups: (() => void)[] = [];
@@ -70,7 +75,7 @@ export function HeroMotion({ children }: { children: ReactNode }) {
           for (const d of doodles) {
             gsap.to(d, {
               yPercent: gsap.utils.random(-16, 16),
-              rotation: gsap.utils.random(-9, 9),
+              rotation: `+=${gsap.utils.random(-9, 9)}`,
               duration: gsap.utils.random(2.2, 3.8),
               ease: "sine.inOut",
               yoyo: true,

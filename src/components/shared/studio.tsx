@@ -54,7 +54,8 @@ export function PhoneShot({
   className,
   sizes = "280px",
   priority,
-}: {
+  ...rest
+}: Omit<ComponentProps<"span">, "children"> & {
   src: string;
   alt: string;
   position?: string;
@@ -68,6 +69,7 @@ export function PhoneShot({
         "relative block aspect-[390/800] rounded-[34px] border-[1.5px] border-ink bg-card p-[7px] shadow-[0_22px_40px_-20px_rgba(60,30,20,0.45)]",
         className,
       )}
+      {...rest}
     >
       <span className="relative block h-full overflow-hidden rounded-[27px] bg-surface">
         <Image src={src} alt={alt} fill sizes={sizes} priority={priority ?? false} draggable={false} className="object-cover" style={{ objectPosition: position }} />
@@ -77,9 +79,15 @@ export function PhoneShot({
 }
 
 /** A lock-screen style notification, as the bot's messages arrive. */
-export function NotifCard({ title, children, time = "now", className }: { title: ReactNode; children?: ReactNode; time?: string; className?: string }) {
+export function NotifCard({
+  title,
+  children,
+  time = "now",
+  className,
+  ...rest
+}: Omit<ComponentProps<"div">, "title"> & { title: ReactNode; children?: ReactNode; time?: string; className?: string }) {
   return (
-    <div className={cx("w-[250px] rounded-[12px] border border-hairline bg-card p-3 text-left shadow-[0_10px_24px_-12px_rgba(60,30,20,0.35)]", className)}>
+    <div className={cx("w-[250px] rounded-[12px] border border-hairline bg-card p-3 text-left shadow-[0_10px_24px_-12px_rgba(60,30,20,0.35)]", className)} {...rest}>
       <div className="flex items-center gap-1.5 text-[10.5px] text-muted">
         <span className="grid size-4 place-items-center rounded-[4px] bg-ink text-rose">
           <Heart className="size-2.5" strokeWidth={3} />
@@ -94,8 +102,8 @@ export function NotifCard({ title, children, time = "now", className }: { title:
 }
 
 /** A strip of washi tape holding things to the page. */
-export function Tape({ className }: { className?: string }) {
-  return <span aria-hidden="true" className={cx("absolute h-6 w-20 bg-[#f4e3a8]/75 shadow-sm backdrop-blur-[1px]", className)} />;
+export function Tape({ className, ...rest }: Omit<ComponentProps<"span">, "children">) {
+  return <span aria-hidden="true" className={cx("absolute h-6 w-20 bg-[#f4e3a8]/75 shadow-sm backdrop-blur-[1px]", className)} {...rest} />;
 }
 
 /**
