@@ -12,7 +12,7 @@ bun run build        # production build
 bun run lint         # ESLint
 bun run typecheck    # tsc --noEmit
 bun run db:generate  # generate a migration from src/lib/db/schema
-bun run db:migrate   # apply migrations (Railway pre-deploy command)
+bun run db:migrate   # apply migrations; deploys don't run it, so it's run by hand against production (see below)
 bun run db:seed      # seed themes + the original invite (idempotent)
 bun run telegram:webhook          # point the bot at NEXT_PUBLIC_APP_URL/api/telegram/webhook
 bun run r2:check                  # verify R2 uploads (CORS, signed PUT, public read); see docs/r2-setup.md
@@ -28,7 +28,7 @@ Copy `.env.example` to `.env.local`. Locally, point `DATABASE_URL` at a separate
 - **Next.js 16** (App Router): breaking changes from prior versions; read `node_modules/next/dist/docs/` before writing code
 - **React 19**, **TypeScript** (strict, plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`)
 - **Tailwind CSS v4** via `@tailwindcss/postcss`
-- **PostgreSQL** + **Drizzle ORM** (`postgres` driver); migrations in `drizzle/migrations/`
+- **PostgreSQL** on Railway + **Drizzle ORM** (`postgres` driver); migrations in `drizzle/migrations/`. The app deploys on **Vercel**, which doesn't migrate: a migration is applied to production by hand (the owner runs `bun run db:migrate`) before the code that needs it is released, so keep migrations additive and hold dependent PRs until it's applied
 - **Auth**: Telegram OpenID Connect + our own `jose`-signed session cookie; no better-auth (see `docs/adr/0001-telegram-oidc-instead-of-better-auth.md`)
 - **Package manager**: bun
 - **Rate limits**: counted in Upstash Redis (`@upstash/redis`), see `docs/adr/0004-rate-limits-counted-in-upstash-redis.md`
