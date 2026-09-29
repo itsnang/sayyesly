@@ -10,7 +10,7 @@ Rate limits used to be counted in each server's memory. A redeploy wiped the cou
 
 ## Consequences
 
-- Every limited action makes one extra query (the Answer makes two: per IP and per Invite).
+- Each rule has two windows (a burst and an hourly cap), so a limited action makes two small upserts, sent together (the Answer checks two rules, per IP then per Invite).
 - **Fail open:** if the query fails, the action is allowed and the error is logged. A limiter problem must never be what stops a Recipient answering; if the database is really down, the action fails anyway.
 - **No raw identifiers are stored:** keys are an HMAC (with `SESSION_SECRET`) of the rule and its subject, so the table holds no IP addresses or ids. Rotating `SESSION_SECRET` just starts every count from zero.
 - About one hit in a hundred also deletes windows that have ended, so the table stays small without a scheduled job.
