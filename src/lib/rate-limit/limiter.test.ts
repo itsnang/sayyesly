@@ -11,7 +11,7 @@ const other: RateLimitRule = { name: "delete", windows: [{ limit: 3, windowMs: M
 function setup(store: RateLimitStore = createMemoryStore()) {
   let time = HOUR * 500_000; // on an hour boundary
   const errors: unknown[] = [];
-  const limiter = createRateLimiter({ store, secret: "test-secret", now: () => time, onError: (e) => errors.push(e) });
+  const limiter = createRateLimiter({ store, secret: "test-secret", now: () => time, timeoutMs: 50, onError: (e) => errors.push(e) });
   const allowed = async (r: RateLimitRule, subject: string) => (await limiter.check(r, subject)).ok;
   return { limiter, allowed, errors, advance: (ms: number) => (time += ms) };
 }
@@ -73,16 +73,34 @@ describe("rate limiter", () => {
   });
 
   test("allows the action when the store fails, and reports the error", async () => {
-    const broken: RateLimitStore = { increment: () => Promise.reject(new Error("database down")) };
+    const broken: RateLimitStore = { increment: () => Promise.reject(new Error("redis down")) };
     const { allowed, errors } = setup(broken);
     expect(await allowed(rule, "creator-1")).toBe(true);
-    expect(errors.length).toBeGreaterThan(0);
+    expect(errors).toHaveLength(1);
+  });
+
+  test("never waits long on a slow store: past the timeout the action goes ahead", async () => {
+    const hanging: RateLimitStore = { increment: () => new Promise(() => {}) };
+    const { allowed, errors } = setup(hanging);
+    const started = performance.now();
+    expect(await allowed(rule, "creator-1")).toBe(true);
+    expect(performance.now() - started).toBeLessThan(500);
+    expect(errors).toHaveLength(1);
+  });
+
+  test("counts all of a rule's windows in one call to the store", async () => {
+    let calls = 0;
+    const memory = createMemoryStore();
+    const counting: RateLimitStore = { increment: (hits) => (calls++, memory.increment(hits)) };
+    const { allowed } = setup(counting);
+    await allowed(rule, "creator-1");
+    expect(calls).toBe(1);
   });
 
   test("the store only ever sees a hash of the key, never the IP or id", async () => {
     const seen: string[] = [];
     const memory = createMemoryStore();
-    const spy: RateLimitStore = { increment: (key, windowStart, windowMs) => (seen.push(key), memory.increment(key, windowStart, windowMs)) };
+    const spy: RateLimitStore = { increment: (hits) => (seen.push(...hits.map((h) => h.key)), memory.increment(hits)) };
     const { allowed } = setup(spy);
     await allowed(other, "203.0.113.7");
     await allowed(other, "203.0.113.7");

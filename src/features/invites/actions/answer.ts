@@ -28,7 +28,8 @@ export async function submitAnswer(slug: string, input: unknown): Promise<Submit
 
   // Per-address and per-invite limits, so spoofing addresses can't flood one invite.
   const ip = clientIp(await headers());
-  const limited = (await rateLimitError(RateLimit.AnswerByIp, ip)) ?? (await rateLimitError(RateLimit.AnswerByInvite, slug));
+  const [byIp, byInvite] = await Promise.all([rateLimitError(RateLimit.AnswerByIp, ip), rateLimitError(RateLimit.AnswerByInvite, slug)]);
+  const limited = byIp ?? byInvite;
   if (limited) return { error: limited };
 
   const invite = await getInviteForAnswer(slug);

@@ -1,6 +1,8 @@
 import "server-only";
+import { Redis } from "@upstash/redis";
 import { env } from "@/env";
-import { createMemoryStore, createRateLimiter, type RateLimitRule } from "./limiter";
+import { createMemoryStore, createRateLimiter, type RateLimitRule, type RateLimitStore } from "./limiter";
+import { createRedisStore } from "./redis-store";
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
@@ -36,8 +38,16 @@ export const RateLimit = {
   BotCommandByChat: rule("bot-command:chat", 10, 60),
 } as const satisfies Record<string, RateLimitRule>;
 
+/** Upstash Redis when configured; otherwise this instance's memory (fine locally, weak in production). */
+function createStore(): RateLimitStore {
+  const { UPSTASH_REDIS_REST_URL: url, UPSTASH_REDIS_REST_TOKEN: token } = env;
+  if (url && token) return createRedisStore(new Redis({ url, token }));
+  if (env.NODE_ENV === "production") console.warn("Rate limits are counted per instance: set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN");
+  return createMemoryStore();
+}
+
 const limiter = createRateLimiter({
-  store: createMemoryStore(),
+  store: createStore(),
   secret: env.SESSION_SECRET ?? "sayyesly-dev-rate-limit",
 });
 
