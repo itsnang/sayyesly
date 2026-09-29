@@ -2,6 +2,7 @@ import "server-only";
 import { and, eq } from "drizzle-orm";
 import type { ThemeAccess } from "@/lib/theme-access";
 import { db } from "../client";
+import { PurchaseStatus } from "@/lib/enums";
 import { purchases, users } from "../schema";
 
 // Shared by the invites slice (who may use a Theme) and the billing slice
@@ -14,7 +15,7 @@ export async function themeAccess(userId: string): Promise<ThemeAccess> {
     db
       .select({ themeId: purchases.themeId })
       .from(purchases)
-      .where(and(eq(purchases.userId, userId), eq(purchases.status, "paid"))),
+      .where(and(eq(purchases.userId, userId), eq(purchases.status, PurchaseStatus.Paid))),
     db.query.users.findFirst({ where: eq(users.id, userId), columns: { testerSince: true } }),
   ]);
   return { owned: new Set(rows.map((r) => r.themeId)), tester: !!user?.testerSince };

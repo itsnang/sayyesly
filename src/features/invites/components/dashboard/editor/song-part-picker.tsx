@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent, type PointerEvent } from "react";
 import { cx } from "@/components/shared/ui";
 import { clipStart, SONG_LENGTHS, type SongLength, type SongLink } from "../../../utils/song";
-import { listenToPlayer, PLAYER_STATE, playerCommand, playerSrc } from "../../../utils/youtube-player";
+import { listenToPlayer, PlayerCommand, PlayerState, playerCommand, playerSrc } from "../../../utils/youtube-player";
 
 /*
  * Choosing the part of the Song that plays, like adding music on Instagram:
@@ -47,18 +47,18 @@ export function SongPartPicker({ song, start, length, onChange }: Props) {
     part.current = { start, length, playing };
   }, [start, length, playing]);
 
-  const send = (func: Parameters<typeof playerCommand>[1], args: unknown[] = []) => playerCommand(frame.current, func, args);
+  const send = (func: PlayerCommand, args: unknown[] = []) => playerCommand(frame.current, func, args);
 
   function playFrom(from: number) {
-    send("seekTo", [from, true]);
-    send("unMute");
-    send("playVideo");
+    send(PlayerCommand.SeekTo, [from, true]);
+    send(PlayerCommand.UnMute);
+    send(PlayerCommand.Play);
     setNow(from);
     setPlaying(true);
   }
 
   function pause() {
-    send("pauseVideo");
+    send(PlayerCommand.Pause);
     setPlaying(false);
   }
 
@@ -70,11 +70,11 @@ export function SongPartPicker({ song, start, length, onChange }: Props) {
       const { start: s, length: l, playing: p } = part.current;
       if (info.currentTime !== undefined) {
         setNow(info.currentTime);
-        if (p && info.currentTime >= s + l) playerCommand(frame.current, "seekTo", [s, true]);
+        if (p && info.currentTime >= s + l) playerCommand(frame.current, PlayerCommand.SeekTo, [s, true]);
       }
-      if (p && info.playerState === PLAYER_STATE.ended) {
-        playerCommand(frame.current, "seekTo", [s, true]);
-        playerCommand(frame.current, "playVideo");
+      if (p && info.playerState === PlayerState.Ended) {
+        playerCommand(frame.current, PlayerCommand.SeekTo, [s, true]);
+        playerCommand(frame.current, PlayerCommand.Play);
       }
     });
   }, [loaded]);

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { CtaLocation } from "@/lib/analytics/events";
 import { trackClick } from "@/lib/analytics/track";
 import { Arrow, Smiley, Sparkle, Star } from "@/components/shared/doodles";
 import { NotifCard, PaperButton, PhoneShot, Tape } from "@/components/shared/studio";
@@ -28,7 +29,7 @@ export function Scrapbook() {
             And what lands on yours.
           </h2>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <PaperButton href="/dashboard/invites/new" className="whitespace-nowrap" {...trackClick("make_invite_clicked", { location: "scrapbook" })}>Make an invite</PaperButton>
+            <PaperButton href="/dashboard/invites/new" className="whitespace-nowrap" {...trackClick("make_invite_clicked", { location: CtaLocation.Scrapbook })}>Make an invite</PaperButton>
             <PaperButton href="/demo" className="whitespace-nowrap">Try the demo ▷</PaperButton>
           </div>
 

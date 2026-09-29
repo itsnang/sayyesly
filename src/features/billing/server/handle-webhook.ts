@@ -1,9 +1,10 @@
 import "server-only";
 import { and, eq, ne } from "drizzle-orm";
 import { z } from "zod";
-import { cutluyPaymentSchema } from "@/lib/cutluy/client";
+import { CutluyEvent, CutluyPaymentStatus, cutluyPaymentSchema } from "@/lib/cutluy/client";
 import { db } from "@/lib/db";
 import { purchases } from "@/lib/db/schema";
+import { PurchaseStatus } from "@/lib/enums";
 import { isId } from "@/lib/validation";
 import { amountMatchesCents } from "../utils/cutluy-webhook";
 
@@ -38,28 +39,28 @@ export async function handleCutluyEvent(body: unknown): Promise<WebhookOutcome> 
   }
 
   switch (type) {
-    case "payment.completed": {
-      if (payment.status !== "paid" || payment.currency !== "USD" || !amountMatchesCents(payment.amount, purchase.amountCents)) {
+    case CutluyEvent.Completed: {
+      if (payment.status !== CutluyPaymentStatus.Paid || payment.currency !== "USD" || !amountMatchesCents(payment.amount, purchase.amountCents)) {
         console.error("CutLuy paid event doesn't match purchase", purchase.id, payment.status, payment.amount, payment.currency);
         return { status: 200, message: "amount mismatch; not unlocked" };
       }
       try {
         await db
           .update(purchases)
-          .set({ status: "paid", paidAt: new Date(), cutluyPaymentId: payment.id, updatedAt: new Date() })
-          .where(and(eq(purchases.id, purchase.id), ne(purchases.status, "paid")));
+          .set({ status: PurchaseStatus.Paid, paidAt: new Date(), cutluyPaymentId: payment.id, updatedAt: new Date() })
+          .where(and(eq(purchases.id, purchase.id), ne(purchases.status, PurchaseStatus.Paid)));
       } catch (error) {
         // The one-paid-purchase-per-theme index: this Creator already owns the Theme (paid twice).
         console.error("Second paid purchase for an owned theme; needs a refund", purchase.id, error);
       }
       return { status: 200, message: "paid" };
     }
-    case "payment.expired":
-    case "payment.failed": {
+    case CutluyEvent.Expired:
+    case CutluyEvent.Failed: {
       await db
         .update(purchases)
-        .set({ status: type === "payment.expired" ? "expired" : "failed", updatedAt: new Date() })
-        .where(and(eq(purchases.id, purchase.id), eq(purchases.status, "pending")));
+        .set({ status: type === CutluyEvent.Expired ? PurchaseStatus.Expired : PurchaseStatus.Failed, updatedAt: new Date() })
+        .where(and(eq(purchases.id, purchase.id), eq(purchases.status, PurchaseStatus.Pending)));
       return { status: 200, message: "closed" };
     }
     default:

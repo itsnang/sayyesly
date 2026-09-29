@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CtaLocation } from "@/lib/analytics/events";
 import { trackClick } from "@/lib/analytics/track";
 import { Heart, Sparkle } from "@/components/shared/doodles";
 import { InkButton, Wordmark } from "@/components/shared/studio";
@@ -34,7 +35,7 @@ export function LandingPage({ envelopePrice }: { envelopePrice: number | undefin
           </h2>
           <p className="mt-3 text-[15px] text-muted">It takes about a minute, and Kitten Soft is free.</p>
           <div className="mt-7 flex justify-center">
-            <InkButton href="/dashboard/invites/new" {...trackClick("make_invite_clicked", { location: "closing" })}>
+            <InkButton href="/dashboard/invites/new" {...trackClick("make_invite_clicked", { location: CtaLocation.Closing })}>
               Make an invite <Heart className="size-3.5 text-rose" strokeWidth={2.4} />
             </InkButton>
           </div>

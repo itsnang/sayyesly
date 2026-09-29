@@ -1,13 +1,26 @@
 import "server-only";
 import { z } from "zod";
 import { requireEnv } from "@/env";
+import { enumValues, type EnumValue } from "@/lib/enums";
 
 // CutLuy KHQR payments API: https://cutluy.com/docs
 const API_BASE = "https://cutluy.com/v1";
 
+/** A CutLuy payment's status, as its API and webhooks send it. */
+export const CutluyPaymentStatus = { Pending: "pending", Scanned: "scanned", Paid: "paid", Expired: "expired", Failed: "failed" } as const;
+export type CutluyPaymentStatus = EnumValue<typeof CutluyPaymentStatus>;
+
+/** The webhook events CutLuy sends (https://cutluy.com/docs). */
+export const CutluyEvent = {
+  Completed: "payment.completed",
+  Expired: "payment.expired",
+  Failed: "payment.failed",
+  Scanned: "payment.scanned",
+} as const;
+
 export const cutluyPaymentSchema = z.object({
   id: z.string(),
-  status: z.enum(["pending", "scanned", "paid", "expired", "failed"]),
+  status: z.enum(enumValues(CutluyPaymentStatus)),
   amount: z.string(),
   currency: z.string(),
   reference_id: z.string().nullable(),

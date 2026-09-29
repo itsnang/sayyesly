@@ -2,9 +2,13 @@
 // Answer kind or which button. Never free text (names, questions, notes).
 // Adding an event here is the whole change; a typo elsewhere fails typecheck.
 
+import type { AnswerKind, EnumValue } from "@/lib/enums";
+
 type NoProps = Record<string, never>;
 
-export type CtaLocation = "hero" | "nav" | "pricing" | "scrapbook" | "studio" | "closing";
+/** Which "Make an invite" button on the landing page was clicked. */
+export const CtaLocation = { Hero: "hero", Nav: "nav", Pricing: "pricing", Scrapbook: "scrapbook", Studio: "studio", Closing: "closing" } as const;
+export type CtaLocation = EnumValue<typeof CtaLocation>;
 
 export type AnalyticsEvents = {
   make_invite_clicked: { location: CtaLocation };
@@ -13,9 +17,9 @@ export type AnalyticsEvents = {
   invite_created: { theme: string };
   link_copied: NoProps;
   invite_opened: { theme: string };
-  invite_answered: { kind: "yes" | "maybe_later" };
+  invite_answered: { kind: AnswerKind };
   /** The Creator cleared an Answer so the Recipient can answer again; `kind` is the Answer cleared */
-  invite_reopened: { theme: string; kind: "yes" | "maybe_later" };
+  invite_reopened: { theme: string; kind: AnswerKind };
   checkout_opened: { theme: string };
   theme_paid: { theme: string };
 };

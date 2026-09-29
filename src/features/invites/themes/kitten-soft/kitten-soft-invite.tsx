@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { AnswerKind, type EnumValue } from "@/lib/enums";
 import type { InviteThemeProps } from "../types";
 import { useInviteAnswer } from "../../hooks/use-invite-answer";
 import { AskScreen } from "./ask-screen";
@@ -13,6 +14,10 @@ import { useFirstTap } from "../shared/use-first-tap";
 
 // The pink grid paper. It used to be painted by the global body, which put it behind
 // every page while loading; the Theme now owns it.
+/** The ask screen first; after Yes, the Plan screen to pick a time. */
+const Stage = { Ask: "ask", Plan: "plan" } as const;
+type Stage = EnumValue<typeof Stage>;
+
 const PAPER_BACKGROUND =
   "linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 26px 26px, " +
   "linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 26px 26px, " +
@@ -23,7 +28,7 @@ const PAPER_BACKGROUND =
 export function KittenSoftInvite(props: InviteThemeProps) {
   const { invite } = props;
   const answering = useInviteAnswer(props);
-  const [stage, setStage] = useState<"ask" | "plan">("ask");
+  const [stage, setStage] = useState<Stage>(Stage.Ask);
   const dodges = useRef(0);
   const { celebrate, layer } = useRain();
   // No envelope to open here: the Song starts in the background on the Recipient's first touch,
@@ -32,11 +37,11 @@ export function KittenSoftInvite(props: InviteThemeProps) {
   const tapped = useFirstTap(!!song);
 
   let screen;
-  if (answering.answer?.answer === "yes") {
+  if (answering.answer?.answer === AnswerKind.Yes) {
     screen = <DoneScreen answer={answering.answer} plan={invite.plan} timezone={invite.timezone} />;
-  } else if (answering.answer?.answer === "maybe_later") {
+  } else if (answering.answer?.answer === AnswerKind.MaybeLater) {
     screen = <MaybeLaterScreen />;
-  } else if (stage === "ask") {
+  } else if (stage === Stage.Ask) {
     screen = (
       <AskScreen
         question={invite.question}
@@ -47,7 +52,7 @@ export function KittenSoftInvite(props: InviteThemeProps) {
         onDodge={(n) => (dodges.current = n)}
         onYes={() => {
           celebrate(1300);
-          setStage("plan");
+          setStage(Stage.Plan);
           window.scrollTo(0, 0);
         }}
         onMaybeLater={async () => {

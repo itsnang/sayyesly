@@ -13,6 +13,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { track } from "@/lib/analytics/track";
+import type { AnswerKind } from "@/lib/enums";
 import { errorMessage } from "@/lib/query/action";
 import { useReopenInvite } from "../../hooks/use-invite-mutations";
 
@@ -21,7 +22,7 @@ type Props = {
   recipientName: string;
   themeId: string;
   /** The Answer being cleared */
-  answerKind: "yes" | "maybe_later";
+  answerKind: AnswerKind;
   /** Every time has passed and they can't pick one: once reopened it can't be answered until a time is added */
   expired: boolean;
 };

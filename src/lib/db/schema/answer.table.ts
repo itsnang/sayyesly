@@ -1,8 +1,9 @@
 import { integer, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { AnswerKind, enumValues } from "../../enums";
 import { inviteTimeSlots } from "./invite-time-slot.table";
 import { invites } from "./invite.table";
 
-export const answerKindEnum = pgEnum("answer_kind", ["yes", "maybe_later"]);
+export const answerKindEnum = pgEnum("answer_kind", enumValues(AnswerKind));
 
 // The Answer to an Invite. The unique `invite_id` enforces one Answer per
 // Invite, and an Invite counts as answered exactly when this row exists.
@@ -24,4 +25,3 @@ export const answers = pgTable("answers", {
 
 export type AnswerRow = typeof answers.$inferSelect;
 export type NewAnswerRow = typeof answers.$inferInsert;
-export type AnswerKind = (typeof answerKindEnum.enumValues)[number];

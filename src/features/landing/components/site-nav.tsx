@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CtaLocation } from "@/lib/analytics/events";
 import { trackClick } from "@/lib/analytics/track";
 import { Wordmark } from "@/components/shared/studio";
 
@@ -22,7 +23,7 @@ export function SiteNav() {
           </Link>
           <Link
             href="/dashboard/invites/new"
-            {...trackClick("make_invite_clicked", { location: "nav" })}
+            {...trackClick("make_invite_clicked", { location: CtaLocation.Nav })}
             className="rounded-[6px] border-[1.5px] border-ink px-4 py-1.5 text-ink transition hover:bg-ink hover:text-canvas max-sm:px-3 max-sm:text-[13px]"
           >
             Make an invite

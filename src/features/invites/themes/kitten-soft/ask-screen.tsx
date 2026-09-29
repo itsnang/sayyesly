@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import type { QuestionSegment } from "../../types";
 import { MAYBE_LATER_AFTER_DODGES } from "../types";
@@ -39,12 +39,16 @@ type AskScreenProps = {
 export function AskScreen({ question, message, imageUrl, busy, error, onYes, onDodge, onMaybeLater }: AskScreenProps) {
   const [promptText, setPromptText] = useState("// awaiting your answer…");
   const lineIdx = useRef(0);
+  // The next line fades in shortly after a dodge; never after the screen has gone.
+  const nextLine = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(nextLine.current), []);
 
   const onNoDodge = useCallback(
     (n: number) => {
       onDodge(n);
       setPromptText("");
-      setTimeout(() => {
+      clearTimeout(nextLine.current);
+      nextLine.current = setTimeout(() => {
         setPromptText(NO_LINES[lineIdx.current % NO_LINES.length] ?? "");
         lineIdx.current++;
       }, 120);

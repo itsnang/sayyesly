@@ -6,6 +6,7 @@ import { Button, buttonClass, Note } from "@/components/shared/ui";
 import { formatUsd } from "@/lib/format";
 import { track } from "@/lib/analytics/track";
 import { useThemePurchase } from "../hooks/use-theme-purchase";
+import { PurchasePhase } from "../utils/purchase-phase";
 
 /**
  * Buying one Paid theme: shows the KHQR code from `useThemePurchase` and each
@@ -52,14 +53,14 @@ export function BuyThemeDialog({
         </div>
 
         <div className="px-5 pt-5 pb-5 text-center">
-          {shown === "starting" && (
+          {shown === PurchasePhase.Starting && (
             <div className="grid place-items-center py-12" aria-live="polite">
               <span className="size-6 animate-spin rounded-full border-2 border-ink/15 border-t-ink" aria-hidden />
               <p className="mt-4 text-[13.5px] text-muted">Making your KHQR code…</p>
             </div>
           )}
 
-          {shown === "waiting" && ticket && (
+          {shown === PurchasePhase.Waiting && ticket && (
             <>
               <p className="text-[13.5px] text-muted">Scan with any KHQR banking app (ABA, ACLEDA, Wing…)</p>
               {/* CutLuy's own branded card (merchant + amount read from the payload); never shown once the payment is over.
@@ -90,7 +91,7 @@ export function BuyThemeDialog({
             </>
           )}
 
-          {shown === "paid" && (
+          {shown === PurchasePhase.Paid && (
             <div className="py-4">
               <span className="mx-auto grid size-11 place-items-center rounded-full bg-emerald-50 text-emerald-800">
                 <svg viewBox="0 0 16 16" aria-hidden className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -105,12 +106,12 @@ export function BuyThemeDialog({
             </div>
           )}
 
-          {(shown === "lapsed" || shown === "failed" || shown === "error") && (
+          {(shown === PurchasePhase.Lapsed || shown === PurchasePhase.Failed || shown === PurchasePhase.Error) && (
             <div className="py-2">
-              <Note tone={shown === "error" ? "error" : "info"} className="text-left">
-                {shown === "error"
+              <Note tone={shown === PurchasePhase.Error ? "error" : "info"} className="text-left">
+                {shown === PurchasePhase.Error
                   ? error
-                  : shown === "failed"
+                  : shown === PurchasePhase.Failed
                     ? "That payment didn't go through. No money was taken."
                     : "This QR code expired. No money was taken."}
               </Note>
