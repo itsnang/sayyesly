@@ -17,17 +17,23 @@ const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
 });
 
+// Fraunces and Courier Prime are the landing page's and dashboard's display and
+// typewriter faces. Not preloaded: every page would download them (~330 KB) before
+// its own fonts, including the invite page a Recipient opens on mobile data. The
+// browser still fetches them on the pages that draw text with them.
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],
   style: ["normal", "italic"],
   axes: ["SOFT", "opsz"],
+  preload: false,
 });
 
 const courierPrime = Courier_Prime({
   variable: "--font-courier-prime",
   subsets: ["latin"],
   weight: ["400", "700"],
+  preload: false,
 });
 
 const architectsDaughter = Architects_Daughter({
