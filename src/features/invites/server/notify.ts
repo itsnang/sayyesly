@@ -6,9 +6,9 @@ import { sendMessage } from "@/lib/telegram";
 import { answerNotification } from "../utils/notification";
 
 /**
- * Tells the Creator (by DM, when allowed) and every Linked group about the
- * Invite's Answer. Each chat is tried independently, so one failure never
- * blocks the others. A 403 on the DM means the Creator blocked the bot.
+ * Tells the Creator (by DM) and every Linked group about the Invite's Answer.
+ * Each chat is tried independently, so one failure never blocks the others.
+ * A 403 on the DM means the Creator never started the bot or blocked it.
  */
 export async function notifyAnswer(inviteId: string): Promise<void> {
   const invite = await db.query.invites.findFirst({
@@ -33,18 +33,20 @@ export async function notifyAnswer(inviteId: string): Promise<void> {
     if (!sent.ok) console.error(`Notify group ${group.chatId} failed`, sent.status, sent.description);
   });
 
-  if (invite.creator.canDm) {
-    sends.push(
-      (async () => {
-        const sent = await sendMessage(invite.creator.telegramId, text, { parseMode: "HTML", disablePreview: true });
-        if (sent.ok) return;
-        console.error(`Notify creator ${invite.creator.id} failed`, sent.status, sent.description);
-        if (sent.status === 403) {
-          await db.update(users).set({ canDm: false, updatedAt: new Date() }).where(eq(users.id, invite.creator.id));
-        }
-      })(),
-    );
-  }
+  // The DM is always tried, whatever can_dm says: Telegram is the only reliable judge of
+  // whether the bot may message the Creator, and a stale flag must never drop an Answer.
+  // The result corrects the flag, which only decides whether the dashboard asks them to start the bot.
+  const { creator } = invite;
+  sends.push(
+    (async () => {
+      const sent = await sendMessage(creator.telegramId, text, { parseMode: "HTML", disablePreview: true });
+      const canDm = sent.ok ? true : sent.status === 403 ? false : creator.canDm;
+      if (!sent.ok) console.error(`Notify creator ${creator.id} failed`, sent.status, sent.description);
+      if (canDm !== creator.canDm) {
+        await db.update(users).set({ canDm, updatedAt: new Date() }).where(eq(users.id, creator.id));
+      }
+    })(),
+  );
 
   await Promise.allSettled(sends);
 }
