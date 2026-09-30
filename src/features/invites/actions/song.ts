@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth/session";
+import { cache, DAY_SECONDS } from "@/lib/cache";
 import { RateLimit, rateLimitError } from "@/lib/rate-limit";
 import { safeHttpUrl } from "@/lib/validation";
 import { songFromUrl } from "../utils/song";
@@ -22,22 +23,34 @@ export async function getSongDetails(url: string): Promise<SongDetails & { error
   const song = songFromUrl(typeof url === "string" ? url : null);
   if (!song) return { error: "That's not a YouTube link.", title: "", by: null, coverUrl: null };
 
-  let response: Response;
-  try {
-    response = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(song.url)}`, {
-      signal: AbortSignal.timeout(5000),
-      next: { revalidate: 86_400 },
-    });
-  } catch {
-    return { error: "Couldn't reach YouTube. The song will still play.", title: "", by: null, coverUrl: null };
-  }
-  // YouTube answers 404 for a video that doesn't exist, and 401 for one that can't be embedded.
-  if (!response.ok) return { error: "YouTube can't play this one here. Try another link.", title: "", by: null, coverUrl: null };
-  const parsed = oembedSchema.safeParse(await response.json().catch(() => null));
-  if (!parsed.success) return { error: "Couldn't read the song from YouTube. It will still play.", title: "", by: null, coverUrl: null };
-  return {
-    title: parsed.data.title,
-    by: parsed.data.author_name ?? null,
-    coverUrl: safeHttpUrl(parsed.data.thumbnail_url ?? null),
-  };
+  // Remembered per video for a week, for everyone: repeat lookups skip YouTube.
+  // Failures aren't remembered, so a hiccup is retried next time.
+  let failure = "Couldn't reach YouTube. The song will still play.";
+  const details = await cache.remember<SongDetails>(`song:v1:${song.id}`, 7 * DAY_SECONDS, async () => {
+    let response: Response;
+    try {
+      response = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(song.url)}`, {
+        signal: AbortSignal.timeout(5000),
+        cache: "no-store",
+      });
+    } catch {
+      return null;
+    }
+    // YouTube answers 404 for a video that doesn't exist, and 401 for one that can't be embedded.
+    if (!response.ok) {
+      failure = "YouTube can't play this one here. Try another link.";
+      return null;
+    }
+    const parsed = oembedSchema.safeParse(await response.json().catch(() => null));
+    if (!parsed.success) {
+      failure = "Couldn't read the song from YouTube. It will still play.";
+      return null;
+    }
+    return {
+      title: parsed.data.title,
+      by: parsed.data.author_name ?? null,
+      coverUrl: safeHttpUrl(parsed.data.thumbnail_url ?? null),
+    };
+  });
+  return details ?? { error: failure, title: "", by: null, coverUrl: null };
 }

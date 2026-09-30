@@ -1,6 +1,6 @@
 import "server-only";
-import { Redis } from "@upstash/redis";
 import { env } from "@/env";
+import { redis } from "@/lib/redis";
 import { createMemoryStore, createRateLimiter, type RateLimitRule, type RateLimitStore } from "./limiter";
 import { createRedisStore } from "./redis-store";
 
@@ -40,8 +40,7 @@ export const RateLimit = {
 
 /** Upstash Redis when configured; otherwise this instance's memory (fine locally, weak in production). */
 function createStore(): RateLimitStore {
-  const { UPSTASH_REDIS_REST_URL: url, UPSTASH_REDIS_REST_TOKEN: token } = env;
-  if (url && token) return createRedisStore(new Redis({ url, token }));
+  if (redis) return createRedisStore(redis);
   if (env.NODE_ENV === "production") console.warn("Rate limits are counted per instance: set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN");
   return createMemoryStore();
 }
