@@ -1,5 +1,6 @@
 import "server-only";
 import { requireEnv } from "@/env";
+import { cache, DAY_SECONDS } from "@/lib/cache";
 
 export type ChatId = bigint | number | string;
 
@@ -10,15 +11,21 @@ export type SendResult =
 
 let cachedUsername: string | null = null;
 
-/** The bot's own @username (without the @), fetched once per server instance. */
+/**
+ * The bot's own @username (without the @). Kept in this instance's memory and,
+ * for fresh instances, in the shared cache for a day, so Telegram is rarely asked.
+ */
 export async function getBotUsername(): Promise<string> {
   if (cachedUsername) return cachedUsername;
-  const token = requireEnv("TELEGRAM_BOT_TOKEN");
-  const res = await fetch(`https://api.telegram.org/bot${token}/getMe`, { cache: "no-store" });
-  const body = (await res.json()) as { ok: boolean; result?: { username?: string } };
-  if (!body.ok || !body.result?.username) throw new Error("Telegram getMe failed");
-  cachedUsername = body.result.username;
-  return cachedUsername;
+  const username = await cache.remember<string>("telegram:bot-username", DAY_SECONDS, async () => {
+    const token = requireEnv("TELEGRAM_BOT_TOKEN");
+    const res = await fetch(`https://api.telegram.org/bot${token}/getMe`, { cache: "no-store" });
+    const body = (await res.json()) as { ok: boolean; result?: { username?: string } };
+    return body.ok && body.result?.username ? body.result.username : null;
+  });
+  if (!username) throw new Error("Telegram getMe failed");
+  cachedUsername = username;
+  return username;
 }
 
 /** Sends a Bot API message. Never throws, even when the bot isn't configured; check `ok`. */
