@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useId, useRef } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import { Field, Input } from "@/components/shared/ui";
 import type { InviteFormValues } from "../../../schemas";
@@ -15,6 +15,7 @@ import { SongPartPicker } from "./song-part-picker";
 export function SongField() {
   const { register, control, setValue, formState } = useFormContext<InviteFormValues>();
   const [songUrl, songStart, songLength] = useWatch({ control, name: ["songUrl", "songStart", "songLength"] });
+  const inputId = useId();
   const song = songFromUrl(songUrl);
   const songId = song?.id ?? null;
 
@@ -34,9 +35,10 @@ export function SongField() {
   );
 
   return (
-    <Field label="Song" optional hint="Plays in the background once they tap. In YouTube: Share → Copy link." error={formState.errors.songUrl?.message}>
+    // `htmlFor`: the part picker lives in this field, and its clicks mustn't focus the link box.
+    <Field label="Song" optional htmlFor={inputId} hint="Plays in the background once they tap. In YouTube: Share → Copy link." error={formState.errors.songUrl?.message}>
       <div className="grid grid-cols-[minmax(0,1fr)] gap-2">
-        <Input {...register("songUrl")} type="url" inputMode="url" placeholder="https://youtu.be/…" />
+        <Input id={inputId} {...register("songUrl")} type="url" inputMode="url" placeholder="https://youtu.be/…" />
         <SongDetails songUrl={songUrl ?? ""} />
         {song && <SongPartPicker key={song.id} song={song} start={songStart ?? 0} length={songLength ?? DEFAULT_SONG_LENGTH} onChange={setPart} />}
       </div>
