@@ -67,6 +67,7 @@ export function Field({
   children,
   className,
   optional,
+  htmlFor,
 }: {
   label: string;
   hint?: ReactNode;
@@ -74,16 +75,42 @@ export function Field({
   children: ReactNode;
   className?: string;
   optional?: boolean;
+  /**
+   * The id of the control the label names. Set it when the field holds more than
+   * that control (buttons, a slider): the whole field is then a <div>, since a
+   * click anywhere inside a <label> that misses a button focuses its first input.
+   */
+  htmlFor?: string;
 }) {
-  return (
-    <label className={cx("block", className)}>
-      <span className="mb-1.5 flex items-baseline gap-2 text-[14px] font-medium text-ink">
-        {label}
-        {optional && <span className="text-[12.5px] font-normal text-faint">optional</span>}
-      </span>
+  const title = (
+    <>
+      {label}
+      {optional && <span className="text-[12.5px] font-normal text-faint">optional</span>}
+    </>
+  );
+  const titleClass = "mb-1.5 flex items-baseline gap-2 text-[14px] font-medium text-ink";
+  const rest = (
+    <>
       {children}
       {hint && !error && <span className="mt-1.5 block text-[12.5px] leading-snug text-muted">{hint}</span>}
       {error && <FieldError>{error}</FieldError>}
+    </>
+  );
+
+  if (htmlFor) {
+    return (
+      <div className={cx("block", className)}>
+        <label htmlFor={htmlFor} className={titleClass}>
+          {title}
+        </label>
+        {rest}
+      </div>
+    );
+  }
+  return (
+    <label className={cx("block", className)}>
+      <span className={titleClass}>{title}</span>
+      {rest}
     </label>
   );
 }
