@@ -14,8 +14,9 @@ import { BackgroundSong } from "../shared/background-song";
 
 /**
  * Envelope: an invitation rather than a question. A handmade envelope opens
- * onto the letter; the Recipient picks a time and says Yes, or says they can't
- * make it (a Maybe later). There is no runaway "No".
+ * onto the letter, and the Recipient answers by picking a time and saying Yes.
+ * It offers no way to decline. An Invite answered Maybe later before that
+ * (or under another Theme) still shows its Maybe later screen.
  */
 export function EnvelopeInvite(props: InviteThemeProps) {
   const { invite } = props;
@@ -46,12 +47,6 @@ export function EnvelopeInvite(props: InviteThemeProps) {
             window.scrollTo(0, 0);
           }
         }}
-        onMaybeLater={async () => {
-          if (await answering.sayMaybeLater()) {
-            setJustAnswered(true);
-            window.scrollTo(0, 0);
-          }
-        }}
       />
     );
   }
@@ -75,14 +70,6 @@ export function EnvelopeInvite(props: InviteThemeProps) {
         .env-split { display: grid; gap: 30px; align-items: start; }
         @media (min-width: 620px) { .env-split { grid-template-columns: 1.1fr 1fr; } }
         @keyframes env-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-        .env-dialog {
-          width: min(380px, calc(100% - 40px)); max-width: none; margin: auto; padding: 0; border: none;
-          background: var(--env-diary); color: var(--env-ink);
-          box-shadow: 0 24px 60px -24px rgba(38,55,196,.45);
-          rotate: -.8deg;
-        }
-        .env-dialog[open] { animation: env-rise .25s ease-out both; }
-        .env-dialog::backdrop { background: rgba(38,55,196,.16); backdrop-filter: blur(2px); }
         @keyframes env-draw { to { stroke-dashoffset: 0; } }
         @keyframes env-fly {
           0%   { transform: translate(-120px, 80vh) rotate(8deg); opacity: 1; }
