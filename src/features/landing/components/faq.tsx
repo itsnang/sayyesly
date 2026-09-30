@@ -3,7 +3,7 @@ import { FaqMotion } from "./closing-motion";
 const QUESTIONS = [
   {
     q: "Can they say no?",
-    a: "Every Theme has a gentle way out: \"maybe another time\" in Kitten Soft, \"i can't make it this time\" in Envelope. You get a kind message either way, and they never feel cornered.",
+    a: "In Kitten Soft, yes: \"maybe another time\" is always there, and you get a kind message either way. Envelope is a letter they answer by picking a time, so it has no way to decline.",
   },
   {
     q: "Do they need an account or the app?",

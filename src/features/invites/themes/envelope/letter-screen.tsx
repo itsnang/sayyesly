@@ -16,7 +16,6 @@ type LetterScreenProps = {
   busy: boolean;
   error: string | null;
   onYes: (choice: PlanChoice, note: string) => void;
-  onMaybeLater: () => void;
 };
 
 /** What's picked so far, e.g. "saturday, september 26 at 7:30 pm", or what's still missing. */
@@ -35,7 +34,7 @@ function pickStatus(selection: PlanSelection, timezone: string): string {
 }
 
 /** The Invite, laid out like a page from a diary. */
-export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: LetterScreenProps) {
+export function LetterScreen({ invite, busy, error, onYes }: LetterScreenProps) {
   const { plan } = invite;
   const selection = usePlanSelection(invite);
   const [note, setNote] = useState("");
@@ -84,7 +83,6 @@ export function LetterScreen({ invite, busy, error, onYes, onMaybeLater }: Lette
           busy={busy}
           error={error}
           onYes={() => choice && onYes(choice, note)}
-          onMaybeLater={onMaybeLater}
         />
       </div>
     </div>

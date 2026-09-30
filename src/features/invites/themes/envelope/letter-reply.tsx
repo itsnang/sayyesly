@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { NOTE_MAX_LENGTH } from "../../utils/answer";
 import { Label, penStyle } from "./lettering";
 
@@ -41,11 +40,10 @@ type ReplyActionsProps = {
   busy: boolean;
   error: string | null;
   onYes: () => void;
-  onMaybeLater: () => void;
 };
 
-/** The pick so far (or the error), "count me in", and the quiet way out under it. */
-export function ReplyActions({ status, canSend, busy, error, onYes, onMaybeLater }: ReplyActionsProps) {
+/** The pick so far (or the error), and "count me in". */
+export function ReplyActions({ status, canSend, busy, error, onYes }: ReplyActionsProps) {
   const ready = canSend && !busy;
   return (
     <section style={{ marginTop: 40, textAlign: "center" }}>
@@ -73,89 +71,7 @@ export function ReplyActions({ status, canSend, busy, error, onYes, onMaybeLater
         <DrawnBox />
         {busy ? "sending…" : "count me in"}
       </button>
-      <div style={{ marginTop: 22 }}>
-        <MaybeLater busy={busy} error={error} onConfirm={onMaybeLater} />
-      </div>
     </section>
-  );
-}
-
-/**
- * The quiet way out. The Recipient can't change an Answer, so it asks once more
- * in a note laid over the letter. On success the whole screen is replaced; on
- * failure the note stays open and says why.
- */
-function MaybeLater({ busy, error, onConfirm }: { busy: boolean; error: string | null; onConfirm: () => void }) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  // `error` is shared with "count me in", so only show one this note caused.
-  const [sent, setSent] = useState(false);
-  const link = { ...penStyle, fontSize: 22, background: "none", border: "none", textUnderlineOffset: 4, cursor: "pointer", padding: 6 } as const;
-  const close = () => {
-    if (!busy) dialog.current?.close();
-  };
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => {
-          setSent(false);
-          dialog.current?.showModal();
-        }}
-        disabled={busy}
-        style={{ ...link, color: "var(--env-graphite)", textDecoration: "underline" }}
-      >
-        i can&apos;t make it this time
-      </button>
-
-      <dialog
-        ref={dialog}
-        className="env-dialog"
-        aria-labelledby="env-decline-title"
-        onCancel={(e) => busy && e.preventDefault()}
-        onClick={(e) => e.target === e.currentTarget && close()}
-      >
-        <div style={{ padding: "30px 24px 20px", textAlign: "center" }}>
-          <p id="env-decline-title" style={{ fontFamily: "var(--env-marker)", fontSize: 32, lineHeight: 1.1, color: "var(--env-ink)" }}>
-            can&apos;t make it this time?
-          </p>
-          <p style={{ ...penStyle, fontSize: 22, marginTop: 12, color: "var(--env-graphite)" }}>
-            we&apos;ll let them know, gently. once it&apos;s sent, it can&apos;t be changed.
-          </p>
-          {sent && error && (
-            <p role="alert" style={{ ...penStyle, fontSize: 20, marginTop: 10, color: "var(--env-error)" }}>
-              {error}
-            </p>
-          )}
-          <div style={{ display: "flex", flexWrap: "wrap-reverse", justifyContent: "center", alignItems: "center", gap: "6px 22px", marginTop: 22 }}>
-            <button type="button" onClick={close} disabled={busy} style={{ ...link, color: "var(--env-graphite)" }}>
-              never mind
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setSent(true);
-                onConfirm();
-              }}
-              disabled={busy}
-              style={{
-                position: "relative",
-                padding: "10px 26px 8px",
-                border: "none",
-                background: "none",
-                fontFamily: "var(--env-marker)",
-                fontSize: 26,
-                color: "var(--env-ink)",
-                cursor: busy ? "not-allowed" : "pointer",
-              }}
-            >
-              <DrawnBox />
-              {busy ? "sending…" : "send it"}
-            </button>
-          </div>
-        </div>
-      </dialog>
-    </>
   );
 }
 
