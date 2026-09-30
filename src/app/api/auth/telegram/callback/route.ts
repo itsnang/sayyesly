@@ -40,8 +40,10 @@ export async function GET(req: NextRequest) {
     username: identity.username,
     photoUrl: identity.photoUrl,
     updatedAt: new Date(),
-    // Only change can_dm when Telegram tells us which scopes were granted.
-    ...(grantedScopes ? { canDm: grantedScopes.includes(BOT_ACCESS_SCOPE) } : {}),
+    // Logging in only ever turns can_dm on. Telegram doesn't always report bot access again on
+    // later logins, and a login without it doesn't mean the bot lost access. It's turned off
+    // only on real evidence: a DM refused with 403, or Telegram saying the bot was blocked.
+    ...(grantedScopes?.includes(BOT_ACCESS_SCOPE) ? { canDm: true } : {}),
   };
 
   // Keyed on telegram_id so a Creator seeded before their first login is claimed, not duplicated.
