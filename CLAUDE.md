@@ -19,7 +19,7 @@ bun run r2:check                  # verify R2 uploads (CORS, signed PUT, public 
 bun test             # unit tests (bun's built-in runner, *.test.ts next to the code)
 ```
 
-Quality gate: `bun run typecheck && bun run lint && bun test && bun run build`. Unit tests cover the agreed seams only: answer rules (`features/invites/utils/answer.ts`), what saving Time slots changes (`features/invites/utils/time-slots.ts`), recognising a Song link (`features/invites/utils/song.ts`), Telegram message text and command parsing, the CutLuy webhook signature/amount check, the Server Action → TanStack Query adapter (`lib/query/action.ts`), when the Theme purchase poll stops (`features/billing/utils/purchase-phase.ts`), who may use a Theme (`lib/theme-access.ts`), when a rate limit blocks (`lib/rate-limit/limiter.ts`), the post-login redirect check (`lib/auth/next-path.ts`), the same-origin (CSRF) check (`lib/auth/same-origin.ts`) and what analytics may send (`lib/analytics/sanitize.ts`).
+Quality gate: `bun run typecheck && bun run lint && bun test && bun run build`. Unit tests cover the agreed seams only: answer rules (`features/invites/utils/answer.ts`), what saving Time slots changes (`features/invites/utils/time-slots.ts`), recognising a Song link (`features/invites/utils/song.ts`), Telegram message text and command parsing, the CutLuy webhook signature/amount check, the Server Action → TanStack Query adapter (`lib/query/action.ts`), when the Theme purchase poll stops (`features/billing/utils/purchase-phase.ts`), who may use a Theme (`lib/theme-access.ts`), when a rate limit blocks (`lib/rate-limit/limiter.ts`), what the shared cache remembers (`lib/cache/cache.ts`), the post-login redirect check (`lib/auth/next-path.ts`), the same-origin (CSRF) check (`lib/auth/same-origin.ts`) and what analytics may send (`lib/analytics/sanitize.ts`).
 
 Copy `.env.example` to `.env.local`. Locally, point `DATABASE_URL` at a separate dev database, never production.
 
@@ -31,7 +31,7 @@ Copy `.env.example` to `.env.local`. Locally, point `DATABASE_URL` at a separate
 - **PostgreSQL** on Railway + **Drizzle ORM** (`postgres` driver); migrations in `drizzle/migrations/`. The app deploys on **Vercel**, which doesn't migrate: a migration is applied to production by hand (the owner runs `bun run db:migrate`) before the code that needs it is released, so keep migrations additive and hold dependent PRs until it's applied
 - **Auth**: Telegram OpenID Connect + our own `jose`-signed session cookie; no better-auth (see `docs/adr/0001-telegram-oidc-instead-of-better-auth.md`)
 - **Package manager**: bun
-- **Rate limits**: counted in Upstash Redis (`@upstash/redis`), see `docs/adr/0004-rate-limits-counted-in-upstash-redis.md`
+- **Upstash Redis** (`@upstash/redis`, one client in `lib/redis.ts`): rate limit counts and a small shared cache, see `docs/adr/0004-rate-limits-counted-in-upstash-redis.md`
 
 Domain vocabulary (Creator, Recipient, Invite, Answer, Theme…) is defined in `CONTEXT.md`. Use those terms in code, UI copy and messages.
 
@@ -55,7 +55,7 @@ src/
   lib/                 shared code: db/ (+ db/queries for cross-slice reads), auth/, telegram/,
                        cutluy/, storage/, time/, format/, query/ (TanStack Query provider + runAction),
                        analytics/ (PostHog events, sanitiser, track()),
-                       enums.ts, validation.ts, rate-limit/, site.ts, theme-ids.ts, theme-access.ts
+                       enums.ts, validation.ts, rate-limit/, cache/, redis.ts, site.ts, theme-ids.ts, theme-access.ts
   env.ts               server-only, zod-validated env; use requireEnv() for optional vars
 ```
 
@@ -77,6 +77,7 @@ Themes are code: `src/features/invites/themes/<id>/` exports a `ThemeDefinition`
 - Changes to an Invite's lockable fields (question, Time slots, time zone, Custom time, Theme) and saving an Answer both take `SELECT … FOR UPDATE` on the invite row, so they can't interleave
 - `revalidatePath()` / `revalidateTag()` only **after** the mutation commits
 - Actions return `{ error?: string }` on failure instead of throwing
+- A slow outside answer that's the same for everyone (a YouTube video's details, the bot's username) goes through `cache.remember()` from `lib/cache`. Don't cache database reads (the database is next to the functions, so Redis is no faster) or per-user data
 - Every action a script could hammer is rate limited: `rateLimitError()` (or `allow()` where there's no message to show) with a rule from the `RateLimit` table in `lib/rate-limit`, keyed by Creator id, IP or chat. Each rule has a generous burst window (a person spamming a bit waits a minute) and an hourly cap (a script that keeps going is shut out). Limits live only in that table
 - Absolute URLs and redirects are built from `NEXT_PUBLIC_APP_URL`; secrets never go in `NEXT_PUBLIC_*`
 - Escape user text with `escapeHtml()` before sending it in Telegram HTML messages

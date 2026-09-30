@@ -16,3 +16,7 @@ The app runs as Vercel functions, so rate limits counted in memory were counted 
 - **No raw identifiers are stored:** keys are an HMAC (with `SESSION_SECRET`) of the rule, window and subject. Rotating `SESSION_SECRET` starts every count from zero.
 - Without `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` the limiter falls back to counting in memory (and warns in production), so local development needs no Redis.
 - About two Redis commands' worth of cost per limited action (one script call); the free tier covers far more than our traffic.
+
+## Also a small shared cache
+
+The same Redis holds a cache for slow outside answers that are the same for everyone: a YouTube video's title and cover (a week) and the bot's username (a day). Next.js's own `fetch` cache doesn't cover these: it skips a `fetch` made after the request's cookies are read, which every logged-in action does first. The cache follows the limiter's rules: a failed or slow (over 300 ms) read loads the value directly, and failures are never remembered. Database reads and pages are deliberately not cached: the database sits next to the functions, so Redis wouldn't be faster, and every page renders per request for its CSP nonce.
