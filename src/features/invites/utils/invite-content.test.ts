@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { AnswerKind, TimeOfDay } from "@/lib/enums";
 import { InviteStatus } from "../enums";
 import type { InviteFormValues } from "../schemas";
-import { formToSaved, inviteState, previewInvite, toPublicInvite, type SavedInvite } from "./invite-content";
+import { blankInviteForm, copyOfInvite, formToSaved, inviteState, previewInvite, savedToForm, toPublicInvite, type SavedInvite } from "./invite-content";
 
 const NOW = new Date("2026-10-01T12:00:00Z");
 const slot = (id: string, iso: string) => ({ id, startsAt: new Date(iso) });
@@ -177,5 +177,65 @@ describe("previewInvite", () => {
   test("its Time slots get ids, so a Theme can pick one", () => {
     const ids = previewInvite(FORM, NOW).timeSlots.map((s) => s.id);
     expect(new Set(ids).size).toBe(2);
+  });
+});
+
+describe("savedToForm", () => {
+  test("a saved Invite opens in the studio with the values it was saved from", () => {
+    expect(savedToForm(SAVED, NOW)).toEqual({ ...FORM, songUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" });
+  });
+
+  test("saving it again unchanged stores the same columns", () => {
+    expect(formToSaved(savedToForm(SAVED, NOW)).content).toEqual(formToSaved(FORM).content);
+  });
+
+  test("an older Invite offering both Time slots and a Custom time opens as I'll pick the times while a slot is upcoming", () => {
+    expect(savedToForm({ ...SAVED, allowCustomTime: true }, NOW).allowCustomTime).toBe(false);
+  });
+
+  test("once all its Time slots have passed it opens as Let them pick, which keeps it answerable", () => {
+    expect(savedToForm({ ...SAVED, allowCustomTime: true, timeSlots: [PAST] }, NOW).allowCustomTime).toBe(true);
+  });
+});
+
+describe("copyOfInvite", () => {
+  test("a copy keeps every field of the original, but lets them pick a time, since its old Time slots are left behind", () => {
+    const copy = copyOfInvite(SAVED, SAVED.themeId, NOW);
+    expect(copy.allowCustomTime).toBe(true);
+    expect({ ...copy, allowCustomTime: SAVED.allowCustomTime, slug: SAVED.slug, timeSlots: SAVED.timeSlots }).toEqual(SAVED);
+  });
+
+  test("it takes the Theme it's given, for when the original's is no longer usable", () => {
+    expect(copyOfInvite(SAVED, "envelope", NOW).themeId).toBe("envelope");
+  });
+});
+
+describe("blankInviteForm", () => {
+  test("a new Invite starts empty, in the given Theme, letting them pick an evening time, with a 30-second Song part", () => {
+    expect(blankInviteForm("kitten-soft")).toEqual({
+      themeId: "kitten-soft",
+      recipientName: "",
+      question: "",
+      message: "",
+      imageUrl: "",
+      planPlace: "",
+      planActivity: "",
+      planMapUrl: "",
+      planDressCode: "",
+      planNotes: "",
+      planPhotos: [],
+      songUrl: "",
+      songStart: 0,
+      songLength: 30,
+      timezone: "Asia/Phnom_Penh",
+      allowCustomTime: true,
+      timeOfDay: TimeOfDay.Evening,
+      timeSlots: [],
+    });
+  });
+
+  test("takes overrides, e.g. the demo's Recipient and Plan", () => {
+    const demo = blankInviteForm("envelope", { recipientName: "you", planActivity: "dinner, then a walk" });
+    expect(demo).toMatchObject({ themeId: "envelope", recipientName: "you", planActivity: "dinner, then a walk", question: "" });
   });
 });

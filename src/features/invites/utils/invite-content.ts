@@ -1,13 +1,14 @@
 import type { AnswerRow, Invite } from "@/lib/db/schema";
 import type { AnswerKind } from "@/lib/enums";
-import { zonedTimeToUtc } from "@/lib/time";
+import { utcToZonedParts, zonedTimeToUtc } from "@/lib/time";
 import { safeHttpUrl } from "@/lib/validation";
 import { InviteStatus } from "../enums";
 import type { InviteFormValues } from "../schemas";
 import type { PublicAnswer, PublicInvite } from "../types";
 import { isExpired } from "./answer";
 import { parseQuestion } from "./question";
-import { songClip, songFromUrl } from "./song";
+import { DEFAULT_SONG_LENGTH, songClip, songFromUrl } from "./song";
+import { DEFAULT_TIME_OF_DAY } from "./time-of-day";
 import type { SavedSlot } from "./time-slots";
 
 // Every translation of an Invite's fields lives here: the blank Invite, form
@@ -103,6 +104,35 @@ export function toPublicInvite(
   };
 }
 
+/**
+ * A new Invite's form values in `themeId`: nothing written yet, and "Let them
+ * pick" an evening time. An empty question shows the Theme's example in the
+ * preview until the Creator writes their own.
+ */
+export function blankInviteForm(themeId: string, overrides: Partial<InviteFormValues> = {}): InviteFormValues {
+  return {
+    recipientName: "",
+    question: "",
+    message: "",
+    imageUrl: "",
+    planPlace: "",
+    planActivity: "",
+    planMapUrl: "",
+    planDressCode: "",
+    planNotes: "",
+    planPhotos: [],
+    songUrl: "",
+    songStart: 0,
+    songLength: DEFAULT_SONG_LENGTH,
+    timezone: "Asia/Phnom_Penh",
+    allowCustomTime: true,
+    timeOfDay: DEFAULT_TIME_OF_DAY,
+    timeSlots: [],
+    themeId,
+    ...overrides,
+  };
+}
+
 const emptyToNull = (v: string) => (v === "" ? null : v);
 // Saved in one form whatever was pasted (youtu.be, Shorts, ?si=…), so it compares and plays the same.
 const canonicalSongUrl = (v: string) => songFromUrl(v)?.url ?? null;
@@ -153,6 +183,45 @@ export function formToSaved(values: InviteFormValues): FormAsSaved {
   const timeSlots = times.filter((at): at is Date => at !== null);
 
   return { content: { ...editable, ...lockable }, editable, lockable, timeSlots, allTimesReal: timeSlots.length === times.length };
+}
+
+/** A saved Invite as the studio's form values, at `now`. */
+export function savedToForm(invite: SavedInvite, now: Date): InviteFormValues {
+  const hasUpcomingSlot = invite.timeSlots.some((s) => s.startsAt.getTime() > now.getTime());
+  return {
+    recipientName: invite.recipientName,
+    question: invite.question,
+    message: invite.message ?? "",
+    imageUrl: invite.imageUrl ?? "",
+    planPlace: invite.planPlace ?? "",
+    planActivity: invite.planActivity ?? "",
+    planMapUrl: invite.planMapUrl ?? "",
+    planDressCode: invite.planDressCode ?? "",
+    planNotes: invite.planNotes ?? "",
+    planPhotos: invite.planPhotos.map((p) => ({ url: p.url, alt: p.alt, caption: p.caption ?? "" })),
+    songUrl: invite.songUrl ?? "",
+    songStart: invite.songStart,
+    songLength: invite.songLength,
+    timezone: invite.timezone,
+    // Older Invites could offer times and a calendar at once; they open as
+    // "I'll pick the times" (and keep both for Recipients until saved again).
+    // Only upcoming times count: if they've all passed, the calendar is what
+    // keeps the Invite answerable, so it opens as "Let them pick".
+    allowCustomTime: invite.allowCustomTime && !hasUpcomingSlot,
+    timeOfDay: invite.timeOfDay,
+    timeSlots: invite.timeSlots.map((s) => utcToZonedParts(s.startsAt, invite.timezone)),
+    themeId: invite.themeId,
+  };
+}
+
+/**
+ * The content of a new Invite copied from `source`: every field, with `themeId`
+ * (the original's, or a fallback when it's no longer usable). Its old Time slots
+ * would be in the past, so the copy has none and lets them pick a time instead,
+ * which keeps it sendable as is.
+ */
+export function copyOfInvite(source: SavedInvite, themeId: string, now: Date): InviteContent {
+  return formToSaved({ ...savedToForm(source, now), themeId, allowCustomTime: true, timeSlots: [] }).content;
 }
 
 /** What the Recipient would see at `now` once these form values are saved, with no Answer yet. */

@@ -3,11 +3,9 @@ import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { invites, inviteTimeSlots, linkedGroups } from "@/lib/db/schema";
 import type { AnswerKind } from "@/lib/enums";
-import { utcToZonedParts } from "@/lib/time";
-import { InviteStatus } from "../enums";
+import type { InviteStatus } from "../enums";
 import type { InviteFormValues } from "../schemas";
-import { isExpired } from "../utils";
-import { inviteState } from "../utils/invite-content";
+import { inviteState, savedToForm } from "../utils/invite-content";
 
 export type InviteSummary = {
   themeId: string;
@@ -70,8 +68,7 @@ export async function getMyInvite(inviteId: string, userId: string): Promise<Edi
     },
   });
   if (!row) return null;
-  const now = Date.now();
-  const hasFutureSlot = row.timeSlots.some((s) => s.startsAt.getTime() > now);
+  const now = new Date();
   return {
     id: row.id,
     slug: row.slug,
@@ -79,31 +76,8 @@ export async function getMyInvite(inviteId: string, userId: string): Promise<Edi
     answered: !!row.answer,
     answerKind: row.answer?.kind ?? null,
     answerAt: row.answer?.startsAt?.toISOString() ?? null,
-    expired: isExpired(row, new Date(now)),
+    expired: inviteState(row, now).outOfTimes,
     linkedGroups: row.linkedGroups.map((g) => ({ id: g.id, title: g.chatTitle })),
-    values: {
-      recipientName: row.recipientName,
-      question: row.question,
-      message: row.message ?? "",
-      imageUrl: row.imageUrl ?? "",
-      planPlace: row.planPlace ?? "",
-      planActivity: row.planActivity ?? "",
-      planMapUrl: row.planMapUrl ?? "",
-      planDressCode: row.planDressCode ?? "",
-      planNotes: row.planNotes ?? "",
-      planPhotos: row.planPhotos.map((p) => ({ url: p.url, alt: p.alt, caption: p.caption ?? "" })),
-      songUrl: row.songUrl ?? "",
-      songStart: row.songStart,
-      songLength: row.songLength,
-      timezone: row.timezone,
-      // Older Invites could offer times and a calendar at once; they open as
-      // "I'll pick the times" (and keep both for Recipients until saved again).
-      // Only upcoming times count: if they've all passed, the calendar is what
-      // keeps the Invite answerable, so it opens as "Let them pick".
-      allowCustomTime: row.allowCustomTime && !hasFutureSlot,
-      timeOfDay: row.timeOfDay,
-      timeSlots: row.timeSlots.map((s) => utcToZonedParts(s.startsAt, row.timezone)),
-      themeId: row.themeId,
-    },
+    values: savedToForm(row, now),
   };
 }
