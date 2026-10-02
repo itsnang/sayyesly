@@ -3,19 +3,9 @@ import { asc, eq } from "drizzle-orm";
 import { connection } from "next/server";
 import { cache } from "react";
 import { db } from "@/lib/db";
-import { songClip } from "../utils/song";
-import { safeHttpUrl } from "@/lib/validation";
-import { invites, inviteTimeSlots, type AnswerRow } from "@/lib/db/schema";
-import type { PublicAnswer, PublicInvite } from "../types";
-import { isExpired, parseQuestion } from "../utils";
-
-export function toPublicAnswer(answer: Pick<AnswerRow, "kind" | "startsAt" | "note">): PublicAnswer {
-  return {
-    answer: answer.kind,
-    startsAt: answer.startsAt?.toISOString() ?? null,
-    note: answer.note,
-  };
-}
+import { invites, inviteTimeSlots } from "@/lib/db/schema";
+import type { PublicInvite } from "../types";
+import { toPublicInvite } from "../utils/invite-content";
 
 /** The Invite with what answering needs: Time slots, the Answer and the Creator. */
 export async function getInviteForAnswer(slug: string) {
@@ -40,32 +30,7 @@ export const getPublicInvite = cache(async (slug: string): Promise<PublicInvite 
   });
   if (!invite) return null;
 
-  const now = new Date();
-  return {
-    slug: invite.slug,
-    themeId: invite.themeId,
-    recipientName: invite.recipientName,
-    question: parseQuestion(invite.question),
-    message: invite.message,
-    imageUrl: invite.imageUrl,
-    plan: {
-      place: invite.planPlace,
-      activity: invite.planActivity,
-      mapUrl: safeHttpUrl(invite.planMapUrl),
-      dressCode: invite.planDressCode,
-      notes: invite.planNotes,
-      photos: invite.planPhotos,
-    },
-    timezone: invite.timezone,
-    timeSlots: invite.timeSlots
-      .filter((slot) => slot.startsAt.getTime() > now.getTime())
-      .map((slot) => ({ id: slot.id, startsAt: slot.startsAt.toISOString() })),
-    allowCustomTime: invite.allowCustomTime,
-    timeOfDay: invite.timeOfDay,
-    song: songClip(invite.songUrl, invite.songStart, invite.songLength),
-    answer: invite.answer ? toPublicAnswer(invite.answer) : null,
-    expired: !invite.answer && isExpired(invite, now),
-  };
+  return toPublicInvite(invite, invite.answer ?? null, new Date());
 });
 
 /** The Invite's creator id, for checking whether the viewer is previewing their own Invite. */

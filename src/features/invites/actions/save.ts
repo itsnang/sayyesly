@@ -8,9 +8,10 @@ import { answers, invites, inviteTimeSlots } from "@/lib/db/schema";
 import { RateLimit, rateLimitError } from "@/lib/rate-limit";
 import { idSchema } from "@/lib/validation";
 import type { InviteFormValues } from "../schemas";
-import { readInviteForm, toInviteColumns, wantedTimeSlots } from "../server/invite-form";
+import { readInviteForm } from "../server/invite-form";
 import { canUseTheme } from "../server/theme-choices";
 import { newInviteSlug, newLinkCode } from "../utils";
+import { formToSaved } from "../utils/invite-content";
 import { diffTimeSlots } from "../utils/time-slots";
 
 type SaveResult = {
@@ -51,9 +52,8 @@ export async function saveInvite(inviteId: string | null, input: InviteFormValue
     return { error: "That theme isn't unlocked yet." };
   }
 
-  const wanted = wantedTimeSlots(values);
-  if (!wanted) return { error: "One of the times isn't a real date." };
-  const { editable, lockable } = toInviteColumns(values);
+  const { editable, lockable, timeSlots: wanted, allTimesReal } = formToSaved(values);
+  if (!allTimesReal) return { error: "One of the times isn't a real date." };
   const now = Date.now();
 
   if (!existing) {

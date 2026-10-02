@@ -7,6 +7,7 @@ import { utcToZonedParts } from "@/lib/time";
 import { InviteStatus } from "../enums";
 import type { InviteFormValues } from "../schemas";
 import { isExpired } from "../utils";
+import { inviteState } from "../utils/invite-content";
 
 export type InviteSummary = {
   themeId: string;
@@ -35,7 +36,7 @@ export async function listMyInvites(userId: string): Promise<InviteSummary[]> {
     slug: row.slug,
     recipientName: row.recipientName,
     question: row.question.replace(/\*/g, ""),
-    status: row.answer ? row.answer.kind : isExpired(row, now) ? InviteStatus.Expired : InviteStatus.Waiting,
+    status: inviteState(row, now).status,
     agreedAt: row.answer?.startsAt?.toISOString() ?? null,
     timezone: row.timezone,
     createdAt: row.createdAt.toISOString(),
