@@ -10,6 +10,7 @@ import { idSchema } from "@/lib/validation";
 import { canUseTheme } from "../server/theme-choices";
 import { DEFAULT_THEME_ID } from "../themes";
 import { newInviteSlug, newLinkCode } from "../utils";
+import { copyOfInvite } from "../utils/invite-content";
 
 type DuplicateResult = { error?: string; id?: string; /** The copy uses the free Theme; the original one is no longer usable */ themeSwapped?: boolean };
 
@@ -44,25 +45,8 @@ export async function duplicateInvite(inviteId: string): Promise<DuplicateResult
       creatorId: user.id,
       slug: newInviteSlug(),
       linkCode: newLinkCode(),
-      themeId,
-      recipientName: source.recipientName,
-      question: source.question,
-      message: source.message,
-      imageUrl: source.imageUrl,
-      planPlace: source.planPlace,
-      planActivity: source.planActivity,
-      planMapUrl: source.planMapUrl,
-      planDressCode: source.planDressCode,
-      planNotes: source.planNotes,
-      planPhotos: source.planPhotos,
-      songUrl: source.songUrl,
-      songStart: source.songStart,
-      songLength: source.songLength,
-      timezone: source.timezone,
-      // Old Time slots would already be in the past, so this Invite starts with
-      // none; always lets them suggest a time, so it's still sendable as is.
-      allowCustomTime: true,
-      timeOfDay: source.timeOfDay,
+      // Its old Time slots stay behind; the copy lets them pick a time instead.
+      ...copyOfInvite({ ...source, timeSlots: [] }, themeId, new Date()),
     })
     .returning({ id: invites.id });
   if (!created) return { error: "Couldn't duplicate. Please try again." };

@@ -57,7 +57,7 @@ const answerInputSchema = z.discriminatedUnion("answer", [
 export type AnswerInput = z.input<typeof answerInputSchema>;
 
 /** An Invite is Expired when every Time slot has passed and no Custom time is allowed. */
-export function isExpired(invite: AnswerableInvite, now: Date): boolean {
+export function isExpired(invite: Pick<AnswerableInvite, "allowCustomTime" | "timeSlots">, now: Date): boolean {
   return !invite.allowCustomTime && invite.timeSlots.every((s) => s.startsAt.getTime() <= now.getTime());
 }
 

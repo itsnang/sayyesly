@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ThemePreview } from "@/features/invites/components/theme-preview";
-import type { InviteFormValues } from "@/features/invites/schemas";
-import { DEFAULT_SONG_LENGTH } from "@/features/invites/utils/song";
 import { DEFAULT_THEME_ID, getTheme, hasTheme } from "@/features/invites/themes";
 import { withExample } from "@/features/invites/utils/example";
-import { DEFAULT_TIME_OF_DAY } from "@/features/invites/utils/time-of-day";
+import { blankInviteForm } from "@/features/invites/utils/invite-content";
 import { TrackOnMount } from "@/lib/analytics/track-on-mount";
 import { BASE_OPEN_GRAPH, BASE_TWITTER, SITE_TITLE } from "@/lib/site";
 
@@ -23,34 +21,18 @@ export const metadata: Metadata = {
 
 // A public example invite: the Theme's own example (the same one the studio
 // preview shows) with a plan. Answers stay in the browser: nothing is saved or sent.
-const DEMO: InviteFormValues = {
+const DEMO_OVERRIDES = {
   recipientName: "you",
-  question: "",
-  message: "",
-  imageUrl: "",
   // No real place: the demo shouldn't look like it's promoting a venue. The
   // Theme's example picture and plan photos are drawings, so they stay.
-  planPlace: "",
   planActivity: "dinner, then a walk",
-  planMapUrl: "",
-  planDressCode: "",
-  planNotes: "",
-  planPhotos: [],
-  songUrl: "",
-  songStart: 0,
-  songLength: DEFAULT_SONG_LENGTH,
-  timezone: "Asia/Phnom_Penh",
-  allowCustomTime: true,
-  timeOfDay: DEFAULT_TIME_OF_DAY,
-  timeSlots: [],
-  themeId: DEFAULT_THEME_ID,
 };
 
 export default async function DemoPage({ searchParams }: PageProps<"/demo">) {
   const { theme: requested } = await searchParams;
   const theme = getTheme(typeof requested === "string" && hasTheme(requested) ? requested : DEFAULT_THEME_ID);
   if (!theme) notFound();
-  const { values } = withExample({ ...DEMO, themeId: theme.id }, theme.content);
+  const { values } = withExample(blankInviteForm(theme.id, DEMO_OVERRIDES), theme.content);
   return (
     <>
       <ThemePreview fixedValues={values} />
