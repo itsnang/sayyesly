@@ -3,49 +3,34 @@
 import { useEffect, useState } from "react";
 import { AnswerKind } from "@/lib/enums";
 import { zonedTimeToUtc } from "@/lib/time";
-import { safeHttpUrl } from "@/lib/validation";
 import { TimeChoiceKind } from "../enums";
 import type { InviteFormValues } from "../schemas";
 import { DEFAULT_THEME_ID, getTheme } from "../themes";
 import type { AnswerInput, PublicInvite, SubmitAnswerResult } from "../types";
-import { parseQuestion } from "../utils/question";
+import { previewInvite } from "../utils/invite-content";
 import { DEFAULT_TIME_OF_DAY } from "../utils/time-of-day";
 import { PREVIEW_MESSAGE, PREVIEW_READY } from "./theme-preview-protocol";
 
-/** `exampleQuestion` stands in for an empty question, so the Theme never renders blank. */
+/**
+ * What the preview shows: the Invite as it would be once saved, plus the
+ * preview's own touches. `exampleQuestion` stands in for an empty question, so
+ * the Theme never renders blank; mid-edit gaps (no name, no time zone) get stand-ins.
+ */
 function toPreviewInvite(values: InviteFormValues, exampleQuestion: string): PublicInvite {
-  const now = Date.now();
-  // Same as saving: "Let them pick" shows the calendar and none of the times still in the form.
-  const timeSlots = (values.allowCustomTime ? [] : values.timeSlots)
-    .map((slot, i) => ({ id: `preview-${i}`, at: zonedTimeToUtc(slot.date, slot.time, values.timezone || "UTC") }))
-    .filter((s): s is { id: string; at: Date } => !!s.at && s.at.getTime() > now)
-    .sort((a, b) => a.at.getTime() - b.at.getTime())
-    .map((s) => ({ id: s.id, startsAt: s.at.toISOString() }));
-
-  return {
-    slug: "preview",
-    themeId: values.themeId,
-    recipientName: values.recipientName || "them",
-    question: parseQuestion(values.question || exampleQuestion),
-    message: values.message || null,
-    imageUrl: values.imageUrl || null,
-    plan: {
-      place: values.planPlace || null,
-      activity: values.planActivity || null,
-      mapUrl: safeHttpUrl(values.planMapUrl),
-      dressCode: values.planDressCode || null,
-      notes: values.planNotes || null,
-      photos: values.planPhotos
-        .filter((p) => p.url)
-        .map((p) => ({ url: p.url, alt: p.alt || "plan photo", ...(p.caption ? { caption: p.caption } : {}) })),
+  const invite = previewInvite(
+    {
+      ...values,
+      question: values.question || exampleQuestion,
+      timezone: values.timezone || "UTC",
+      timeOfDay: values.timeOfDay ?? DEFAULT_TIME_OF_DAY,
     },
-    timezone: values.timezone || "UTC",
-    timeSlots,
-    allowCustomTime: values.allowCustomTime,
-    timeOfDay: values.timeOfDay ?? DEFAULT_TIME_OF_DAY,
+    new Date(),
+  );
+  return {
+    ...invite,
+    recipientName: values.recipientName || "them",
     // The studio's Song picker plays it already; a second player here would play over it.
     song: null,
-    answer: null,
     expired: false,
   };
 }

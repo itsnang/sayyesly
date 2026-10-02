@@ -8,10 +8,11 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { answers, invites, inviteTimeSlots } from "@/lib/db/schema";
 import { clientIp, RateLimit, rateLimitError } from "@/lib/rate-limit";
-import { getInviteForAnswer, toPublicAnswer } from "../server/data";
+import { getInviteForAnswer } from "../server/data";
 import { notifyAnswer } from "../server/notify";
 import type { SubmitAnswerResult } from "../types";
 import { resolveAnswer, type ResolvedAnswer } from "../utils";
+import { toPublicAnswer } from "../utils/invite-content";
 
 const slugSchema = z.string().regex(/^[\w-]{1,40}$/);
 
