@@ -1,9 +1,10 @@
 "use client";
 
-// PROTOTYPE variant B: "Turn the pages". Up front: the binder is already open on the
-// cover (title, byline, the plan, a taped collage). Pages are bound on the LEFT rings like
-// a book: swipe right to left and the page follows your finger over the rings; swipe left
-// to right to bring the last one back. The question is the last page.
+// PROTOTYPE variant B: "Turn the pages". Up front: the pad is already open on the cover
+// (title, byline, the plan, a taped collage), rings along the TOP (the owner's pick). Swipe
+// right to left and the sheet slides off to the left under your finger, tilting from its
+// top corner, with the next one underneath; swipe left to right to slide the last one back.
+// The question is the last page.
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, PointerEvent } from "react";
 import { EXAMPLE } from "./example";
@@ -14,14 +15,19 @@ const FLIP_MS = 520;
 const SETTLE_MS = 220;
 /** How far a finger must travel before letting go turns the page. */
 const THRESHOLD = 60;
-/** Degrees of lift per pixel dragged. */
-const TILT = 0.45;
-const OPEN = -110;
+/** How far left a sheet travels to be fully off the pad. */
+const OFF = 430;
 
-type Flip = { index: number; from: number; dir: "fwd" | "back" };
+type Flip = { index: number; from: string; dir: "fwd" | "back" };
 type Drag = { d: number; dir: "fwd" | "back"; active: boolean };
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
+
+/** A sheet `d` px (≤ 0) to the left, dipping and tilting as it goes, like sliding it off the pad. */
+const slide = (d: number) => `translate(${d}px, ${-d * 0.06}px) rotate(${d * 0.035}deg)`;
+/** Where the sheet being dragged sits: forward follows the finger, back brings the last one in from the left. */
+const fwdAt = (d: number) => clamp(d, -OFF, 0);
+const backAt = (d: number) => clamp(-OFF + d * 1.2, -OFF, 0);
 
 export function VariantB({ report }: { report: (state: string) => void }) {
   const total = EXAMPLE.stops.length + 2; // cover + chapters + question
@@ -63,33 +69,38 @@ export function VariantB({ report }: { report: (state: string) => void }) {
     else setDrag(null);
   };
 
+  // Not far enough (or cancelled): let the sheet fall back where it was. Reads the latest
+  // drag through the updater, since a quick release can beat the last re-render.
+  const settle = () => {
+    setDrag((d) => (d ? { d: 0, dir: d.dir, active: false } : null));
+    setTimeout(() => setDrag(null), SETTLE_MS);
+  };
+
   const onUp = (e: PointerEvent<HTMLDivElement>) => {
     if (!start.current) return;
     const d = delta(e);
     start.current = null;
-    if (drag?.dir === "fwd" && d < -THRESHOLD) {
-      setFlip({ index: page, from: clamp(d * TILT, OPEN, 0), dir: "fwd" });
+    // Decide from the distance itself, not from `drag`: a fast flick can end before React
+    // has re-rendered with the last move.
+    if (d < -THRESHOLD && page + 1 < total) {
+      setFlip({ index: page, from: slide(fwdAt(d)), dir: "fwd" });
       setPage(page + 1);
       setDrag(null);
       setTimeout(() => setFlip(null), FLIP_MS);
-    } else if (drag?.dir === "back" && d > THRESHOLD) {
-      setFlip({ index: page, from: clamp(OPEN + d * TILT, OPEN, 0), dir: "back" });
+    } else if (d > THRESHOLD && page > 0) {
+      setFlip({ index: page, from: slide(backAt(d)), dir: "back" });
       setPage(page - 1);
       setDrag(null);
       setTimeout(() => setFlip(null), FLIP_MS);
-    } else if (drag) {
-      // Not far enough: let the page fall back where it was.
-      setDrag({ d: 0, dir: drag.dir, active: false });
-      setTimeout(() => setDrag(null), SETTLE_MS);
+    } else {
+      settle();
     }
   };
 
   // The browser took the gesture over (a scroll, a call): put the page back.
   const onCancel = () => {
     start.current = null;
-    if (!drag) return;
-    setDrag({ d: 0, dir: drag.dir, active: false });
-    setTimeout(() => setDrag(null), SETTLE_MS);
+    settle();
   };
 
   const render = (i: number) => {
@@ -102,19 +113,19 @@ export function VariantB({ report }: { report: (state: string) => void }) {
   let base = page;
   let overlay: { index: number; style: CSSProperties } | null = null;
   if (flip?.dir === "fwd") {
-    overlay = { index: flip.index, style: { ["--from" as string]: `${flip.from}deg`, animation: `b-fwd ${FLIP_MS}ms ease-out forwards` } };
+    overlay = { index: flip.index, style: { ["--from" as string]: flip.from, animation: `b-fwd ${FLIP_MS}ms ease-out forwards` } };
   } else if (flip?.dir === "back") {
     base = flip.index;
-    overlay = { index: page, style: { ["--from" as string]: `${flip.from}deg`, animation: `b-back ${FLIP_MS}ms ease-out forwards` } };
+    overlay = { index: page, style: { ["--from" as string]: flip.from, animation: `b-back ${FLIP_MS}ms ease-out forwards` } };
   } else if (drag?.dir === "fwd") {
     base = page + 1;
-    overlay = { index: page, style: { transform: `rotateY(${clamp(drag.d * TILT, OPEN, 0)}deg)`, transition: drag.active ? "none" : `transform ${SETTLE_MS}ms ease` } };
+    overlay = { index: page, style: { transform: slide(fwdAt(drag.d)), transition: drag.active ? "none" : `transform ${SETTLE_MS}ms ease` } };
   } else if (drag?.dir === "back") {
     overlay = {
       index: page - 1,
       style: {
-        transform: `rotateY(${drag.active ? clamp(OPEN + drag.d * TILT, OPEN, 0) : OPEN}deg)`,
-        opacity: drag.active ? 1 : 0.3,
+        transform: slide(drag.active ? backAt(drag.d) : -OFF),
+        opacity: drag.active ? 1 : 0,
         transition: drag.active ? "none" : `transform ${SETTLE_MS}ms ease, opacity ${SETTLE_MS}ms`,
       },
     };
@@ -126,8 +137,8 @@ export function VariantB({ report }: { report: (state: string) => void }) {
   return (
     <main style={{ minHeight: "100dvh", background: BOARD_BG, display: "grid", placeItems: "center", padding: "78px 16px 96px" }}>
       <style>{`
-        @keyframes b-fwd { from { transform: rotateY(var(--from)) } to { transform: rotateY(${OPEN}deg); opacity: .2 } }
-        @keyframes b-back { from { transform: rotateY(var(--from)) } to { transform: rotateY(0) } }
+        @keyframes b-fwd { from { transform: var(--from) } to { transform: ${slide(-OFF)}; opacity: 0 } }
+        @keyframes b-back { from { transform: var(--from) } to { transform: none } }
       `}</style>
       <div
         onPointerDown={onDown}
@@ -136,20 +147,20 @@ export function VariantB({ report }: { report: (state: string) => void }) {
         onPointerCancel={onCancel}
         // Without this, starting on a photo drags the image and cancels the swipe.
         onDragStart={(e) => e.preventDefault()}
-        style={{ position: "relative", width: "min(360px, 92vw)", height: 620, perspective: 1600, touchAction: "pan-y", userSelect: "none", cursor: flip ? "default" : "grab" }}
+        style={{ position: "relative", width: "min(360px, 92vw)", height: 620, touchAction: "pan-y", userSelect: "none", cursor: flip ? "default" : "grab" }}
       >
         {/* the pages underneath, so the pad looks thick */}
         <div style={{ ...sheet, transform: "translate(5px, 6px)", background: "#f1efe9", boxShadow: "0 2px 4px rgba(0,0,0,.12)" }} />
         <div style={{ ...sheet, transform: "translate(2px, 3px)", background: "#f7f5f0" }} />
-        <Page style={sheet}>
+        <Page holes="top" style={{ ...sheet, paddingTop: 18 }}>
           {render(base)}
         </Page>
         {overlay && (
-          <Page style={{ ...sheet, transformOrigin: "left center", zIndex: 2, boxShadow: "0 10px 24px rgba(0,0,0,.22)", ...overlay.style }}>
+          <Page holes="top" style={{ ...sheet, paddingTop: 18, transformOrigin: "top right", zIndex: 2, boxShadow: "0 10px 24px rgba(0,0,0,.22)", ...overlay.style }}>
             {render(overlay.index)}
           </Page>
         )}
-        <Rings />
+        <Rings horizontal />
       </div>
       <div style={{ width: "min(360px, 92vw)", textAlign: "center", marginTop: 16, fontFamily: FONT.hand, fontSize: 20, color: C.ink }}>
         {last ? "→ swipe right to look back" : page === 0 ? "swipe left to turn the page ←" : "← next · back →"}
@@ -163,7 +174,7 @@ export function VariantB({ report }: { report: (state: string) => void }) {
 
 function Cover() {
   return (
-    <div style={{ position: "relative", padding: "26px 22px 26px 38px", minHeight: 560 }}>
+    <div style={{ position: "relative", padding: "26px 24px", minHeight: 560 }}>
       <div style={{ fontFamily: FONT.hand, fontSize: 48, fontWeight: 700, lineHeight: 0.9, color: C.ink, maxWidth: 220 }}>{EXAMPLE.title}</div>
       <LabelStrip style={{ marginTop: 10 }}>{EXAMPLE.byline}</LabelStrip>
       <TypedCard tone="cream" rotate={1.5} style={{ margin: "16px 70px 0 0" }}>
@@ -197,7 +208,7 @@ function Question({
   onDay: (day: string) => void;
 }) {
   return (
-    <div style={{ position: "relative", padding: "40px 22px 40px 38px", minHeight: 560, textAlign: "center" }}>
+    <div style={{ position: "relative", padding: "40px 24px", minHeight: 560, textAlign: "center" }}>
       <Sticker kind="heart" size={44} style={{ top: 26, left: 22 }} />
       <div style={{ fontFamily: FONT.marker, fontSize: 15, color: C.soft }}>so, after all that…</div>
       <h1 style={{ fontFamily: FONT.hand, fontSize: 44, lineHeight: 1.05, color: C.ink, margin: "14px 0 26px" }}>{EXAMPLE.question}</h1>
