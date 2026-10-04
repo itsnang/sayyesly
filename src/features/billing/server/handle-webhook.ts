@@ -7,6 +7,7 @@ import { purchases } from "@/lib/db/schema";
 import { PurchaseStatus } from "@/lib/enums";
 import { isId } from "@/lib/validation";
 import { amountMatchesCents } from "../utils/cutluy-webhook";
+import { logger } from "@/lib/logger";
 
 const eventSchema = z.object({
   id: z.string(),
@@ -34,14 +35,14 @@ export async function handleCutluyEvent(body: unknown): Promise<WebhookOutcome> 
   if (!purchase) return { status: 200, message: "unknown purchase" };
   // The event must be about the CutLuy payment we created for this Purchase.
   if (purchase.cutluyPaymentId && purchase.cutluyPaymentId !== payment.id) {
-    console.error("CutLuy payment id mismatch", purchase.id, payment.id);
+    logger.warn("cutluy_webhook.payment_id_mismatch", { purchaseId: purchase.id });
     return { status: 200, message: "payment id mismatch" };
   }
 
   switch (type) {
     case CutluyEvent.Completed: {
       if (payment.status !== CutluyPaymentStatus.Paid || payment.currency !== "USD" || !amountMatchesCents(payment.amount, purchase.amountCents)) {
-        console.error("CutLuy paid event doesn't match purchase", purchase.id, payment.status, payment.amount, payment.currency);
+        logger.warn("cutluy_webhook.amount_mismatch", { purchaseId: purchase.id, status: payment.status, currency: payment.currency });
         return { status: 200, message: "amount mismatch; not unlocked" };
       }
       try {
@@ -51,7 +52,7 @@ export async function handleCutluyEvent(body: unknown): Promise<WebhookOutcome> 
           .where(and(eq(purchases.id, purchase.id), ne(purchases.status, PurchaseStatus.Paid)));
       } catch (error) {
         // The one-paid-purchase-per-theme index: this Creator already owns the Theme (paid twice).
-        console.error("Second paid purchase for an owned theme; needs a refund", purchase.id, error);
+        logger.error("cutluy_webhook.second_paid_purchase", error, { purchaseId: purchase.id });
       }
       return { status: 200, message: "paid" };
     }

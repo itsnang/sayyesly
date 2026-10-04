@@ -13,6 +13,7 @@ import { isThemeUsable } from "@/lib/theme-access";
 import { idSchema } from "@/lib/validation";
 import type { CheckoutResult, PurchaseStatusResult } from "../types";
 import { centsToDollars } from "../utils/cutluy-webhook";
+import { logger } from "@/lib/logger";
 
 const themeIdSchema = z.string().regex(/^[a-z0-9-]{1,64}$/);
 
@@ -75,7 +76,7 @@ export async function buyTheme(themeId: string): Promise<CheckoutResult> {
       idempotencyKey: purchase.id,
       metadata: { theme_id: themeId },
     }).catch((error: unknown) => {
-      console.error("CutLuy create payment failed", error);
+      logger.error("cutluy.create_payment_failed", error, { purchaseId: purchase.id, creatorId: user.id });
       return null;
     });
 

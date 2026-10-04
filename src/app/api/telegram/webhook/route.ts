@@ -3,6 +3,7 @@ import { env } from "@/env";
 import { handleUpdate } from "@/features/telegram-bot/server/handle-update";
 import { updateSchema } from "@/features/telegram-bot/types";
 import { isValidSecretToken } from "@/features/telegram-bot/server/verify";
+import { logger } from "@/lib/logger";
 
 // POST /api/telegram/webhook — registered with `bun run telegram:webhook`.
 export async function POST(req: NextRequest) {
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
   try {
     await handleUpdate(parsed.data);
   } catch (error) {
-    console.error("Telegram update failed", parsed.data.update_id, error);
+    logger.error("telegram_webhook.update_failed", error, { updateId: parsed.data.update_id });
   }
   return NextResponse.json({ ok: true });
 }

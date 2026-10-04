@@ -1,4 +1,5 @@
 import "server-only";
+import { logger } from "@/lib/logger";
 import { redis } from "@/lib/redis";
 import { createCache, createMemoryCacheStore, type CacheStore } from "./cache";
 
@@ -14,6 +15,6 @@ function createStore(): CacheStore {
 }
 
 /** Shared across every server instance when Redis is configured. See docs/adr/0004. */
-export const cache = createCache({ store: createStore() });
+export const cache = createCache({ store: createStore(), onError: (error) => logger.error("cache.failed", error) });
 
 export const DAY_SECONDS = 86_400;

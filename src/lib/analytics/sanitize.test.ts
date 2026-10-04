@@ -67,3 +67,49 @@ describe("sanitizeEvent", () => {
     expect(sanitizeEvent(null)).toBeNull();
   });
 });
+
+describe("sanitizeEvent on exceptions", () => {
+  const exception = (list: unknown, extra: Props = {}) => ({ event: "$exception", properties: { $exception_list: list, ...extra } });
+
+  test("an error's message is dropped: it can quote a name, a question or a slug", () => {
+    const out = sanitizeEvent(
+      exception([{ type: "Error", value: "duplicate key value violates unique constraint (slug)=(M8rqKCdVS6)", mechanism: { handled: false } }], {
+        $exception_message: "boom for Lina",
+        $exception_values: ["boom for Lina"],
+      }),
+    );
+    expect(out?.properties.$exception_list).toEqual([{ type: "Error", mechanism: { handled: false } }]);
+    expect(out?.properties).not.toHaveProperty("$exception_message");
+    expect(out?.properties).not.toHaveProperty("$exception_values");
+  });
+
+  test("stack frames lose query strings and Invite slugs", () => {
+    const out = sanitizeEvent(
+      exception([
+        {
+          type: "TypeError",
+          value: "x",
+          stacktrace: {
+            type: "raw",
+            frames: [
+              { filename: "https://sayyesly.site/_next/static/chunks/app.js?v=1", abs_path: "https://sayyesly.site/invite/M8rqKCdVS6?x=1#a", lineno: 3, function: "f" },
+            ],
+          },
+        },
+      ]),
+    );
+    expect(out?.properties.$exception_list).toEqual([
+      {
+        type: "TypeError",
+        stacktrace: {
+          type: "raw",
+          frames: [{ filename: "https://sayyesly.site/_next/static/chunks/app.js", abs_path: "https://sayyesly.site/invite/[slug]", lineno: 3, function: "f" }],
+        },
+      },
+    ]);
+  });
+
+  test("an exception without a list passes through", () => {
+    expect(sanitizeEvent(exception(undefined))?.properties.$exception_list).toBeUndefined();
+  });
+});
