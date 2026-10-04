@@ -3,7 +3,7 @@ import type { AnswerKind } from "@/lib/enums";
 import { utcToZonedParts, zonedTimeToUtc } from "@/lib/time";
 import { safeHttpUrl } from "@/lib/validation";
 import { InviteStatus } from "../enums";
-import type { InviteFormValues, StopFormValues } from "../schemas";
+import { STOP_TEXT_FIELDS, type InviteFormValues, type StopFormValues } from "../schemas";
 import type { PublicAnswer, PublicInvite, Stop } from "../types";
 import { isExpired } from "./answer";
 import { parseQuestion } from "./question";
@@ -86,6 +86,21 @@ function placeAsStop(invite: Pick<InviteContent, "planPlace" | "planActivity" | 
   const { planPlace: place, planActivity: activity, planMapUrl: mapUrl, planPhotos: photos } = invite;
   if (!place && !activity && !mapUrl && photos.length === 0) return null;
   return { title: standInTitle(activity, place), ...(place ? { place } : {}), ...(mapUrl ? { mapUrl } : {}), photos };
+}
+
+/**
+ * The place the Telegram message about an Answer names: the one the Recipient
+ * saw. A Theme with several Stops showed the first Stop (or the one place
+ * standing in for it); any other Theme its one place, whatever Stops another
+ * Theme left behind.
+ */
+export function placeToNotify(
+  invite: Pick<InviteContent, "planPlace" | "planActivity" | "planMapUrl" | "planPhotos" | "planStops">,
+  showsStops: boolean,
+): { place: string | null; mapUrl: string | null } {
+  if (!showsStops) return { place: invite.planPlace, mapUrl: invite.planMapUrl };
+  const first = invite.planStops[0] ?? placeAsStop(invite);
+  return { place: first?.place ?? null, mapUrl: first?.mapUrl ?? null };
 }
 
 function toPublicStop(stop: PlanStop): Stop {
@@ -176,11 +191,12 @@ const photoRows = (photos: PlanPhoto[]): InviteFormValues["planPhotos"] =>
 
 /** A Stop as saved: its title and photos, and only the parts that were filled in. */
 function savedStop(stop: StopFormValues): PlanStop {
-  const optional = (["line", "time", "description", "place", "mapUrl"] as const).filter((k) => stop[k] !== "");
+  const optional = STOP_TEXT_FIELDS.filter((k) => k !== "title" && stop[k] !== "");
   return { title: stop.title, ...Object.fromEntries(optional.map((k) => [k, stop[k]])), photos: savedPhotos(stop.photos, "stop photo") };
 }
 
-function stopRow(stop: PlanStop): StopFormValues {
+/** A saved Stop as the studio's form holds it. */
+export function stopRow(stop: PlanStop): StopFormValues {
   return {
     title: stop.title,
     line: stop.line ?? "",
@@ -193,10 +209,10 @@ function stopRow(stop: PlanStop): StopFormValues {
 }
 
 /** Nothing written on it: the studio's starting card, left as it was. Not saved. */
-const isBlankStop = (stop: StopFormValues) =>
-  stop.photos.length === 0 && (["title", "line", "time", "description", "place", "mapUrl"] as const).every((k) => stop[k].trim() === "");
+const isBlankStop = (stop: StopFormValues) => stop.photos.length === 0 && STOP_TEXT_FIELDS.every((k) => stop[k].trim() === "");
 
-const BLANK_STOP: StopFormValues = { title: "", line: "", time: "", description: "", place: "", mapUrl: "", photos: [] };
+/** A Stop with nothing written yet, as the studio adds one. */
+export const blankStop = (): StopFormValues => ({ title: "", line: "", time: "", description: "", place: "", mapUrl: "", photos: [] });
 
 /**
  * The Stops the studio starts from when the Theme shows several: those already
@@ -206,8 +222,8 @@ const BLANK_STOP: StopFormValues = { title: "", line: "", time: "", description:
 export function startingStops(values: InviteFormValues): StopFormValues[] {
   if (values.planStops.length > 0) return values.planStops;
   const { planPlace: place, planActivity: activity, planMapUrl: mapUrl, planPhotos: photos } = values;
-  if (!place && !activity && !mapUrl && photos.length === 0) return [BLANK_STOP];
-  return [{ ...BLANK_STOP, title: standInTitle(activity, place), place, mapUrl, photos }];
+  if (!place && !activity && !mapUrl && photos.length === 0) return [blankStop()];
+  return [{ ...blankStop(), title: standInTitle(activity, place), place, mapUrl, photos }];
 }
 // Saved in one form whatever was pasted (youtu.be, Shorts, ?si=…), so it compares and plays the same.
 const canonicalSongUrl = (v: string) => songFromUrl(v)?.url ?? null;

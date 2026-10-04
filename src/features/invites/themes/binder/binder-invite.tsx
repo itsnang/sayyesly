@@ -3,18 +3,22 @@
 import { useState } from "react";
 import type { InviteThemeProps } from "../types";
 import { useInviteAnswer } from "../../hooks/use-invite-answer";
+import { BackgroundSong } from "../shared/background-song";
+import { useFirstTap } from "../shared/use-first-tap";
 import { usePlanSelection } from "../shared/use-plan-selection";
 import { Answered } from "./answered";
 import { Chapter, Cover } from "./chapter";
 import { markerFont } from "./fonts";
 import { Pad } from "./pad";
-import { BOARD_BG, COLORS } from "./pieces";
+import { COLORS } from "./palette";
+import { BOARD_BG } from "./pieces";
 import { QuestionPage } from "./question-page";
 
 /**
  * Binder: a scrapbook pad on top rings that shows the whole Plan up front. The
  * cover lists the Stops, each Stop is a page, and the question is the last
- * page. Pages turn by swiping right to left. Maybe later is there from the start.
+ * page. Pages turn by swiping right to left. Maybe later is there from the start,
+ * and the Song plays from the first touch.
  */
 export function BinderInvite(props: InviteThemeProps) {
   const { invite } = props;
@@ -24,6 +28,9 @@ export function BinderInvite(props: InviteThemeProps) {
   const [note, setNote] = useState("");
   const [justAnswered, setJustAnswered] = useState(false);
   const { stops } = invite.plan;
+  // The Song starts on the Recipient's first touch, like Kitten Soft's; an Invite answered before this visit stays quiet.
+  const song = invite.answer ? null : invite.song;
+  const tapped = useFirstTap(!!song);
 
   const render = (index: number) => {
     if (index === 0) return <Cover plan={invite.plan} recipientName={invite.recipientName} />;
@@ -66,6 +73,7 @@ export function BinderInvite(props: InviteThemeProps) {
       ) : (
         <Pad count={stops.length + 2} render={render} />
       )}
+      {song && <BackgroundSong song={song} playing={tapped} />}
     </div>
   );
 }

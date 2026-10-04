@@ -11,7 +11,7 @@ export const binder: ThemeDefinition = {
     note: false,
     planPhotos: false,
     stops: { label: "chapter" },
-    song: false,
+    song: true,
     example: {
       question: "will you spend a whole *saturday* with me?",
       note: "",

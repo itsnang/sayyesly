@@ -1,7 +1,7 @@
 "use client";
 
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
-import { Field, Input } from "@/components/shared/ui";
+import { Field, Input, Note } from "@/components/shared/ui";
 import { StudioSection } from "../../../enums";
 import { MAX_PLAN_PHOTOS, type InviteFormValues } from "../../../schemas";
 import type { ThemeContent } from "../../../themes";
@@ -61,6 +61,11 @@ function PlacePlanSection({ content, uploadsEnabled }: { content: ThemeContent; 
     <Section id={StudioSection.Plan} content={content}>
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
         <p className="text-[13px] text-muted">Shown after they say yes. Leave it empty to keep it a surprise.</p>
+        {errors.planStops && (
+          <Note tone="warn">
+            A Stop you added in a Theme with several Stops needs a name. Switch back to that Theme to fix or remove it.
+          </Note>
+        )}
         <Field label="Where" optional error={errors.planPlace?.message}>
           <Input {...register("planPlace")} placeholder="the café by the river" />
         </Field>

@@ -3,11 +3,10 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { SITE_TITLE } from "@/lib/site";
 import { OG_IMAGE_SIZE, type OgImageInput } from "../types";
+import { COLORS } from "./palette";
 
-const PAPER = "#fdfcf8";
-const BOARD = "#cfc8c0";
-const INK = "#2b2622";
-const SOFT = "#7d726a";
+const { paper: PAPER, board: BOARD, ink: INK, soft: SOFT } = COLORS;
+/** The highlighter under the question's emphasised words: the sage card, see-through */
 const SAGE = "rgba(143,174,126,.55)";
 
 const sizeFor = (text: string) => (text.length > 40 ? 72 : text.length > 24 ? 88 : 104);

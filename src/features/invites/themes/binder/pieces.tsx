@@ -4,21 +4,9 @@
 import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 import { isOptimizable } from "@/lib/media";
-import { GRAIN } from "../envelope/ornaments";
-
-export const COLORS = {
-  board: "#cfc8c0",
-  paper: "#fdfcf8",
-  ink: "#2b2622",
-  soft: "#7d726a",
-  /** Handwritten highlights */
-  brown: "#8a6240",
-  kraft: "#a97b52",
-  sage: "#8fae7e",
-  /** Yes and the picked time: a deeper shade of the sage card */
-  accent: "#5f7d52",
-  dot: "#f0a050",
-} as const;
+import type { EnumValue } from "@/lib/enums";
+import { GRAIN } from "../shared/paper";
+import { COLORS } from "./palette";
 
 export const FONT = {
   marker: "var(--font-marker), var(--font-architects-daughter), cursive",
@@ -156,14 +144,17 @@ export function Sheet({ children, style }: { children: ReactNode; style?: CSSPro
 }
 
 /** A printed card with typewriter text, kraft or cream. */
-export function TypedCard({ children, tone = "kraft", rotate = 0, style }: { children: ReactNode; tone?: "kraft" | "cream"; rotate?: number; style?: CSSProperties }) {
+export const CardTone = { Kraft: "kraft", Cream: "cream" } as const;
+export type CardTone = EnumValue<typeof CardTone>;
+
+export function TypedCard({ children, tone = CardTone.Kraft, rotate = 0, style }: { children: ReactNode; tone?: CardTone; rotate?: number; style?: CSSProperties }) {
   return (
     <div
       style={{
         position: "relative",
         padding: "12px 14px",
-        background: tone === "kraft" ? COLORS.kraft : "#f6efe2",
-        color: tone === "kraft" ? "#fbf3e6" : COLORS.ink,
+        background: tone === CardTone.Kraft ? COLORS.kraft : "#f6efe2",
+        color: tone === CardTone.Kraft ? "#fbf3e6" : COLORS.ink,
         fontFamily: FONT.typed,
         fontSize: 12.5,
         lineHeight: 1.5,
@@ -218,14 +209,17 @@ export function MarkerWords({ children, rotate = -4, style }: { children: ReactN
   );
 }
 
+export const StickerKind = { Star: "star", Heart: "heart", Sun: "sun" } as const;
+export type StickerKind = EnumValue<typeof StickerKind>;
+
 /** A hand-drawn sticker. */
-export function Sticker({ kind, size = 34, style }: { kind: "star" | "heart" | "sun"; size?: number; style?: CSSProperties }) {
+export function Sticker({ kind, size = 34, style }: { kind: StickerKind; size?: number; style?: CSSProperties }) {
   const line = { stroke: COLORS.ink, strokeWidth: 1.6, strokeLinejoin: "round" as const, strokeLinecap: "round" as const };
   return (
     <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true" style={{ position: "absolute", zIndex: 3, ...style }}>
-      {kind === "star" && <path d="M20 4l4.6 10 10.9 1.2-8.2 7.4 2.4 10.8L20 27.9 10.3 33.4l2.4-10.8-8.2-7.4L15.4 14z" fill="#f4c64e" {...line} />}
-      {kind === "heart" && <path d="M20 34S5 25 5 15a7.5 7.5 0 0 1 15-1.5A7.5 7.5 0 0 1 35 15c0 10-15 19-15 19z" fill="#f3b8a2" {...line} />}
-      {kind === "sun" && (
+      {kind === StickerKind.Star && <path d="M20 4l4.6 10 10.9 1.2-8.2 7.4 2.4 10.8L20 27.9 10.3 33.4l2.4-10.8-8.2-7.4L15.4 14z" fill="#f4c64e" {...line} />}
+      {kind === StickerKind.Heart && <path d="M20 34S5 25 5 15a7.5 7.5 0 0 1 15-1.5A7.5 7.5 0 0 1 35 15c0 10-15 19-15 19z" fill="#f3b8a2" {...line} />}
+      {kind === StickerKind.Sun && (
         <g {...line}>
           <circle cx="20" cy="20" r="8" fill={COLORS.dot} />
           {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (

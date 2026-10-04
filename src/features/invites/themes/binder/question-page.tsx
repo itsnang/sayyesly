@@ -1,12 +1,13 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import type { PublicInvite } from "../../types";
 import { NOTE_MAX_LENGTH } from "../../utils/answer";
 import { timesFor } from "../../utils/time-of-day";
 import { formatInZone, MONTHS, parseIsoDate, timeLabel, WEEKDAYS } from "../shared/format";
 import { isoDate, type PlanSelection } from "../shared/use-plan-selection";
-import { COLORS, FONT, LabelStrip, Sticker, Tape } from "./pieces";
+import { COLORS } from "./palette";
+import { FONT, LabelStrip, Sticker, StickerKind, Tape } from "./pieces";
 
 const DAYS = ["s", "m", "t", "w", "t", "f", "s"];
 
@@ -39,9 +40,11 @@ type QuestionPageProps = {
 /** The last page: the question, when, a note back, Yes, or maybe later. */
 export function QuestionPage({ invite, selection, note, onNote, busy, error, onYes, onMaybeLater }: QuestionPageProps) {
   const ready = !!selection.choice && !busy;
+  // The page is drawn twice while it turns, so the note's id must be unique per copy.
+  const noteId = useId();
   return (
     <div style={{ position: "relative", padding: "34px 22px 40px", textAlign: "center" }}>
-      <Sticker kind="heart" size={40} style={{ top: 30, left: 18 }} />
+      <Sticker kind={StickerKind.Heart} size={40} style={{ top: 30, left: 18 }} />
       <LabelStrip>the last page</LabelStrip>
       <h1 style={{ fontFamily: FONT.hand, fontSize: 40, fontWeight: 700, lineHeight: 1.05, color: COLORS.ink, margin: "16px 0 8px", textWrap: "balance" }}>
         {invite.question.map((s, i) =>
@@ -57,11 +60,11 @@ export function QuestionPage({ invite, selection, note, onNote, busy, error, onY
 
       <When invite={invite} selection={selection} />
 
-      <label htmlFor="binder-note" style={{ display: "block", marginTop: 26, fontFamily: FONT.typed, fontSize: 12, color: COLORS.soft }}>
+      <label htmlFor={noteId} style={{ display: "block", marginTop: 26, fontFamily: FONT.typed, fontSize: 12, color: COLORS.soft }}>
         write back (optional)
       </label>
       <textarea
-        id="binder-note"
+        id={noteId}
         value={note}
         onChange={(e) => onNote(e.target.value)}
         maxLength={NOTE_MAX_LENGTH}

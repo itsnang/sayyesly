@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button, Field, Input, Textarea, cx } from "@/components/shared/ui";
-import { MAX_PLAN_PHOTOS, MAX_STOPS, type InviteFormValues } from "../../../schemas";
-import { startingStops } from "../../../utils/invite-content";
+import { MAX_PLAN_PHOTOS, MAX_STOPS, type InviteFormValues, type StopTextField } from "../../../schemas";
+import { blankStop, startingStops } from "../../../utils/invite-content";
 import { PhotosField } from "./photos-field";
 
 /**
@@ -13,15 +13,16 @@ import { PhotosField } from "./photos-field";
  * Stops already there, else the Invite's one place, else one empty card.
  */
 export function StopsField({ label, uploadsEnabled }: { label: string; uploadsEnabled: boolean }) {
-  const { control, getValues, setValue, formState } = useFormContext<InviteFormValues>();
+  const { control, getValues, resetField, formState } = useFormContext<InviteFormValues>();
   const stops = useFieldArray({ control, name: "planStops" });
   const titles = useWatch({ control, name: "planStops" });
   const [open, setOpen] = useState(0);
 
-  // Seed once, without marking the form changed: opening an Invite isn't an edit.
+  // Seed once, as the field's starting value too: opening an Invite isn't an edit,
+  // so it mustn't count as an unsaved change.
   useEffect(() => {
-    if (getValues("planStops").length === 0) setValue("planStops", startingStops(getValues()), { shouldDirty: false });
-  }, [getValues, setValue]);
+    if (getValues("planStops").length === 0) resetField("planStops", { defaultValue: startingStops(getValues()) });
+  }, [getValues, resetField]);
 
   const errors = formState.errors.planStops;
 
@@ -66,7 +67,7 @@ export function StopsField({ label, uploadsEnabled }: { label: string; uploadsEn
           size="sm"
           className="justify-self-start"
           onClick={() => {
-            stops.append({ title: "", line: "", time: "", description: "", place: "", mapUrl: "", photos: [] });
+            stops.append(blankStop());
             setOpen(stops.fields.length);
           }}
         >
@@ -97,7 +98,7 @@ function StopFields({ index, uploadsEnabled }: { index: number; uploadsEnabled: 
   const photos = useFieldArray({ control, name: `planStops.${index}.photos` });
   const photoValues = useWatch({ control, name: `planStops.${index}.photos` });
   const errors = formState.errors.planStops?.[index];
-  const name = (field: "title" | "line" | "time" | "description" | "place" | "mapUrl") => `planStops.${index}.${field}` as const;
+  const name = (field: StopTextField) => `planStops.${index}.${field}` as const;
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-3.5 border-t border-ink/10 px-3 pt-3 pb-4">

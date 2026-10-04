@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { invites, users } from "@/lib/db/schema";
 import { sendMessage } from "@/lib/telegram";
 import { logger } from "@/lib/logger";
+import { getTheme } from "../themes";
+import { placeToNotify } from "../utils/invite-content";
 import { answerNotification } from "../utils/notification";
 
 /**
@@ -18,13 +20,15 @@ export async function notifyAnswer(inviteId: string): Promise<void> {
   });
   if (!invite?.answer) return;
 
+  // The place the Recipient saw: a Theme with several Stops showed the first one.
+  const { place, mapUrl } = placeToNotify(invite, !!getTheme(invite.themeId)?.content.stops);
   const text = answerNotification({
     recipientName: invite.recipientName,
     kind: invite.answer.kind,
     startsAt: invite.answer.startsAt,
     timezone: invite.timezone,
-    place: invite.planPlace,
-    mapUrl: invite.planMapUrl,
+    place,
+    mapUrl,
     note: invite.answer.note,
     noDodges: invite.answer.noDodges,
   });

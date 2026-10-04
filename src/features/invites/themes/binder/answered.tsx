@@ -1,7 +1,9 @@
 import { AnswerKind } from "@/lib/enums";
 import type { Plan, PublicAnswer } from "../../types";
 import { formatInZone } from "../shared/format";
-import { COLORS, FONT, LabelStrip, Rings, Sheet, Sticker, TypedCard } from "./pieces";
+import { PlanList } from "./chapter";
+import { COLORS } from "./palette";
+import { FONT, LabelStrip, Rings, Sheet, Sticker, StickerKind, TypedCard } from "./pieces";
 
 /**
  * After the Answer: one sheet on the rings, no more pages. A Yes shows when, and
@@ -14,7 +16,7 @@ export function Answered({ answer, plan, timezone, justAnswered }: { answer: Pub
     <div style={{ position: "relative", width: "min(380px, 100%)" }}>
       <Sheet style={{ padding: "52px 24px 44px", textAlign: "center", animation: justAnswered ? "binder-in .6s ease-out both" : undefined }}>
         <style>{`@keyframes binder-in { from { opacity: 0; transform: translateY(14px) rotate(1deg) } to { opacity: 1; transform: none } }`}</style>
-        <Sticker kind="star" size={46} style={{ top: 30, right: 24 }} />
+        <Sticker kind={StickerKind.Star} size={46} style={{ top: 30, right: 24 }} />
         <LabelStrip>{justAnswered ? "your answer is on its way" : "your answer"}</LabelStrip>
         <h1 style={{ fontFamily: FONT.hand, fontSize: 54, fontWeight: 700, lineHeight: 1, color: yes ? COLORS.brown : COLORS.ink, margin: "18px 0 0" }}>
           {yes ? "it's a date!" : "another time ♡"}
@@ -26,23 +28,9 @@ export function Answered({ answer, plan, timezone, justAnswered }: { answer: Pub
         )}
         {!yes && <p style={{ fontFamily: FONT.note, fontSize: 15, color: COLORS.soft, margin: "14px 0 0" }}>thank you for letting me know.</p>}
 
-        {yes && plan.stops.length > 0 && (
+        {yes && (plan.stops.length > 0 || plan.dressCode || plan.notes) && (
           <TypedCard rotate={-1.5} style={{ margin: "26px 10px 0", textAlign: "left" }}>
-            <div style={{ fontWeight: 700, marginBottom: 4 }}>{plan.title ? plan.title.toLowerCase() : "the plan"}:</div>
-            {plan.stops.map((s, i) => (
-              <div key={i}>
-                {i + 1}. {s.title.toLowerCase()}
-                {s.time && ` · ${s.time}`}
-                {s.mapUrl && (
-                  <>
-                    {" · "}
-                    <a href={s.mapUrl} target="_blank" rel="noopener noreferrer" style={{ color: "inherit" }}>
-                      map
-                    </a>
-                  </>
-                )}
-              </div>
-            ))}
+            <PlanList plan={plan} heading={plan.title ? plan.title.toLowerCase() : "the plan"} withMaps />
           </TypedCard>
         )}
 

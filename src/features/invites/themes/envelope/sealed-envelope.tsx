@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { EnumValue } from "@/lib/enums";
 import type { PublicInvite } from "../../types";
 import { sizeForQuestion } from "./lettering";
-import { FIBRES, GRAIN } from "./ornaments";
+import { GRAIN } from "../shared/paper";
+import { FIBRES } from "./ornaments";
 
 /** Opening the envelope: sealed until tapped, the flap lifting, then the envelope sliding away. */
 const Stage = { Sealed: "sealed", Opening: "opening", Leaving: "leaving" } as const;

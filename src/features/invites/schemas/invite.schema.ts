@@ -44,6 +44,10 @@ const photoRows = z
   )
   .max(MAX_PLAN_PHOTOS);
 
+/** A Stop's written parts besides its photos, in the order the studio asks for them. */
+export const STOP_TEXT_FIELDS = ["title", "line", "time", "description", "place", "mapUrl"] as const;
+export type StopTextField = (typeof STOP_TEXT_FIELDS)[number];
+
 /**
  * One Stop of a Plan with several. It needs a title once anything else on it is
  * filled in; a Stop left entirely empty (the studio's starting card) is fine and
@@ -59,7 +63,7 @@ const stopSchema = z
     mapUrl: linkUrl,
     photos: photoRows,
   })
-  .refine((s) => s.title !== "" || (s.photos.length === 0 && [s.line, s.time, s.description, s.place, s.mapUrl].every((v) => v === "")), {
+  .refine((s) => s.title !== "" || (s.photos.length === 0 && STOP_TEXT_FIELDS.every((k) => s[k] === "")), {
     message: "Give it a name, e.g. Lunch",
     path: ["title"],
   });

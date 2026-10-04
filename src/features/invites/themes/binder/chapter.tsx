@@ -1,12 +1,14 @@
 import type { Plan, Stop } from "../../types";
-import { COLORS, FONT, LabelStrip, MarkerWords, PaperClip, Polaroid, ScriptCard, Sticker, TypedCard, type TapeTone } from "./pieces";
+import { COLORS } from "./palette";
+import { CardTone, FONT, LabelStrip, MarkerWords, PaperClip, Polaroid, ScriptCard, Sticker, StickerKind, TypedCard, type TapeTone } from "./pieces";
 
 // The Theme's own decorations, picked by position: the Creator never writes them.
 const MARKER_WORDS = ["yum!", "busy doing nothing", "happier times are coming", "best day ever", "no regrets"];
 const TILTS = [3, -4, 2];
 const TAPES: TapeTone[] = ["beige", "grid", "sage"];
 
-const cover = (stop: Stop) => stop.line || stop.title;
+/** What the sage card says: the handwritten line, else the title. */
+const scriptLine = (stop: Stop) => stop.line || stop.title;
 
 /** The cover: the Plan's title, who it's for, the plan as a typed card, and a taped collage. */
 export function Cover({ plan, recipientName }: { plan: Plan; recipientName: string }) {
@@ -17,21 +19,13 @@ export function Cover({ plan, recipientName }: { plan: Plan; recipientName: stri
         {plan.title || "our day"}
       </h2>
       <LabelStrip style={{ marginTop: 10 }}>for {recipientName.trim() || "you"}</LabelStrip>
-      {plan.stops.length > 0 && (
-        <TypedCard tone="cream" rotate={1.5} style={{ margin: "18px 64px 0 0" }}>
-          <div style={{ fontWeight: 700, marginBottom: 4 }}>the plan:</div>
-          {plan.stops.map((s, i) => (
-            <div key={i}>
-              {i + 1}. {s.title.toLowerCase()}
-              {s.time && ` · ${s.time}`}
-            </div>
-          ))}
-          {plan.dressCode && <div style={{ marginTop: 6 }}>wear: {plan.dressCode}</div>}
-          {plan.notes && <div style={{ marginTop: plan.dressCode ? 0 : 6 }}>note: {plan.notes}</div>}
+      {(plan.stops.length > 0 || plan.dressCode || plan.notes) && (
+        <TypedCard tone={CardTone.Cream} rotate={1.5} style={{ margin: "18px 64px 0 0" }}>
+          <PlanList plan={plan} heading="the plan" />
         </TypedCard>
       )}
       <MarkerWords style={{ right: 20, top: 104, maxWidth: 92 }}>swipe ← to open</MarkerWords>
-      <Sticker kind="sun" size={44} style={{ right: 24, top: 36 }} />
+      <Sticker kind={StickerKind.Sun} size={44} style={{ right: 24, top: 36 }} />
       {photos.length > 0 && (
         <div style={{ position: "relative", height: 280, marginTop: 22 }}>
           {photos.map((p, i) => (
@@ -48,6 +42,31 @@ export function Cover({ plan, recipientName }: { plan: Plan; recipientName: stri
         </div>
       )}
     </div>
+  );
+}
+
+/** The plan as typed lines: each Stop and its time (with a map link when asked), then dress code and notes. */
+export function PlanList({ plan, heading, withMaps = false }: { plan: Plan; heading: string; withMaps?: boolean }) {
+  return (
+    <>
+      <div style={{ fontWeight: 700, marginBottom: 4 }}>{heading}:</div>
+      {plan.stops.map((s, i) => (
+        <div key={i}>
+          {i + 1}. {s.title.toLowerCase()}
+          {s.time && ` · ${s.time}`}
+          {withMaps && s.mapUrl && (
+            <>
+              {" · "}
+              <a href={s.mapUrl} target="_blank" rel="noopener noreferrer" style={{ color: "inherit" }}>
+                map
+              </a>
+            </>
+          )}
+        </div>
+      ))}
+      {plan.dressCode && <div style={{ marginTop: plan.stops.length ? 6 : 0 }}>wear: {plan.dressCode}</div>}
+      {plan.notes && <div style={{ marginTop: plan.stops.length && !plan.dressCode ? 6 : 0 }}>note: {plan.notes}</div>}
+    </>
   );
 }
 
@@ -69,7 +88,7 @@ export function Chapter({ stop, n }: { stop: Stop; n: number }) {
           </div>
         )}
         <ScriptCard rotate={3} style={{ flex: 1, marginTop: first ? 24 : 6, minHeight: 110 }}>
-          {cover(stop)}
+          {scriptLine(stop)}
         </ScriptCard>
       </div>
 

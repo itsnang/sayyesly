@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { AnswerKind, TimeOfDay } from "@/lib/enums";
 import { InviteStatus } from "../enums";
 import type { InviteFormValues } from "../schemas";
-import { blankInviteForm, copyOfInvite, formToSaved, inviteState, previewInvite, savedToForm, startingStops, toPublicInvite, type SavedInvite } from "./invite-content";
+import { blankInviteForm, copyOfInvite, formToSaved, inviteState, placeToNotify, previewInvite, savedToForm, startingStops, toPublicInvite, type SavedInvite } from "./invite-content";
 
 const NOW = new Date("2026-10-01T12:00:00Z");
 const slot = (id: string, iso: string) => ({ id, startsAt: new Date(iso) });
@@ -351,5 +351,23 @@ describe("startingStops", () => {
 
   test("with nothing planned, one empty Stop ready to fill in", () => {
     expect(startingStops(blankInviteForm("binder"))).toEqual([blankStop]);
+  });
+});
+
+describe("placeToNotify", () => {
+  test("a single-place Theme names its place, even with Stops left over from another Theme", () => {
+    expect(placeToNotify(STOPS_SAVED, false)).toEqual({ place: "Riverside", mapUrl: "https://maps.example/riverside" });
+  });
+
+  test("a Theme with several Stops names the first Stop's place, which is what the Recipient saw", () => {
+    expect(placeToNotify(STOPS_SAVED, true)).toEqual({ place: "Gogi", mapUrl: "https://maps.example/gogi" });
+  });
+
+  test("with no Stops saved, the one place it showed as a Stop", () => {
+    expect(placeToNotify(SAVED, true)).toEqual({ place: "Riverside", mapUrl: "https://maps.example/riverside" });
+  });
+
+  test("a first Stop without a place names none", () => {
+    expect(placeToNotify({ ...STOPS_SAVED, planStops: [THRIFT] }, true)).toEqual({ place: null, mapUrl: null });
   });
 });

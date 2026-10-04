@@ -1,6 +1,7 @@
 import { utcToZonedParts } from "@/lib/time";
 import type { InviteFormValues } from "../schemas";
 import type { ThemeContent } from "../themes/types";
+import { startingStops, stopRow } from "./invite-content";
 import { timesFor } from "./time-of-day";
 
 /**
@@ -31,17 +32,10 @@ export function withExample(values: InviteFormValues, content: ThemeContent, now
     next.planPhotos = example.planPhotos.map((p) => ({ url: p.url, alt: p.alt, caption: p.caption ?? "" }));
     filled.push("plan photos");
   }
-  // Stops count as written once one has a title; until then the example's stand in.
-  if (content.stops && example.stops && !values.planStops?.some((s) => s.title.trim())) {
-    next.planStops = example.stops.map((s) => ({
-      title: s.title,
-      line: s.line ?? "",
-      time: s.time ?? "",
-      description: s.description ?? "",
-      place: s.place ?? "",
-      mapUrl: s.mapUrl ?? "",
-      photos: s.photos.map((p) => ({ url: p.url, alt: p.alt, caption: p.caption ?? "" })),
-    }));
+  // The example's Stops stand in only while nothing is planned: no Stop named
+  // yet, and no one place that would show as the only Stop.
+  if (content.stops && example.stops && startingStops(values).every((s) => !s.title.trim())) {
+    next.planStops = example.stops.map(stopRow);
     if (!values.planTitle?.trim() && example.planTitle) next.planTitle = example.planTitle;
     filled.push(`${content.stops.label}s`);
   }

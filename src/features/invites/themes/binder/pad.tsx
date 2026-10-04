@@ -1,7 +1,9 @@
 "use client";
 
 import { useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
-import { COLORS, FONT, Rings, Sheet } from "./pieces";
+import type { EnumValue } from "@/lib/enums";
+import { COLORS } from "./palette";
+import { FONT, Rings, Sheet } from "./pieces";
 
 const TURN_MS = 520;
 const SETTLE_MS = 220;
@@ -10,8 +12,12 @@ const THRESHOLD = 60;
 /** How far left a sheet travels to be off the pad. */
 const OFF = 430;
 
-type Turn = { index: number; from: string; dir: "fwd" | "back" };
-type Drag = { d: number; dir: "fwd" | "back"; active: boolean };
+/** Which way a page turns: forward (right to left) or back. */
+const TurnDir = { Forward: "forward", Back: "back" } as const;
+type TurnDir = EnumValue<typeof TurnDir>;
+
+type Turn = { index: number; from: string; dir: TurnDir };
+type Drag = { d: number; dir: TurnDir; active: boolean };
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 /** A sheet `d` px (≤ 0) to the left, dipping and tilting as it goes, like sliding it off the pad. */
@@ -33,11 +39,11 @@ export function Pad({ count, render }: { count: number; render: (index: number) 
   const [drag, setDrag] = useState<Drag | null>(null);
   const start = useRef<{ x: number; y: number } | null>(null);
 
-  const go = (dir: "fwd" | "back", from: string) => {
+  const go = (dir: TurnDir, from: string) => {
     if (turn) return;
-    if (dir === "fwd" ? page + 1 >= count : page === 0) return;
+    if (dir === TurnDir.Forward ? page + 1 >= count : page === 0) return;
     setTurn({ index: page, from, dir });
-    setPage(dir === "fwd" ? page + 1 : page - 1);
+    setPage(dir === TurnDir.Forward ? page + 1 : page - 1);
     setDrag(null);
     setTimeout(() => setTurn(null), TURN_MS);
   };
@@ -70,8 +76,8 @@ export function Pad({ count, render }: { count: number; render: (index: number) 
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
     if (!start.current) return;
     const d = delta(e);
-    if (d < 0 && page + 1 < count) setDrag({ d, dir: "fwd", active: true });
-    else if (d > 0 && page > 0) setDrag({ d, dir: "back", active: true });
+    if (d < 0 && page + 1 < count) setDrag({ d, dir: TurnDir.Forward, active: true });
+    else if (d > 0 && page > 0) setDrag({ d, dir: TurnDir.Back, active: true });
     else setDrag(null);
   };
 
@@ -80,8 +86,8 @@ export function Pad({ count, render }: { count: number; render: (index: number) 
     const d = delta(e);
     start.current = null;
     // From the distance itself, not `drag`: a fast flick can end before the last move re-renders.
-    if (d < -THRESHOLD && page + 1 < count) go("fwd", slide(fwdAt(d)));
-    else if (d > THRESHOLD && page > 0) go("back", slide(backAt(d)));
+    if (d < -THRESHOLD && page + 1 < count) go(TurnDir.Forward, slide(fwdAt(d)));
+    else if (d > THRESHOLD && page > 0) go(TurnDir.Back, slide(backAt(d)));
     else settle();
   };
 
@@ -93,15 +99,15 @@ export function Pad({ count, render }: { count: number; render: (index: number) 
   // What lies flat underneath, and what (if anything) is moving over it.
   let base = page;
   let moving: { index: number; style: CSSProperties } | null = null;
-  if (turn?.dir === "fwd") {
+  if (turn?.dir === TurnDir.Forward) {
     moving = { index: turn.index, style: { ["--from" as string]: turn.from, animation: `binder-off ${TURN_MS}ms ease-out forwards` } };
-  } else if (turn?.dir === "back") {
+  } else if (turn?.dir === TurnDir.Back) {
     base = turn.index;
     moving = { index: page, style: { ["--from" as string]: turn.from, animation: `binder-on ${TURN_MS}ms ease-out forwards` } };
-  } else if (drag?.dir === "fwd") {
+  } else if (drag?.dir === TurnDir.Forward) {
     base = page + 1;
     moving = { index: page, style: { transform: slide(fwdAt(drag.d)), transition: drag.active ? "none" : `transform ${SETTLE_MS}ms ease` } };
-  } else if (drag?.dir === "back") {
+  } else if (drag?.dir === TurnDir.Back) {
     moving = {
       index: page - 1,
       style: {
@@ -128,8 +134,10 @@ export function Pad({ count, render }: { count: number; render: (index: number) 
         aria-label={`Page ${page + 1} of ${count}`}
         tabIndex={0}
         onKeyDown={(e) => {
-          if (e.key === "ArrowLeft") go("back", slide(-OFF));
-          if (e.key === "ArrowRight") go("fwd", "none");
+          // Only on the pad itself: arrows typed in the note or time box move the cursor.
+          if (e.target !== e.currentTarget) return;
+          if (e.key === "ArrowLeft") go(TurnDir.Back, slide(-OFF));
+          if (e.key === "ArrowRight") go(TurnDir.Forward, "none");
         }}
         onPointerDown={onDown}
         onPointerMove={onMove}
@@ -167,10 +175,10 @@ export function Pad({ count, render }: { count: number; render: (index: number) 
         <span style={{ display: "block", fontFamily: FONT.marker, fontSize: 13, marginTop: 2 }}>
           {page + 1} / {count}
         </span>
-        <button type="button" className="sr-only focus:not-sr-only" onClick={() => go("back", slide(-OFF))} disabled={page === 0}>
+        <button type="button" className="sr-only focus:not-sr-only" onClick={() => go(TurnDir.Back, slide(-OFF))} disabled={page === 0}>
           Previous page
         </button>
-        <button type="button" className="sr-only focus:not-sr-only" onClick={() => go("fwd", "none")} disabled={last}>
+        <button type="button" className="sr-only focus:not-sr-only" onClick={() => go(TurnDir.Forward, "none")} disabled={last}>
           Next page
         </button>
       </div>
