@@ -317,6 +317,10 @@ describe("Stops", () => {
     expect(saved.content.planStops).toEqual([{ title: "Thrift", photos: [{ url: "https://img.example/x.jpg", alt: "stop photo" }] }]);
   });
 
+  test("an untouched empty Stop (the studio's starting card) isn't saved", () => {
+    expect(formToSaved({ ...STOPS_FORM, planStops: [blankStop, { ...blankStop, title: "Thrift" }] }).content.planStops).toEqual([THRIFT]);
+  });
+
   test("Stops round-trip: the form saves the saved Stops, and a saved Invite opens with them", () => {
     const { content } = formToSaved(STOPS_FORM);
     expect({ planTitle: content.planTitle, planStops: content.planStops }).toEqual({ planTitle: "The Three Chapters", planStops: [LUNCH, THRIFT] });

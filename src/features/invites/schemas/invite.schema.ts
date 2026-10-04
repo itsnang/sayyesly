@@ -44,16 +44,25 @@ const photoRows = z
   )
   .max(MAX_PLAN_PHOTOS);
 
-/** One Stop of a Plan with several. Only its title is required. */
-const stopSchema = z.object({
-  title: z.string().trim().min(1, "Give it a name, e.g. Lunch").max(30, "Keep it under 30 characters"),
-  line: optionalText(40),
-  time: optionalText(20),
-  description: optionalText(300),
-  place: optionalText(80),
-  mapUrl: linkUrl,
-  photos: photoRows,
-});
+/**
+ * One Stop of a Plan with several. It needs a title once anything else on it is
+ * filled in; a Stop left entirely empty (the studio's starting card) is fine and
+ * isn't saved.
+ */
+const stopSchema = z
+  .object({
+    title: optionalText(30),
+    line: optionalText(40),
+    time: optionalText(20),
+    description: optionalText(300),
+    place: optionalText(80),
+    mapUrl: linkUrl,
+    photos: photoRows,
+  })
+  .refine((s) => s.title !== "" || (s.photos.length === 0 && [s.line, s.time, s.description, s.place, s.mapUrl].every((v) => v === "")), {
+    message: "Give it a name, e.g. Lunch",
+    path: ["title"],
+  });
 
 export const inviteFormSchema = z
   .object({

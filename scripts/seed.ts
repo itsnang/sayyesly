@@ -50,6 +50,13 @@ async function main() {
       target: schema.themes.id,
       set: { name: "Envelope", priceCents: 199, isActive: true, sortOrder: 2 },
     });
+  await db
+    .insert(schema.themes)
+    .values({ id: "binder", name: "Binder", priceCents: 199, isActive: true, sortOrder: 3 })
+    .onConflictDoUpdate({
+      target: schema.themes.id,
+      set: { name: "Binder", priceCents: 199, isActive: true, sortOrder: 3 },
+    });
 
   const telegramId = BigInt(SEED_OWNER_TELEGRAM_ID!);
   await db

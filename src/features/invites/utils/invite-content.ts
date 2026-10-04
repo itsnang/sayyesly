@@ -192,6 +192,10 @@ function stopRow(stop: PlanStop): StopFormValues {
   };
 }
 
+/** Nothing written on it: the studio's starting card, left as it was. Not saved. */
+const isBlankStop = (stop: StopFormValues) =>
+  stop.photos.length === 0 && (["title", "line", "time", "description", "place", "mapUrl"] as const).every((k) => stop[k].trim() === "");
+
 const BLANK_STOP: StopFormValues = { title: "", line: "", time: "", description: "", place: "", mapUrl: "", photos: [] };
 
 /**
@@ -234,7 +238,7 @@ export function formToSaved(values: InviteFormValues): FormAsSaved {
     planNotes: emptyToNull(values.planNotes),
     planPhotos: savedPhotos(values.planPhotos, "plan photo"),
     planTitle: emptyToNull(values.planTitle),
-    planStops: values.planStops.map(savedStop),
+    planStops: values.planStops.filter((s) => !isBlankStop(s)).map(savedStop),
     songUrl: canonicalSongUrl(values.songUrl),
     songStart: values.songStart,
     songLength: values.songLength,
