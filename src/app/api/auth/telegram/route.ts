@@ -3,11 +3,12 @@ import { env } from "@/env";
 import { savePendingLogin } from "@/lib/auth/oauth-state";
 import { safeNextPath } from "@/lib/auth/session";
 import { buildAuthorizeUrl, createPkcePair, createState, isTelegramLoginConfigured } from "@/lib/auth/telegram";
+import { logger } from "@/lib/logger";
 
 // GET /api/auth/telegram?next=/dashboard → redirects to Telegram's login page.
 export async function GET(req: NextRequest) {
   if (!isTelegramLoginConfigured()) {
-    console.error("Telegram login is not configured: set TELEGRAM_CLIENT_ID, TELEGRAM_CLIENT_SECRET and SESSION_SECRET");
+    logger.error("telegram_login.not_configured", new Error("set TELEGRAM_CLIENT_ID, TELEGRAM_CLIENT_SECRET and SESSION_SECRET"));
     return NextResponse.redirect(new URL("/login?error=unavailable", env.NEXT_PUBLIC_APP_URL));
   }
 

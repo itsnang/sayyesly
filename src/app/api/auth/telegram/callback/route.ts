@@ -5,6 +5,7 @@ import { createSession, safeNextPath } from "@/lib/auth/session";
 import { BOT_ACCESS_SCOPE, exchangeCode, isTelegramLoginConfigured, verifyIdToken } from "@/lib/auth/telegram";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
+import { logger } from "@/lib/logger";
 
 function redirectTo(path: string) {
   return NextResponse.redirect(new URL(path, env.NEXT_PUBLIC_APP_URL));
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest) {
     grantedScopes = exchanged.grantedScopes;
     identity = await verifyIdToken(exchanged.idToken);
   } catch (error) {
-    console.error("Telegram login failed", error);
+    logger.error("telegram_login.failed", error);
     return redirectTo("/login?error=failed");
   }
 

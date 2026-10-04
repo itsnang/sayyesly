@@ -1,3 +1,4 @@
+import { withPostHogConfig } from "@posthog/nextjs-config";
 import type { NextConfig } from "next";
 
 // R2_PUBLIC_URL (docs/r2-setup.md) is where Creator-uploaded photos are served
@@ -55,4 +56,16 @@ const nextConfig: NextConfig = {
   skipTrailingSlashRedirect: true,
 };
 
-export default nextConfig;
+// Readable stacks in PostHog's error tracking (docs/adr/0005): the build uploads its
+// source maps. Only when the build has a PostHog personal API key and project id
+// (Vercel build env vars), so local builds and CI are unaffected.
+const { POSTHOG_PERSONAL_API_KEY, POSTHOG_PROJECT_ID } = process.env;
+
+export default POSTHOG_PERSONAL_API_KEY && POSTHOG_PROJECT_ID
+  ? withPostHogConfig(nextConfig, {
+      personalApiKey: POSTHOG_PERSONAL_API_KEY,
+      projectId: POSTHOG_PROJECT_ID,
+      host: "https://us.posthog.com",
+      sourcemaps: { enabled: true, deleteAfterUpload: true },
+    })
+  : nextConfig;

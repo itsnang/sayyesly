@@ -8,6 +8,7 @@ export const analyticsEnabled = Boolean(process.env.NEXT_PUBLIC_POSTHOG_KEY);
 let client: PostHog | null = null;
 const waiting: [string, object][] = [];
 const MAX_WAITING = 50;
+const waitingErrors: [unknown, object][] = [];
 
 // Our events are few and often come right before a page change (a login
 // redirect), so they skip PostHog's batching; clicks go by beacon, which
@@ -30,6 +31,19 @@ export function track<E extends AnalyticsEvent>(event: E, ...[props]: PropsArg<E
 export function attachAnalytics(posthog: PostHog): void {
   client = posthog;
   for (const [event, props] of waiting.splice(0)) send(event, props);
+  for (const [error, props] of waitingErrors.splice(0)) posthog.captureException(error, props);
+}
+
+/**
+ * Reports an error the browser caught for us (an error boundary). Unhandled
+ * errors are caught by PostHog itself; this is for the ones React swallows.
+ * The message is dropped before sending (sanitize.ts), the digest links it to the server's report.
+ */
+export function reportError(error: unknown, props: { digest?: string | undefined } = {}): void {
+  if (!analyticsEnabled || typeof window === "undefined") return;
+  const extra = { ...(props.digest ? { digest: props.digest } : {}) };
+  if (client) client.captureException(error, extra);
+  else if (waitingErrors.length < MAX_WAITING) waitingErrors.push([error, extra]);
 }
 
 /**

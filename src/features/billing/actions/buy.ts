@@ -11,6 +11,7 @@ import { PurchaseStatus } from "@/lib/enums";
 import { RateLimit, rateLimitError } from "@/lib/rate-limit";
 import { isThemeUsable } from "@/lib/theme-access";
 import { idSchema } from "@/lib/validation";
+import { logger } from "@/lib/logger";
 import type { CheckoutResult, PurchaseStatusResult } from "../types";
 import { centsToDollars } from "../utils/cutluy-webhook";
 
@@ -75,7 +76,7 @@ export async function buyTheme(themeId: string): Promise<CheckoutResult> {
       idempotencyKey: purchase.id,
       metadata: { theme_id: themeId },
     }).catch((error: unknown) => {
-      console.error("CutLuy create payment failed", error);
+      logger.error("cutluy.create_payment_failed", error, { purchaseId: purchase.id, creatorId: user.id });
       return null;
     });
 

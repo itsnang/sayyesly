@@ -26,7 +26,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
  * title, the bot's username). A cache problem never breaks or slows a call:
  * if the store fails or is slow, the value is loaded directly.
  */
-export function createCache({ store, timeoutMs = 300, onError = console.error }: CacheOptions) {
+export function createCache({ store, timeoutMs = 300, onError = () => {} }: CacheOptions) {
   return {
     /** The value remembered under `key`, else `load()`'s, remembered for `ttlSeconds` unless it's null. */
     async remember<T>(key: string, ttlSeconds: number, load: () => Promise<T | null>): Promise<T | null> {

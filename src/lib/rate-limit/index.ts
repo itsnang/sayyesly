@@ -1,5 +1,6 @@
 import "server-only";
 import { env } from "@/env";
+import { logger } from "@/lib/logger";
 import { redis } from "@/lib/redis";
 import { createMemoryStore, createRateLimiter, type RateLimitRule, type RateLimitStore } from "./limiter";
 import { createRedisStore } from "./redis-store";
@@ -41,13 +42,14 @@ export const RateLimit = {
 /** Upstash Redis when configured; otherwise this instance's memory (fine locally, weak in production). */
 function createStore(): RateLimitStore {
   if (redis) return createRedisStore(redis);
-  if (env.NODE_ENV === "production") console.warn("Rate limits are counted per instance: set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN");
+  if (env.NODE_ENV === "production") logger.warn("rate_limit.per_instance");
   return createMemoryStore();
 }
 
 const limiter = createRateLimiter({
   store: createStore(),
   secret: env.SESSION_SECRET ?? "sayyesly-dev-rate-limit",
+  onError: (error) => logger.error("rate_limit.store_failed", error),
 });
 
 /** Records a hit; false when `subject` has used up `rule` for now. */

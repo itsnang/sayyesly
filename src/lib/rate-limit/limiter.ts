@@ -38,7 +38,7 @@ type LimiterOptions = {
  * so hammering doesn't help. When the store fails or is slow the action goes
  * ahead: a limiter problem must never block a Recipient or slow the app down.
  */
-export function createRateLimiter({ store, secret, now = Date.now, timeoutMs = 300, onError = console.error }: LimiterOptions) {
+export function createRateLimiter({ store, secret, now = Date.now, timeoutMs = 300, onError = () => {} }: LimiterOptions) {
   return {
     async check(rule: RateLimitRule, subject: string): Promise<RateLimitResult> {
       const at = now();

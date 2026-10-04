@@ -51,6 +51,8 @@ function resolveAppUrl(): string {
 const serverEnv = serverSchema.safeParse({ ...process.env, NEXT_PUBLIC_APP_URL: resolveAppUrl() });
 
 if (!serverEnv.success) {
+  // The logger needs this module, so the console is the only way to say it.
+  // eslint-disable-next-line no-console
   console.error("Invalid server environment variables:", z.treeifyError(serverEnv.error));
   throw new Error("Invalid server environment variables", { cause: serverEnv.error });
 }
