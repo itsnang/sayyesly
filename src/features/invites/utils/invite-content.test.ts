@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { AnswerKind, TimeOfDay } from "@/lib/enums";
 import { InviteStatus } from "../enums";
 import type { InviteFormValues } from "../schemas";
-import { blankInviteForm, copyOfInvite, formToSaved, inviteState, previewInvite, savedToForm, toPublicInvite, type SavedInvite } from "./invite-content";
+import { blankInviteForm, copyOfInvite, formToSaved, inviteState, previewInvite, savedToForm, startingStops, toPublicInvite, type SavedInvite } from "./invite-content";
 
 const NOW = new Date("2026-10-01T12:00:00Z");
 const slot = (id: string, iso: string) => ({ id, startsAt: new Date(iso) });
@@ -51,6 +51,8 @@ const SAVED: SavedInvite = {
   planDressCode: null,
   planNotes: null,
   planPhotos: [{ url: "https://img.example/1.jpg", alt: "the river" }],
+  planTitle: null,
+  planStops: [],
   songUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   songStart: 42,
   songLength: 15,
@@ -80,6 +82,19 @@ describe("toPublicInvite", () => {
         dressCode: null,
         notes: null,
         photos: [{ url: "https://img.example/1.jpg", alt: "the river" }],
+        title: null,
+        // No Stops saved: its one place stands in as the only Stop
+        stops: [
+          {
+            title: "Riverside",
+            line: null,
+            time: null,
+            description: null,
+            place: "Riverside",
+            mapUrl: "https://maps.example/riverside",
+            photos: [{ url: "https://img.example/1.jpg", alt: "the river" }],
+          },
+        ],
       },
       timezone: "Asia/Phnom_Penh",
       timeSlots: [
@@ -120,6 +135,8 @@ const FORM: InviteFormValues = {
   planDressCode: "",
   planNotes: "",
   planPhotos: [{ url: "https://img.example/1.jpg", alt: "the river", caption: "" }],
+  planTitle: "",
+  planStops: [],
   songUrl: "https://youtu.be/dQw4w9WgXcQ?si=share",
   songStart: 42,
   songLength: 15,
@@ -224,6 +241,8 @@ describe("blankInviteForm", () => {
       planDressCode: "",
       planNotes: "",
       planPhotos: [],
+      planTitle: "",
+      planStops: [],
       songUrl: "",
       songStart: 0,
       songLength: 30,
@@ -237,5 +256,96 @@ describe("blankInviteForm", () => {
   test("takes overrides, e.g. the demo's Recipient and Plan", () => {
     const demo = blankInviteForm("envelope", { recipientName: "you", planActivity: "dinner, then a walk" });
     expect(demo).toMatchObject({ themeId: "envelope", recipientName: "you", planActivity: "dinner, then a walk", question: "" });
+  });
+});
+
+// A Plan of several Stops, as saved and as the studio's form holds it.
+const LUNCH = {
+  title: "Lunch",
+  line: "enjoy lunch",
+  time: "12:00",
+  description: "far too much meat",
+  place: "Gogi",
+  mapUrl: "https://maps.example/gogi",
+  photos: [{ url: "https://img.example/bbq.jpg", alt: "stop photo", caption: "the grill" }],
+};
+const THRIFT = { title: "Thrift", photos: [] };
+const STOPS_SAVED: SavedInvite = { ...SAVED, themeId: "binder", planTitle: "The Three Chapters", planStops: [LUNCH, THRIFT] };
+const blankStop = { title: "", line: "", time: "", description: "", place: "", mapUrl: "", photos: [] };
+const STOPS_FORM: InviteFormValues = {
+  ...FORM,
+  themeId: "binder",
+  planTitle: "The Three Chapters",
+  planStops: [
+    { ...LUNCH, photos: [{ url: "https://img.example/bbq.jpg", alt: "stop photo", caption: "the grill" }] },
+    { ...blankStop, title: "Thrift" },
+  ],
+};
+
+describe("Stops", () => {
+  test("saved Stops are shown in order, with safe map links and the parts left empty as null", () => {
+    const plan = toPublicInvite({ ...STOPS_SAVED, planStops: [{ ...LUNCH, mapUrl: "javascript:alert(1)" }, THRIFT] }, null, NOW).plan;
+    expect(plan.title).toBe("The Three Chapters");
+    expect(plan.stops).toEqual([
+      { ...LUNCH, mapUrl: null },
+      { title: "Thrift", line: null, time: null, description: null, place: null, mapUrl: null, photos: [] },
+    ]);
+  });
+
+  test("with no Stops, the one place stands in as a Stop named after what you'll do there", () => {
+    const stops = toPublicInvite({ ...SAVED, planActivity: "dinner, then a walk" }, null, NOW).plan.stops;
+    expect(stops.map((s) => [s.title, s.place])).toEqual([["dinner, then a walk", "Riverside"]]);
+  });
+
+  test("with no Stops and only photos planned, the stand-in Stop is called our day", () => {
+    const onlyPhotos = { ...SAVED, planPlace: null, planMapUrl: null };
+    expect(toPublicInvite(onlyPhotos, null, NOW).plan.stops.map((s) => s.title)).toEqual(["our day"]);
+  });
+
+  test("nothing planned at all: no Stops", () => {
+    const nothing = { ...SAVED, planPlace: null, planMapUrl: null, planPhotos: [] };
+    expect(toPublicInvite(nothing, null, NOW).plan.stops).toEqual([]);
+  });
+
+  test("saving leaves a Stop's empty parts out, drops photo rows with no picture yet, and stores an empty Plan title as null", () => {
+    const saved = formToSaved({
+      ...STOPS_FORM,
+      planTitle: "",
+      planStops: [{ ...blankStop, title: "Thrift", photos: [{ url: "", alt: "", caption: "" }, { url: "https://img.example/x.jpg", alt: "", caption: "" }] }],
+    });
+    expect(saved.content.planTitle).toBeNull();
+    expect(saved.content.planStops).toEqual([{ title: "Thrift", photos: [{ url: "https://img.example/x.jpg", alt: "stop photo" }] }]);
+  });
+
+  test("Stops round-trip: the form saves the saved Stops, and a saved Invite opens with them", () => {
+    const { content } = formToSaved(STOPS_FORM);
+    expect({ planTitle: content.planTitle, planStops: content.planStops }).toEqual({ planTitle: "The Three Chapters", planStops: [LUNCH, THRIFT] });
+    expect(savedToForm(STOPS_SAVED, NOW)).toEqual({ ...STOPS_FORM, songUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" });
+  });
+
+  test("Stops and the Plan title stay editable once answered: they aren't lockable", () => {
+    const { editable } = formToSaved(STOPS_FORM);
+    expect(editable).toMatchObject({ planTitle: "The Three Chapters" });
+    expect(editable.planStops).toHaveLength(2);
+  });
+
+  test("a copy keeps the Stops", () => {
+    expect(copyOfInvite(STOPS_SAVED, "binder", NOW).planStops).toEqual([LUNCH, THRIFT]);
+  });
+});
+
+describe("startingStops", () => {
+  test("the studio starts from the Stops already there", () => {
+    expect(startingStops(STOPS_FORM)).toEqual(STOPS_FORM.planStops);
+  });
+
+  test("with none, from the one place, so nothing the Creator typed disappears", () => {
+    expect(startingStops({ ...FORM, planActivity: "dinner" })).toEqual([
+      { ...blankStop, title: "dinner", place: "Riverside", mapUrl: "https://maps.example/riverside", photos: FORM.planPhotos },
+    ]);
+  });
+
+  test("with nothing planned, one empty Stop ready to fill in", () => {
+    expect(startingStops(blankInviteForm("binder"))).toEqual([blankStop]);
   });
 });

@@ -12,6 +12,22 @@ export type PlanPhoto = {
   caption?: string;
 };
 
+/**
+ * One Stop of a Plan with several (lunch, then thrift shops…). Parts left
+ * empty are left out. Only Themes that support several Stops show them.
+ */
+export type PlanStop = {
+  title: string;
+  /** The handwritten line beside the title, e.g. "enjoy lunch" */
+  line?: string;
+  /** A plain label ("12:00", "around 2pm"), not a real time: the Answer still picks the date's time */
+  time?: string;
+  description?: string;
+  place?: string;
+  mapUrl?: string;
+  photos: PlanPhoto[];
+};
+
 export const invites = pgTable(
   "invites",
   {
@@ -37,6 +53,10 @@ export const invites = pgTable(
     planDressCode: text("plan_dress_code"),
     planNotes: text("plan_notes"),
     planPhotos: jsonb("plan_photos").$type<PlanPhoto[]>().notNull().default([]),
+    // A Plan with several Stops: its cover title and the Stops in order. Empty
+    // for single-place Invites, whose plan_* columns above stay as they are.
+    planTitle: text("plan_title"),
+    planStops: jsonb("plan_stops").$type<PlanStop[]>().notNull().default([]),
     // The Song: a canonical YouTube watch link (see recognizeSong), or null
     songUrl: text("song_url"),
     // The part of the Song that plays, repeating: from this second, for 15, 30 or 60 seconds
