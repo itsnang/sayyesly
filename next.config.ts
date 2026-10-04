@@ -1,11 +1,14 @@
 import { withPostHogConfig } from "@posthog/nextjs-config";
 import type { NextConfig } from "next";
+import { posthogHosts } from "./src/lib/analytics/posthog-host";
 
 // R2_PUBLIC_URL (docs/r2-setup.md) is where Creator-uploaded photos are served
 // from; everything else pasted as an image link stays unoptimized (see
 // isOptimizable in themes/kitten-soft/shared.tsx) rather than opening the
 // image optimizer to arbitrary hosts.
 const r2Host = process.env.R2_PUBLIC_URL ? new URL(process.env.R2_PUBLIC_URL).hostname : null;
+
+const posthog = posthogHosts(process.env.NEXT_PUBLIC_POSTHOG_HOST);
 
 const nextConfig: NextConfig = {
   // Let the dev server be reached through a Cloudflare quick tunnel
@@ -43,13 +46,13 @@ const nextConfig: NextConfig = {
       { source: "/picker", destination: "/i/k1tten-d1n", permanent: true },
     ];
   },
-  // Analytics goes to our own origin and is forwarded to PostHog's US hosts (the project is on us.posthog.com),
+  // Analytics goes to our own origin and is forwarded to the PostHog hosts for NEXT_PUBLIC_POSTHOG_HOST,
   // so the CSP stays same-origin and ad blockers don't drop it
   // (src/instrumentation-client.ts).
   async rewrites() {
     return [
-      { source: "/ingest/static/:path*", destination: "https://us-assets.i.posthog.com/static/:path*" },
-      { source: "/ingest/:path*", destination: "https://us.i.posthog.com/:path*" },
+      { source: "/ingest/static/:path*", destination: `${posthog.assets}/static/:path*` },
+      { source: "/ingest/:path*", destination: `${posthog.ingest}/:path*` },
     ];
   },
   // PostHog's API paths end in a slash; don't redirect them away from it.
@@ -65,7 +68,7 @@ export default POSTHOG_PERSONAL_API_KEY && POSTHOG_PROJECT_ID
   ? withPostHogConfig(nextConfig, {
       personalApiKey: POSTHOG_PERSONAL_API_KEY,
       projectId: POSTHOG_PROJECT_ID,
-      host: "https://us.posthog.com",
+      host: posthog.app,
       sourcemaps: { enabled: true, deleteAfterUpload: true },
     })
   : nextConfig;

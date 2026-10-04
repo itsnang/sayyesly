@@ -1,6 +1,7 @@
 import "server-only";
 import { PostHog } from "posthog-node";
 import type { LogContext } from "@/lib/logger/logger";
+import { posthogHosts } from "./posthog-host";
 import { sanitizeEvent } from "./sanitize";
 
 // Same project key as the browser's (public by design); off when it isn't set.
@@ -12,7 +13,7 @@ function getClient(): PostHog | null {
   if (!key) return null;
   // Serverless functions freeze after responding: send each event at once, don't batch.
   client ??= new PostHog(key, {
-    host: "https://us.i.posthog.com",
+    host: posthogHosts(process.env.NEXT_PUBLIC_POSTHOG_HOST).ingest,
     flushAt: 1,
     flushInterval: 0,
     before_send: (event) => (event ? { ...event, properties: sanitizeEvent({ properties: event.properties ?? {} })?.properties ?? {} } : null),

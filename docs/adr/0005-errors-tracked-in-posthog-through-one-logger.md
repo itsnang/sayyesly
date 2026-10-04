@@ -2,7 +2,7 @@
 
 Analytics already ran on PostHog (anonymous, same-origin through `/ingest`). Errors now go to the same project: nothing watched the Telegram or CutLuy webhooks, where a silent failure costs a payment or a notification.
 
-**Server.** `src/lib/logger` is the only way server code talks to the console. `logger.info/warn/error(event, …)` writes one JSON line to stdout (Vercel collects it); `error` also sends the exception to PostHog with `posthog-node`, reusing `NEXT_PUBLIC_POSTHOG_KEY` and calling `us.i.posthog.com` directly (the `/ingest` rewrite is for browsers). Next.js's `onRequestError` (`src/instrumentation.ts`) feeds it the errors Next catches itself. Events are sent at once (`flushAt: 1`) inside `after()`, because a function freezes once it has responded.
+**Server.** `src/lib/logger` is the only way server code talks to the console. `logger.info/warn/error(event, …)` writes one JSON line to stdout (Vercel collects it); `error` also sends the exception to PostHog with `posthog-node`, reusing `NEXT_PUBLIC_POSTHOG_KEY` and calling the host in `NEXT_PUBLIC_POSTHOG_HOST` directly (US cloud by default) (the `/ingest` rewrite is for browsers). Next.js's `onRequestError` (`src/instrumentation.ts`) feeds it the errors Next catches itself. Events are sent at once (`flushAt: 1`) inside `after()`, because a function freezes once it has responded.
 
 **Browser.** `capture_exceptions` is on for unhandled errors and rejections, and `error.tsx` / `global-error.tsx` report the ones React's error boundaries swallow, then show a plain "try again" screen.
 
