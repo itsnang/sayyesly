@@ -7,11 +7,15 @@ import { useCallback, useEffect, useState } from "react";
 import { VariantA } from "./variant-a";
 import { VariantB } from "./variant-b";
 import { VariantC } from "./variant-c";
+import { VariantD } from "./variant-d";
+import { VariantE } from "./variant-e";
 
 const VARIANTS = [
   { key: "A", name: "Snap the elastic · ask first, sideways pages", Component: VariantA },
   { key: "B", name: "Flip the pad · up front, question last", Component: VariantB },
   { key: "C", name: "One long scrapbook · scroll, no pages", Component: VariantC },
+  { key: "D", name: "Dear diary · a letter, question as the P.S.", Component: VariantD },
+  { key: "E", name: "Spiral photo notebook · tap a photo to open a chapter", Component: VariantE },
 ];
 
 export function Prototype({ variant }: { variant: string }) {

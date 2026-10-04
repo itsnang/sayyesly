@@ -6,7 +6,7 @@
 // whole way down. Tests whether paging is worth it at all.
 import { useEffect, useState } from "react";
 import { EXAMPLE } from "./example";
-import { C, Elastic, FONT, GRID_BG, LabelButton, Polaroid, Rings, Sticker, Tape, TimeTag } from "./pieces";
+import { C, Elastic, FONT, GRID_BG, LabelButton, LabelStrip, Polaroid, Rings, Sticker, Tape, TimeTag } from "./pieces";
 
 export function VariantC({ report }: { report: (state: string) => void }) {
   const [answer, setAnswer] = useState<string | null>(null);
@@ -42,8 +42,8 @@ export function VariantC({ report }: { report: (state: string) => void }) {
       <section style={{ position: "relative", background: "#fffbea", padding: "26px 18px 20px", marginRight: 18, transform: "rotate(-1.5deg)", boxShadow: "0 3px 8px rgba(0,0,0,.12)" }}>
         <Tape tone="pink" style={{ top: -10, left: 24, transform: "rotate(-5deg)" }} />
         <Tape tone="pink" style={{ top: -10, right: 24, transform: "rotate(6deg)" }} />
-        <div style={{ fontFamily: FONT.display, fontSize: 34, lineHeight: 0.95, color: C.olive }}>{EXAMPLE.title}</div>
-        <div style={{ fontFamily: FONT.hand, fontSize: 20, color: C.soft }}>{EXAMPLE.byline}</div>
+        <div style={{ fontFamily: FONT.hand, fontSize: 40, fontWeight: 700, lineHeight: 0.95, color: C.ink }}>{EXAMPLE.title}</div>
+        <LabelStrip style={{ marginTop: 6 }}>{EXAMPLE.byline}</LabelStrip>
         <h1 style={{ fontFamily: FONT.hand, fontSize: 36, lineHeight: 1.05, color: C.ink, margin: "12px 0 6px" }}>{EXAMPLE.question}</h1>
         <div style={{ fontFamily: FONT.marker, fontSize: 14, color: C.rust }}>scroll for the plan ↓</div>
       </section>
@@ -55,13 +55,13 @@ export function VariantC({ report }: { report: (state: string) => void }) {
           <section key={stop.title} data-stop style={{ position: "relative", marginBottom: 54 }}>
             <span
               aria-hidden
-              style={{ position: "absolute", left: -32, top: 2, width: 28, height: 28, borderRadius: 28, background: C.olive, color: "#fff", fontFamily: FONT.marker, fontSize: 14, display: "grid", placeItems: "center" }}
+              style={{ position: "absolute", left: -32, top: 2, width: 28, height: 28, borderRadius: 28, background: C.ink, color: "#fff", fontFamily: FONT.marker, fontSize: 14, display: "grid", placeItems: "center" }}
             >
               {i + 1}
             </span>
             <TimeTag>{stop.time}</TimeTag>
-            <div style={{ fontFamily: FONT.display, fontSize: 30, color: C.olive, lineHeight: 1, marginTop: 6 }}>{stop.title}</div>
-            <div style={{ fontFamily: FONT.hand, fontSize: 24, color: C.rust, transform: "rotate(-2deg)" }}>{stop.subtitle}</div>
+            <div style={{ fontFamily: FONT.typed, fontSize: 15, fontWeight: 700, color: C.ink, letterSpacing: 1, textTransform: "uppercase", marginTop: 8 }}>{stop.title}</div>
+            <div style={{ fontFamily: FONT.hand, fontSize: 34, color: C.rust, lineHeight: 1, transform: "rotate(-2deg)" }}>{stop.subtitle}</div>
             <div style={{ position: "relative", height: stop.photos.length > 2 ? 230 : 190, margin: "12px 0" }}>
               {stop.photos.map((p, j) => (
                 <Polaroid
@@ -105,7 +105,7 @@ export function VariantC({ report }: { report: (state: string) => void }) {
       >
         <Tape tone="grid" width={60} style={{ top: -10, left: "50%", marginLeft: -30 }} />
         {answer ? (
-          <span style={{ fontFamily: FONT.display, fontSize: 24, color: C.rust }}>{answer === "later" ? "Another time ♡" : `It's a date! ${answer}`}</span>
+          <span style={{ fontFamily: FONT.hand, fontSize: 30, fontWeight: 700, color: C.rust }}>{answer === "later" ? "Another time ♡" : `It's a date! ${answer}`}</span>
         ) : picking ? (
           EXAMPLE.days.map((d) => (
             <button key={d} type="button" onClick={() => setAnswer(d)} style={{ padding: "8px 10px", fontFamily: FONT.marker, fontSize: 14, background: C.sage, color: "#fff", border: 0, cursor: "pointer" }}>

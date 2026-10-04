@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import { EXAMPLE } from "./example";
 import { Chapter } from "./chapter";
-import { BOARD_BG, C, Elastic, FONT, LabelButton, Page, Polaroid, Rings, Sticker, Tape } from "./pieces";
+import { BOARD_BG, C, Elastic, FONT, LabelButton, LabelStrip, Page, PaperClip, Polaroid, Rings, Sticker, Tape, TypedCard } from "./pieces";
 
 const Stage = { Closed: "closed", Opening: "opening", Ask: "ask", Pages: "pages", Pick: "pick", Done: "done", Later: "later" } as const;
 type Stage = (typeof Stage)[keyof typeof Stage];
@@ -56,7 +56,7 @@ export function VariantA({ report }: { report: (state: string) => void }) {
         >
           <div style={{ position: "absolute", left: "12%", right: "22%", top: "22%", padding: "20px 14px", background: C.paper, transform: "rotate(-2deg)", boxShadow: "0 2px 4px rgba(0,0,0,.15)" }}>
             <Tape tone="sage" style={{ top: -10, left: 20, transform: "rotate(-6deg)" }} />
-            <div style={{ fontFamily: FONT.display, fontSize: 30, lineHeight: 1, color: C.olive, textAlign: "left" }}>{EXAMPLE.title}</div>
+            <div style={{ fontFamily: FONT.hand, fontSize: 38, fontWeight: 700, lineHeight: 0.95, color: C.ink, textAlign: "left" }}>{EXAMPLE.title}</div>
             <div style={{ fontFamily: FONT.hand, fontSize: 22, color: C.ink, marginTop: 8 }}>for you ✦</div>
           </div>
           <Sticker kind="heart" style={{ left: "16%", bottom: "16%" }} />
@@ -106,14 +106,20 @@ export function VariantA({ report }: { report: (state: string) => void }) {
               <Rings />
               {page === 0 ? (
                 <div style={{ padding: "30px 22px 30px 40px" }}>
-                  <div style={{ fontFamily: FONT.display, fontSize: 44, lineHeight: 0.95, color: C.olive }}>{EXAMPLE.title}</div>
-                  <div style={{ fontFamily: FONT.hand, fontSize: 22, color: C.ink, margin: "6px 0 26px" }}>{EXAMPLE.byline}</div>
-                  {EXAMPLE.stops.map((s, i) => (
-                    <div key={s.title} style={{ fontFamily: FONT.marker, fontSize: 22, color: C.olive, margin: "8px 0" }}>
-                      0{i + 1} {s.title} <span style={{ fontFamily: FONT.hand, fontSize: 18, color: C.soft }}>· {s.time}</span>
-                    </div>
-                  ))}
-                  <Polaroid src={EXAMPLE.picture} caption="our day ✦" width={150} rotate={4} style={{ margin: "26px 0 0 auto" }} />
+                  <div style={{ fontFamily: FONT.hand, fontSize: 46, fontWeight: 700, lineHeight: 0.95, color: C.ink }}>{EXAMPLE.title}</div>
+                  <LabelStrip style={{ marginTop: 10 }}>{EXAMPLE.byline}</LabelStrip>
+                  <TypedCard rotate={-2} style={{ margin: "18px 10px 0 0" }}>
+                    <div style={{ fontWeight: 700, marginBottom: 4 }}>the plan:</div>
+                    {EXAMPLE.stops.map((s, i) => (
+                      <div key={s.title}>
+                        {i + 1}. {s.title.toLowerCase()} <span style={{ opacity: 0.75 }}>· {s.time}</span>
+                      </div>
+                    ))}
+                  </TypedCard>
+                  <div style={{ position: "relative", width: 150, margin: "26px 0 0 auto" }}>
+                    <PaperClip style={{ top: -14, right: 22 }} />
+                    <Polaroid src={EXAMPLE.picture} caption="our day ✦" width={150} rotate={4} tape={false} />
+                  </div>
                 </div>
               ) : (
                 <Chapter stop={EXAMPLE.stops[page - 1]!} n={page} />
@@ -131,7 +137,7 @@ export function VariantA({ report }: { report: (state: string) => void }) {
       {stage === Stage.Pick && (
         <Page style={{ width: "min(360px, 92vw)", padding: "34px 22px 30px 40px", animation: "a-in .45s ease" }}>
           <Rings />
-          <h2 style={{ fontFamily: FONT.display, fontSize: 34, color: C.olive, margin: "0 0 16px" }}>Which day?</h2>
+          <h2 style={{ fontFamily: FONT.hand, fontSize: 42, fontWeight: 700, color: C.ink, margin: "0 0 16px" }}>which day?</h2>
           {EXAMPLE.days.map((d) => (
             <button
               key={d}
@@ -152,7 +158,7 @@ export function VariantA({ report }: { report: (state: string) => void }) {
         <Page style={{ width: "min(360px, 92vw)", padding: "60px 22px 60px 40px", textAlign: "center", animation: "a-in .45s ease" }}>
           <Rings />
           <Sticker kind="star" size={48} style={{ top: 20, right: 24 }} />
-          <div style={{ fontFamily: FONT.display, fontSize: 38, color: stage === Stage.Done ? C.rust : C.olive }}>
+          <div style={{ fontFamily: FONT.hand, fontSize: 52, fontWeight: 700, color: stage === Stage.Done ? C.rust : C.ink }}>
             {stage === Stage.Done ? "It's a date!" : "Another time ♡"}
           </div>
           <div style={{ fontFamily: FONT.hand, fontSize: 24, color: C.ink, marginTop: 12 }}>

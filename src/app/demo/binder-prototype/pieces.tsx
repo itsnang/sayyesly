@@ -8,15 +8,16 @@ export const C = {
   paper: "#fdfcf8",
   ink: "#2b2622",
   soft: "#7d726a",
-  olive: "#5f6b3c",
   rust: "#c4572e",
   elastic: "#d8392b",
-  kraft: "#b08a5f",
-  sage: "#93ae84",
+  kraft: "#a97b52",
+  sage: "#8fae7e",
+  dot: "#f0a050",
 };
 
 export const FONT = {
-  display: "var(--font-bagel), var(--font-caveat), cursive",
+  /** Typewriter text on cards and label strips, like the image's printed bits */
+  typed: "var(--font-courier-prime), ui-monospace, monospace",
   marker: "var(--font-marker), var(--font-architects-daughter), cursive",
   hand: "var(--font-caveat), cursive",
   note: "var(--font-architects-daughter), cursive",
@@ -250,5 +251,64 @@ export function LabelButton({ children, onClick, tone = "ink" }: { children: Rea
     >
       {children}
     </button>
+  );
+}
+
+/** A printed card (kraft by default) with typewriter text, like "i love this so much". */
+export function TypedCard({ children, tone = "kraft", rotate = 0, style }: { children: ReactNode; tone?: "kraft" | "cream"; rotate?: number; style?: CSSProperties }) {
+  return (
+    <div
+      style={{
+        position: "relative",
+        padding: "12px 14px",
+        background: tone === "kraft" ? C.kraft : "#f6efe2",
+        color: tone === "kraft" ? "#fbf3e6" : C.ink,
+        fontFamily: FONT.typed,
+        fontSize: 12.5,
+        lineHeight: 1.5,
+        transform: `rotate(${rotate}deg)`,
+        boxShadow: "0 2px 5px rgba(0,0,0,.15)",
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** A coloured paper card with a big script line, like the green "Bon voyage" card. */
+export function ScriptCard({ children, rotate = 0, style }: { children: ReactNode; rotate?: number; style?: CSSProperties }) {
+  return (
+    <div style={{ position: "relative", padding: "26px 16px 22px", background: C.sage, transform: `rotate(${rotate}deg)`, boxShadow: "0 2px 5px rgba(0,0,0,.12)", ...style }}>
+      <span aria-hidden style={{ position: "absolute", top: -8, left: 18, width: 30, height: 20, borderRadius: "50%", background: C.dot, transform: "rotate(-12deg)" }} />
+      <div style={{ fontFamily: FONT.hand, fontSize: 44, lineHeight: 0.95, color: "#fffdf6", transform: "rotate(-6deg)" }}>{children}</div>
+    </div>
+  );
+}
+
+/** A black label-maker strip with small typed text. */
+export function LabelStrip({ children, style }: { children: ReactNode; style?: CSSProperties }) {
+  return (
+    <span style={{ display: "inline-block", padding: "3px 8px", background: "#1d1b19", color: "#f4f1ea", fontFamily: FONT.typed, fontSize: 11, letterSpacing: 0.5, ...style }}>
+      {children}
+    </span>
+  );
+}
+
+/** A silver paper clip. */
+export function PaperClip({ style }: { style?: CSSProperties }) {
+  return (
+    <svg width="18" height="44" viewBox="0 0 18 44" aria-hidden style={{ position: "absolute", zIndex: 4, ...style }}>
+      <path d="M5 12V34a4 4 0 0 0 8 0V8a6 6 0 0 0-12 0v28a8 8 0 0 0 16 0V14" fill="none" stroke="#a9a9a9" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** Marker words stuck on the page, like "busy doing nothing". */
+export function MarkerWords({ children, rotate = -4, style }: { children: ReactNode; rotate?: number; style?: CSSProperties }) {
+  return (
+    <span style={{ position: "absolute", fontFamily: FONT.marker, fontSize: 17, lineHeight: 1.05, color: C.ink, textTransform: "uppercase", transform: `rotate(${rotate}deg)`, zIndex: 3, ...style }}>
+      {children}
+    </span>
   );
 }

@@ -7,7 +7,7 @@
 import { useEffect, useState } from "react";
 import { EXAMPLE } from "./example";
 import { Chapter } from "./chapter";
-import { BOARD_BG, C, Elastic, FONT, LabelButton, Page, Polaroid, Rings, Sticker } from "./pieces";
+import { BOARD_BG, C, Elastic, FONT, LabelButton, LabelStrip, MarkerWords, Page, Polaroid, Rings, Sticker, TypedCard } from "./pieces";
 
 const FLIP_MS = 650;
 
@@ -78,19 +78,17 @@ export function VariantB({ report }: { report: (state: string) => void }) {
 function Cover() {
   return (
     <div style={{ position: "relative", padding: "26px 24px", minHeight: 560 }}>
-      <div style={{ fontFamily: FONT.display, fontSize: 44, lineHeight: 0.92, color: C.olive }}>
-        The
-        <br />
-        Three
-        <br />
-        Chapters
-      </div>
-      <div style={{ fontFamily: FONT.hand, fontSize: 22, color: C.ink, margin: "6px 0 18px" }}>{EXAMPLE.byline}</div>
-      {EXAMPLE.stops.map((s, i) => (
-        <div key={s.title} style={{ fontFamily: FONT.marker, fontSize: 20, color: C.olive, margin: "6px 0" }}>
-          0{i + 1} {s.title}
-        </div>
-      ))}
+      <div style={{ fontFamily: FONT.hand, fontSize: 48, fontWeight: 700, lineHeight: 0.9, color: C.ink, maxWidth: 220 }}>{EXAMPLE.title}</div>
+      <LabelStrip style={{ marginTop: 10 }}>{EXAMPLE.byline}</LabelStrip>
+      <TypedCard tone="cream" rotate={1.5} style={{ margin: "16px 70px 0 0" }}>
+        <div style={{ fontWeight: 700, marginBottom: 4 }}>the plan:</div>
+        {EXAMPLE.stops.map((s, i) => (
+          <div key={s.title}>
+            {i + 1}. {s.title.toLowerCase()} · {s.time}
+          </div>
+        ))}
+      </TypedCard>
+      <MarkerWords style={{ right: 22, top: 96, maxWidth: 90 }}>flip up for each chapter</MarkerWords>
       <Polaroid src="/examples/food.png" width={112} rotate={-6} style={{ position: "absolute", left: 34, bottom: 44 }} tape="grid" />
       <Polaroid src="/examples/vibe.png" width={104} rotate={5} style={{ position: "absolute", right: 18, bottom: 150 }} tape="sage" />
       <Polaroid src="/examples/place.png" width={108} rotate={-2} style={{ position: "absolute", right: 40, bottom: 16 }} tape="pink" />
@@ -119,7 +117,7 @@ function Question({
       <div style={{ fontFamily: FONT.marker, fontSize: 15, color: C.soft }}>so, after all that…</div>
       <h1 style={{ fontFamily: FONT.hand, fontSize: 44, lineHeight: 1.05, color: C.ink, margin: "14px 0 26px" }}>{EXAMPLE.question}</h1>
       {answer ? (
-        <div style={{ fontFamily: FONT.display, fontSize: 34, color: C.rust }}>{answer.startsWith("yes") ? `It's a date! ✦ ${answer.slice(5)}` : "Another time ♡"}</div>
+        <div style={{ fontFamily: FONT.hand, fontSize: 44, fontWeight: 700, color: C.rust }}>{answer.startsWith("yes") ? `It's a date! ✦ ${answer.slice(5)}` : "Another time ♡"}</div>
       ) : picking ? (
         <div>
           <div style={{ fontFamily: FONT.hand, fontSize: 24, marginBottom: 8 }}>which day?</div>
