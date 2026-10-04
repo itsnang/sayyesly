@@ -11,9 +11,9 @@ import { PurchaseStatus } from "@/lib/enums";
 import { RateLimit, rateLimitError } from "@/lib/rate-limit";
 import { isThemeUsable } from "@/lib/theme-access";
 import { idSchema } from "@/lib/validation";
+import { logger } from "@/lib/logger";
 import type { CheckoutResult, PurchaseStatusResult } from "../types";
 import { centsToDollars } from "../utils/cutluy-webhook";
-import { logger } from "@/lib/logger";
 
 const themeIdSchema = z.string().regex(/^[a-z0-9-]{1,64}$/);
 

@@ -6,8 +6,8 @@ import { db } from "@/lib/db";
 import { purchases } from "@/lib/db/schema";
 import { PurchaseStatus } from "@/lib/enums";
 import { isId } from "@/lib/validation";
-import { amountMatchesCents } from "../utils/cutluy-webhook";
 import { logger } from "@/lib/logger";
+import { amountMatchesCents } from "../utils/cutluy-webhook";
 
 const eventSchema = z.object({
   id: z.string(),
@@ -52,7 +52,7 @@ export async function handleCutluyEvent(body: unknown): Promise<WebhookOutcome> 
           .where(and(eq(purchases.id, purchase.id), ne(purchases.status, PurchaseStatus.Paid)));
       } catch (error) {
         // The one-paid-purchase-per-theme index: this Creator already owns the Theme (paid twice).
-        logger.error("cutluy_webhook.second_paid_purchase", error, { purchaseId: purchase.id });
+        logger.error("cutluy_webhook.paid_update_failed", error, { purchaseId: purchase.id });
       }
       return { status: 200, message: "paid" };
     }

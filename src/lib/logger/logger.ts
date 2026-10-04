@@ -12,7 +12,7 @@ export type LogContext = Record<string, string | number | boolean | null | undef
 
 type LoggerOptions = {
   write: (level: LogLevel, line: string) => void;
-  report: (error: unknown, props: LogContext) => void;
+  report: (error: unknown, props: LogContext) => void | Promise<void>;
   now?: () => number;
   dedupeMs?: number;
 };
@@ -43,12 +43,15 @@ export function createLogger({ write, report, now = Date.now, dedupeMs = 60_000 
   return {
     info: (event: string, context: LogContext = {}) => line("info", event, context),
     warn: (event: string, context: LogContext = {}) => line("warn", event, context),
-    /** An unexpected failure: logged, and reported to analytics. Expected `{ error }` results don't belong here. */
-    error(event: string, error: unknown, context: LogContext = {}) {
+    /**
+     * An unexpected failure: logged, and reported to analytics. Expected `{ error }` results don't belong here.
+     * Resolves once the report is out; callers outside a request (`onRequestError`) await it.
+     */
+    async error(event: string, error: unknown, context: LogContext = {}): Promise<void> {
       line("error", event, { ...(error instanceof Error ? { errorName: error.name } : {}), ...context });
       if (!shouldReport(fingerprint(event, error))) return;
       try {
-        report(error, { event, ...context });
+        await report(error, { event, ...context });
       } catch {
         // Reporting must never break the code that hit the error.
       }

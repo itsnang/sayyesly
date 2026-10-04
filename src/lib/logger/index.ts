@@ -12,11 +12,13 @@ export const logger = createLogger({
   },
   report: (error, props) => {
     const sent = reportServerException(error, props);
-    // Keep the function alive until the event is out; outside a request there's no `after`.
+    // Keep the function alive until the event is out. Outside a request there's no `after`;
+    // the caller can await the returned promise instead.
     try {
       after(sent);
     } catch {
-      void sent;
+      // not in a request
     }
+    return sent;
   },
 });

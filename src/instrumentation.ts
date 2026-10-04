@@ -6,5 +6,5 @@ export const onRequestError: Instrumentation.onRequestError = async (error, _req
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
   const { logger } = await import("@/lib/logger");
   const digest = error instanceof Error && "digest" in error && typeof error.digest === "string" ? error.digest : undefined;
-  logger.error("request.failed", error, { routePath: context.routePath, routeType: context.routeType, digest });
+  await logger.error("request.failed", error, { routePath: context.routePath, routeType: context.routeType, digest });
 };

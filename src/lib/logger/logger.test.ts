@@ -7,7 +7,9 @@ function setup(dedupeMs = 60_000) {
   const reports: { error: unknown; props: object }[] = [];
   const logger = createLogger({
     write: (level, line) => lines.push({ level, line }),
-    report: (error, props) => reports.push({ error, props }),
+    report: (error, props) => {
+      reports.push({ error, props });
+    },
     now: () => time,
     dedupeMs,
   });
@@ -66,13 +68,13 @@ describe("logger", () => {
     expect(reports).toHaveLength(1);
   });
 
-  test("a failing reporter never breaks the caller", () => {
+  test("a failing reporter never breaks the caller", async () => {
     const logger = createLogger({
       write: () => {},
       report: () => {
         throw new Error("posthog down");
       },
     });
-    expect(() => logger.error("a", new Error("x"))).not.toThrow();
+    await expect(logger.error("a", new Error("x"))).resolves.toBeUndefined();
   });
 });

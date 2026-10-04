@@ -3,8 +3,10 @@
 import { useEffect } from "react";
 import { reportError } from "@/lib/analytics/track";
 
+export type ErrorBoundaryProps = { error: Error & { digest?: string }; unstable_retry: () => void };
+
 /** What a visitor sees when a page breaks. Shows no error text: it can quote their own words. */
-export function ErrorScreen({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
+export function ErrorScreen({ error, unstable_retry: retry }: ErrorBoundaryProps) {
   useEffect(() => {
     reportError(error, { digest: error.digest });
   }, [error]);

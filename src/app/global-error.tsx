@@ -1,14 +1,14 @@
 "use client";
 
-import { ErrorScreen } from "./error-screen";
+import { ErrorScreen, type ErrorBoundaryProps } from "./error-screen";
 import "./globals.css";
 
 // Replaces the root layout when it breaks, so it brings its own <html>. No fonts here: the layout loads them.
-export default function GlobalError({ error, unstable_retry }: { error: Error & { digest?: string }; unstable_retry: () => void }) {
+export default function GlobalError(props: ErrorBoundaryProps) {
   return (
     <html lang="en">
       <body>
-        <ErrorScreen error={error} retry={unstable_retry} />
+        <ErrorScreen {...props} />
       </body>
     </html>
   );

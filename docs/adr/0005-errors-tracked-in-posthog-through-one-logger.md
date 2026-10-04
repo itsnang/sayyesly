@@ -32,4 +32,5 @@ The same promise as the rest of analytics: ids and enums, never free text.
 
 - A `posthog-node` dependency, and two optional build-time variables.
 - Errors in the studio or any action that is *caught and turned into `{ error }`* are only seen if that code calls `logger.error`. Catch blocks that swallow an unexpected error should.
-- `onRequestError` runs outside `after()`'s reach in some cases, so a report from there is sent best-effort.
+- `onRequestError` has no request scope for `after()`, so it awaits `logger.error` itself before returning.
+- A `console.*` call in `scripts/` is fine: the rule covers `src` only.
