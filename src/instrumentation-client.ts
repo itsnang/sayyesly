@@ -2,7 +2,7 @@
 // finished loading so it never delays what the visitor sees. Off unless
 // NEXT_PUBLIC_POSTHOG_KEY is set. See docs: spec itsnang/sayyesly#94.
 import { sanitizeEvent } from "@/lib/analytics/sanitize";
-import { analyticsEnabled, attachAnalytics, onTrackedClick } from "@/lib/analytics/track";
+import { analyticsEnabled, attachAnalytics, onTrackedClick, reportError } from "@/lib/analytics/track";
 
 async function startAnalytics() {
   const { default: posthog } = await import("posthog-js");
@@ -21,8 +21,9 @@ async function startAnalytics() {
     capture_dead_clicks: false,
     capture_heatmaps: false,
     capture_performance: false,
-    // Unhandled errors and rejections; the message is dropped by sanitizeEvent. Error boundaries report their own.
-    capture_exceptions: true,
+    // PostHog's own exception capture lazy-loads a script, which the line below blocks:
+    // unhandled errors and rejections are caught by the listeners at the bottom instead.
+    capture_exceptions: false,
     disable_session_recording: true,
     disable_surveys: true,
     disable_product_tours: true,
@@ -37,6 +38,12 @@ async function startAnalytics() {
 
 if (analyticsEnabled) {
   document.addEventListener("click", onTrackedClick, { capture: true });
+  // Unhandled errors and rejections (error boundaries report their own); the message is dropped by sanitizeEvent.
+  window.addEventListener("error", (e) => {
+    // A cross-origin script's error has no details to send.
+    if (e.error) reportError(e.error);
+  });
+  window.addEventListener("unhandledrejection", (e) => reportError(e.reason));
   const later = () => {
     const run = () => void startAnalytics().catch(() => {});
     if ("requestIdleCallback" in window) window.requestIdleCallback(run, { timeout: 3000 });
