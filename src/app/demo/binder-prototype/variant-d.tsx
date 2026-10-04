@@ -66,7 +66,7 @@ export function VariantD({ report }: { report: (state: string) => void }) {
             <path d="M20 4c-2 18 3 34-1 58M10 52l9 12 10-13" fill="none" stroke={C.ink} strokeWidth="1.6" strokeLinecap="round" />
           </svg>
           {answer ? (
-            <p style={{ fontFamily: FONT.hand, fontSize: 36, fontWeight: 700, color: C.rust, margin: 0 }}>{answer === "later" ? "another time ♡" : `it's a date! ${answer}`}</p>
+            <p style={{ fontFamily: FONT.hand, fontSize: 36, fontWeight: 700, color: C.brown, margin: 0 }}>{answer === "later" ? "another time ♡" : `it's a date! ${answer}`}</p>
           ) : picking ? (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
               {EXAMPLE.days.map((d) => (
@@ -130,7 +130,7 @@ function AdmitOne({ label, small, onClick }: { label: string; small: string; onC
       style={{
         position: "relative",
         padding: "10px 22px",
-        background: C.elastic,
+        background: C.accent,
         color: "#fff",
         border: 0,
         cursor: "pointer",

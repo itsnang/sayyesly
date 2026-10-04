@@ -45,7 +45,7 @@ export function VariantC({ report }: { report: (state: string) => void }) {
         <div style={{ fontFamily: FONT.hand, fontSize: 40, fontWeight: 700, lineHeight: 0.95, color: C.ink }}>{EXAMPLE.title}</div>
         <LabelStrip style={{ marginTop: 6 }}>{EXAMPLE.byline}</LabelStrip>
         <h1 style={{ fontFamily: FONT.hand, fontSize: 36, lineHeight: 1.05, color: C.ink, margin: "12px 0 6px" }}>{EXAMPLE.question}</h1>
-        <div style={{ fontFamily: FONT.marker, fontSize: 14, color: C.rust }}>scroll for the plan ↓</div>
+        <div style={{ fontFamily: FONT.marker, fontSize: 14, color: C.brown }}>scroll for the plan ↓</div>
       </section>
 
       {/* the route */}
@@ -61,7 +61,7 @@ export function VariantC({ report }: { report: (state: string) => void }) {
             </span>
             <TimeTag>{stop.time}</TimeTag>
             <div style={{ fontFamily: FONT.typed, fontSize: 15, fontWeight: 700, color: C.ink, letterSpacing: 1, textTransform: "uppercase", marginTop: 8 }}>{stop.title}</div>
-            <div style={{ fontFamily: FONT.hand, fontSize: 34, color: C.rust, lineHeight: 1, transform: "rotate(-2deg)" }}>{stop.subtitle}</div>
+            <div style={{ fontFamily: FONT.hand, fontSize: 34, color: C.brown, lineHeight: 1, transform: "rotate(-2deg)" }}>{stop.subtitle}</div>
             <div style={{ position: "relative", height: stop.photos.length > 2 ? 230 : 190, margin: "12px 0" }}>
               {stop.photos.map((p, j) => (
                 <Polaroid
@@ -105,7 +105,7 @@ export function VariantC({ report }: { report: (state: string) => void }) {
       >
         <Tape tone="grid" width={60} style={{ top: -10, left: "50%", marginLeft: -30 }} />
         {answer ? (
-          <span style={{ fontFamily: FONT.hand, fontSize: 30, fontWeight: 700, color: C.rust }}>{answer === "later" ? "Another time ♡" : `It's a date! ${answer}`}</span>
+          <span style={{ fontFamily: FONT.hand, fontSize: 30, fontWeight: 700, color: C.brown }}>{answer === "later" ? "Another time ♡" : `It's a date! ${answer}`}</span>
         ) : picking ? (
           EXAMPLE.days.map((d) => (
             <button key={d} type="button" onClick={() => setAnswer(d)} style={{ padding: "8px 10px", fontFamily: FONT.marker, fontSize: 14, background: C.sage, color: "#fff", border: 0, cursor: "pointer" }}>
@@ -114,7 +114,7 @@ export function VariantC({ report }: { report: (state: string) => void }) {
           ))
         ) : (
           <>
-            <LabelButton tone="red" onClick={() => setPicking(true)}>Yes ✦</LabelButton>
+            <LabelButton tone="accent" onClick={() => setPicking(true)}>Yes ✦</LabelButton>
             <LabelButton tone="plain" onClick={() => setAnswer("later")}>maybe later</LabelButton>
           </>
         )}

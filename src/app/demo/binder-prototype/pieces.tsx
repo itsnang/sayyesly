@@ -8,8 +8,12 @@ export const C = {
   paper: "#fdfcf8",
   ink: "#2b2622",
   soft: "#7d726a",
-  rust: "#c4572e",
-  elastic: "#d8392b",
+  /** Handwritten highlights: kraft brown, never red (owner's call) */
+  brown: "#8a6240",
+  /** Yes buttons and tickets: a deeper shade of the sage card */
+  accent: "#5f7d52",
+  /** The elastic band: charcoal, never red */
+  band: "#2f2c29",
   kraft: "#a97b52",
   sage: "#8fae7e",
   dot: "#f0a050",
@@ -139,7 +143,7 @@ export function Rings({ horizontal = false, style }: { horizontal?: boolean; sty
   );
 }
 
-/** The red elastic band that keeps the binder closed. */
+/** The elastic band that keeps the binder closed (charcoal). */
 export function Elastic({ style }: { style?: CSSProperties }) {
   return (
     <span
@@ -150,7 +154,7 @@ export function Elastic({ style }: { style?: CSSProperties }) {
         bottom: -4,
         width: 7,
         borderRadius: 4,
-        background: `linear-gradient(90deg, #a8251b, ${C.elastic} 40%, #ff7a68 55%, ${C.elastic} 70%, #a8251b)`,
+        background: `linear-gradient(90deg, #1c1a18, ${C.band} 40%, #6b6560 55%, ${C.band} 70%, #1c1a18)`,
         boxShadow: "1px 0 3px rgba(0,0,0,.3)",
         zIndex: 5,
         ...style,
@@ -230,8 +234,8 @@ export function TimeTag({ children, style }: { children: ReactNode; style?: CSSP
 }
 
 /** A button that looks like a label stuck on the page. */
-export function LabelButton({ children, onClick, tone = "ink" }: { children: ReactNode; onClick: () => void; tone?: "ink" | "red" | "plain" }) {
-  const bg = tone === "red" ? C.elastic : tone === "ink" ? C.ink : "transparent";
+export function LabelButton({ children, onClick, tone = "ink" }: { children: ReactNode; onClick: () => void; tone?: "ink" | "accent" | "plain" }) {
+  const bg = tone === "accent" ? C.accent : tone === "ink" ? C.ink : "transparent";
   return (
     <button
       type="button"

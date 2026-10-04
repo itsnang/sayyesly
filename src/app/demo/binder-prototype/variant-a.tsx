@@ -81,7 +81,7 @@ export function VariantA({ report }: { report: (state: string) => void }) {
           <h1 style={{ fontFamily: FONT.hand, fontSize: 40, lineHeight: 1.05, color: C.ink, margin: "10px 0 18px" }}>{EXAMPLE.question}</h1>
           <Polaroid src={EXAMPLE.picture} caption="it's sunny today" width={170} rotate={-3} style={{ margin: "0 auto 22px" }} />
           <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "center" }}>
-            <LabelButton tone="red" onClick={() => setStage(Stage.Pages)}>Yes ✦</LabelButton>
+            <LabelButton tone="accent" onClick={() => setStage(Stage.Pages)}>Yes ✦</LabelButton>
             <LabelButton tone="plain" onClick={() => setStage(Stage.Later)}>maybe later</LabelButton>
           </div>
         </Page>
@@ -158,7 +158,7 @@ export function VariantA({ report }: { report: (state: string) => void }) {
         <Page style={{ width: "min(360px, 92vw)", padding: "60px 22px 60px 40px", textAlign: "center", animation: "a-in .45s ease" }}>
           <Rings />
           <Sticker kind="star" size={48} style={{ top: 20, right: 24 }} />
-          <div style={{ fontFamily: FONT.hand, fontSize: 52, fontWeight: 700, color: stage === Stage.Done ? C.rust : C.ink }}>
+          <div style={{ fontFamily: FONT.hand, fontSize: 52, fontWeight: 700, color: stage === Stage.Done ? C.brown : C.ink }}>
             {stage === Stage.Done ? "It's a date!" : "Another time ♡"}
           </div>
           <div style={{ fontFamily: FONT.hand, fontSize: 24, color: C.ink, marginTop: 12 }}>
