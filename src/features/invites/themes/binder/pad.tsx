@@ -1,71 +1,114 @@
 "use client";
 
-import { useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 import type { EnumValue } from "@/lib/enums";
 import { COLORS } from "./palette";
-import { FONT, Rings, Sheet } from "./pieces";
+import { BackBoard, FONT, Rings, Sheet, SheetBack, SheetKind, Tab } from "./pieces";
 
-const TURN_MS = 520;
-const SETTLE_MS = 220;
+/** How long a whole turn takes; part of one takes its share. */
+const TURN_MS = 720;
 /** How far a finger must travel before letting go turns the page. */
 const THRESHOLD = 60;
-/** How far left a sheet travels to be off the pad. */
-const OFF = 430;
+/** Movement smaller than this is still a tap. */
+const SLOP = 8;
+const RAD = Math.PI / 180;
 
-/** Which way a page turns: forward (right to left) or back. */
+/** Which way a page turns: forward (swiped right to left, up over the rings) or back down. */
 const TurnDir = { Forward: "forward", Back: "back" } as const;
 type TurnDir = EnumValue<typeof TurnDir>;
 
-type Turn = { index: number; from: string; dir: TurnDir };
-type Drag = { d: number; dir: TurnDir; active: boolean };
-
-const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
-/** A sheet `d` px (≤ 0) to the left, dipping and tilting as it goes, like sliding it off the pad. */
-const slide = (d: number) => `translate(${d}px, ${-d * 0.06}px) rotate(${d * 0.035}deg)`;
-const fwdAt = (d: number) => clamp(d, -OFF, 0);
-const backAt = (d: number) => clamp(-OFF + d * 1.2, -OFF, 0);
+/** A page of the binder: what it's made of, and its divider tab (none on the cover). */
+export type PadPage = { kind: SheetKind; tab: { label: string; name: string } | null };
 
 /**
- * A pad of grid-paper sheets on the top rings. Swipe right to left and the sheet
- * follows the finger off to the left, the next one underneath; left to right
- * slides the last one back; a short swipe settles back. Vertical movement stays
- * the browser's (each sheet scrolls). ← / → keys and the screen-reader buttons
- * turn pages too. Pages hold no state of their own: `render` is called for the
- * sheet underneath and the one moving, so whatever they show lives above.
+ * Which sheets are drawn: the one lying flat on top, and the one turning over
+ * it. `angle` is how far that one has turned: 0 lies on the pad, 180 has gone
+ * over the rings. When `to` is set it's finishing on its own, then `next` is the page.
  */
-export function Pad({ count, render }: { count: number; render: (index: number) => ReactNode }) {
+type Flip = { moving: number; base: number; dir: TurnDir; to: number | null; next: number };
+
+const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
+const easeOut = (t: number) => 1 - (1 - t) ** 3;
+
+/** Draws a sheet turned `angle` degrees up over the rings, its shading, and its shadow on the page below. */
+function paint(sheet: HTMLElement | undefined, under: HTMLElement | undefined, angle: number | null) {
+  if (sheet) {
+    const a = angle ?? 0;
+    // A slight twist, as if lifted by its bottom right corner.
+    sheet.style.transform = angle === null ? "" : `rotateX(${a}deg) rotateY(${-Math.sin(a * RAD) * 7}deg)`;
+    const front = sheet.querySelector<HTMLElement>("[data-shade=front]");
+    const back = sheet.querySelector<HTMLElement>("[data-shade=back]");
+    if (front) front.style.opacity = String((Math.min(a, 90) / 90) * 0.32);
+    if (back) back.style.opacity = String((clamp(180 - a, 0, 90) / 90) * 0.28);
+  }
+  const cast = under?.querySelector<HTMLElement>("[data-shade=cast]");
+  if (cast) cast.style.opacity = angle === null ? "0" : String(Math.sin(clamp(angle, 0, 90) * RAD) * clamp(1 - angle / 150, 0, 1));
+}
+
+/**
+ * A binder on top rings: a cloth cover, then grid-paper pages with divider tabs
+ * along the bottom. Swipe right to left and the sheet lifts by its corner and
+ * turns up over the rings, following the finger; left to right brings the last
+ * one back down; a short swipe drops back. Tapping a tab turns to that page.
+ * Vertical movement stays the browser's (each page scrolls). ← / → keys and the
+ * screen-reader buttons turn pages too. Pages hold no state of their own:
+ * `render` is called for each sheet drawn, so whatever they show lives above.
+ */
+export function Pad({ pages, render }: { pages: PadPage[]; render: (index: number, goTo: (index: number) => void) => ReactNode }) {
+  const count = pages.length;
   const [page, setPage] = useState(0);
-  const [turn, setTurn] = useState<Turn | null>(null);
-  const [drag, setDrag] = useState<Drag | null>(null);
-  const start = useRef<{ x: number; y: number } | null>(null);
+  const [flip, setFlip] = useState<Flip | null>(null);
+  // Until the first touch, the cover lifts now and then to show it opens.
+  const [touched, setTouched] = useState(false);
+  const start = useRef<{ x: number; y: number; dragging: boolean } | null>(null);
+  const angle = useRef(0);
+  const sheets = useRef(new Map<number, HTMLDivElement>());
+  const pad = useRef<HTMLDivElement>(null);
 
-  const go = (dir: TurnDir, from: string) => {
-    if (turn) return;
-    if (dir === TurnDir.Forward ? page + 1 >= count : page === 0) return;
-    setTurn({ index: page, from, dir });
-    setPage(dir === TurnDir.Forward ? page + 1 : page - 1);
-    setDrag(null);
-    setTimeout(() => setTurn(null), TURN_MS);
+  const turn = (dir: TurnDir, to: number) => {
+    if (flip || to === page || to < 0 || to >= count) return;
+    setTouched(true);
+    angle.current = dir === TurnDir.Forward ? 0 : 180;
+    setFlip(dir === TurnDir.Forward ? { moving: page, base: to, dir, to: 180, next: to } : { moving: to, base: page, dir, to: 0, next: to });
   };
+  const goTo = (index: number) => turn(index > page ? TurnDir.Forward : TurnDir.Back, index);
 
-  // Not far enough, or the browser took the gesture over: the sheet falls back.
-  // Through the updater, since a quick release can beat the last re-render.
-  const settle = () => {
-    setDrag((d) => (d ? { d: 0, dir: d.dir, active: false } : null));
-    setTimeout(() => setDrag(null), SETTLE_MS);
-  };
+  // Draw the turning sheet where it is, then (when it's finishing) run it home.
+  useLayoutEffect(() => {
+    for (const [i, el] of sheets.current) if (i !== flip?.moving) paint(el, el, null);
+    if (!flip) return;
+    const sheet = sheets.current.get(flip.moving);
+    const under = sheets.current.get(flip.base);
+    paint(sheet, under, angle.current);
+    if (flip.to === null) return;
+    const from = angle.current;
+    const to = flip.to;
+    const ms = Math.max(160, (Math.abs(to - from) / 180) * TURN_MS);
+    const began = performance.now();
+    let frame = requestAnimationFrame(function step(now) {
+      const t = Math.min(1, (now - began) / ms);
+      angle.current = from + (to - from) * easeOut(t);
+      paint(sheet, under, angle.current);
+      if (t < 1) frame = requestAnimationFrame(step);
+      else {
+        setPage(flip.next);
+        setFlip(null);
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [flip]);
 
-  /** Horizontal travel only: a mostly vertical move is a scroll. */
-  const delta = (e: PointerEvent) => {
-    const s = start.current;
-    if (!s) return 0;
-    const dx = e.clientX - s.x;
-    return Math.abs(dx) > Math.abs(e.clientY - s.y) ? dx : 0;
+  /** How far the finger has turned the sheet, from the horizontal travel only. */
+  const angleFor = (dir: TurnDir, dx: number) => {
+    const width = pad.current?.offsetWidth ?? 340;
+    const turned = clamp((Math.abs(dx) / width) * 190, 0, 180);
+    return dir === TurnDir.Forward ? (dx < 0 ? turned : 0) : dx > 0 ? 180 - turned : 180;
   };
 
   const onDown = (e: PointerEvent<HTMLDivElement>) => {
-    if (turn || (e.target instanceof Element && e.target.closest("button, a, input, textarea, label"))) return;
-    start.current = { x: e.clientX, y: e.clientY };
+    if (flip || (e.target instanceof Element && e.target.closest("button, a, input, textarea, label"))) return;
+    setTouched(true);
+    start.current = { x: e.clientX, y: e.clientY, dragging: false };
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch {
@@ -74,111 +117,171 @@ export function Pad({ count, render }: { count: number; render: (index: number) 
   };
 
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
-    if (!start.current) return;
-    const d = delta(e);
-    if (d < 0 && page + 1 < count) setDrag({ d, dir: TurnDir.Forward, active: true });
-    else if (d > 0 && page > 0) setDrag({ d, dir: TurnDir.Back, active: true });
-    else setDrag(null);
+    const s = start.current;
+    if (!s) return;
+    const dx = e.clientX - s.x;
+    if (!s.dragging) {
+      // A mostly vertical move is a scroll; let the browser have it.
+      if (Math.abs(dx) < SLOP || Math.abs(dx) < Math.abs(e.clientY - s.y)) return;
+      if (dx < 0 && page + 1 < count) {
+        angle.current = 0;
+        setFlip({ moving: page, base: page + 1, dir: TurnDir.Forward, to: null, next: page });
+      } else if (dx > 0 && page > 0) {
+        angle.current = 180;
+        setFlip({ moving: page - 1, base: page, dir: TurnDir.Back, to: null, next: page });
+      } else return;
+      s.dragging = true;
+      return;
+    }
+    if (!flip || flip.to !== null) return;
+    angle.current = angleFor(flip.dir, dx);
+    paint(sheets.current.get(flip.moving), sheets.current.get(flip.base), angle.current);
   };
 
-  const onUp = (e: PointerEvent<HTMLDivElement>) => {
-    if (!start.current) return;
-    const d = delta(e);
+  const release = (dx: number) => {
+    const s = start.current;
     start.current = null;
-    // From the distance itself, not `drag`: a fast flick can end before the last move re-renders.
-    if (d < -THRESHOLD && page + 1 < count) go(TurnDir.Forward, slide(fwdAt(d)));
-    else if (d > THRESHOLD && page > 0) go(TurnDir.Back, slide(backAt(d)));
-    else settle();
+    if (!s?.dragging) return;
+    // From the distance itself, as well as the angle: a fast flick can end before the last move is drawn.
+    setFlip((f) => {
+      if (!f || f.to !== null) return f;
+      if (f.dir === TurnDir.Forward) return dx < -THRESHOLD ? { ...f, to: 180, next: f.base } : { ...f, to: 0, next: f.moving };
+      return dx > THRESHOLD ? { ...f, to: 0, next: f.moving } : { ...f, to: 180, next: f.base };
+    });
   };
 
-  const onCancel = () => {
-    start.current = null;
-    settle();
-  };
-
-  // What lies flat underneath, and what (if anything) is moving over it.
-  let base = page;
-  let moving: { index: number; style: CSSProperties } | null = null;
-  if (turn?.dir === TurnDir.Forward) {
-    moving = { index: turn.index, style: { ["--from" as string]: turn.from, animation: `binder-off ${TURN_MS}ms ease-out forwards` } };
-  } else if (turn?.dir === TurnDir.Back) {
-    base = turn.index;
-    moving = { index: page, style: { ["--from" as string]: turn.from, animation: `binder-on ${TURN_MS}ms ease-out forwards` } };
-  } else if (drag?.dir === TurnDir.Forward) {
-    base = page + 1;
-    moving = { index: page, style: { transform: slide(fwdAt(drag.d)), transition: drag.active ? "none" : `transform ${SETTLE_MS}ms ease` } };
-  } else if (drag?.dir === TurnDir.Back) {
-    moving = {
-      index: page - 1,
-      style: {
-        transform: slide(drag.active ? backAt(drag.d) : -OFF),
-        opacity: drag.active ? 1 : 0,
-        transition: drag.active ? "none" : `transform ${SETTLE_MS}ms ease, opacity ${SETTLE_MS}ms`,
-      },
-    };
-  }
-
-  const sheet: CSSProperties = { position: "absolute", inset: 0, overflow: "hidden", paddingTop: 18 };
-  const scroll: CSSProperties = { height: "100%", overflowY: "auto", overscrollBehavior: "contain" };
+  // Not turning: the page lies flat. Before the first touch, the cover peeks open over page 2.
+  const peeking = !flip && !touched && page === 0 && count > 1;
+  const base = flip?.base ?? (peeking ? 1 : page);
+  const moving = flip?.moving ?? (peeking ? 0 : null);
+  const drawn = moving === null ? [base] : [base, moving];
+  // The last page turned lies flat above the rings, as on a desk; a turn lands on it.
+  const turned = Math.min(base, moving ?? base) - 1;
+  const turnedKind = pages[turned]?.kind;
+  const underneath = Math.max(0, count - 1 - Math.max(base, moving ?? 0));
+  const tabbed = pages.filter((p) => p.tab).length;
+  /** A tab's place along the bottom: its page's place among the pages with tabs. */
+  const slotOf = (i: number) => pages.slice(0, i).filter((p) => p.tab).length;
   const last = page + 1 === count;
+
+  const tab = (i: number, onClick?: () => void) => {
+    const spec = pages[i]?.tab;
+    return spec ? <Tab key={`tab-${i}`} label={spec.label} name={spec.name} slot={slotOf(i)} of={tabbed} {...(onClick ? { onClick } : {})} /> : null;
+  };
+
+  const face: CSSProperties = { position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" };
+  const shade: CSSProperties = { position: "absolute", inset: 0, pointerEvents: "none", opacity: 0, borderRadius: "inherit" };
 
   return (
     <div style={{ width: "min(380px, 100%)" }}>
       <style>{`
-        @keyframes binder-off { from { transform: var(--from) } to { transform: ${slide(-OFF)}; opacity: 0 } }
-        @keyframes binder-on { from { transform: var(--from) } to { transform: none } }
+        @keyframes binder-peek {
+          0%, 64%, 100% { transform: none }
+          74% { transform: rotateX(26deg) rotateY(-4deg) }
+          84% { transform: rotateX(4deg) }
+          90% { transform: rotateX(9deg) }
+        }
       `}</style>
       <div
+        ref={pad}
         role="region"
-        aria-roledescription="pages"
+        aria-roledescription="binder"
         aria-label={`Page ${page + 1} of ${count}`}
         tabIndex={0}
         onKeyDown={(e) => {
-          // Only on the pad itself: arrows typed in the note or time box move the cursor.
+          // Only on the binder itself: arrows typed in the note or time box move the cursor.
           if (e.target !== e.currentTarget) return;
-          if (e.key === "ArrowLeft") go(TurnDir.Back, slide(-OFF));
-          if (e.key === "ArrowRight") go(TurnDir.Forward, "none");
+          if (e.key === "ArrowLeft") turn(TurnDir.Back, page - 1);
+          if (e.key === "ArrowRight") turn(TurnDir.Forward, page + 1);
         }}
         onPointerDown={onDown}
         onPointerMove={onMove}
-        onPointerUp={onUp}
-        onPointerCancel={onCancel}
+        onPointerUp={(e) => release(start.current ? e.clientX - start.current.x : 0)}
+        onPointerCancel={() => release(0)}
         // Without this, a swipe starting on a photo drags the image instead.
         onDragStart={(e) => e.preventDefault()}
         style={{
           position: "relative",
-          height: "min(680px, calc(100svh - 150px))",
-          minHeight: 520,
+          height: "min(660px, calc(100svh - 170px))",
+          minHeight: 500,
+          marginBottom: 30,
+          perspective: 1900,
+          perspectiveOrigin: "50% 0%",
           touchAction: "pan-y",
           userSelect: "none",
           outline: "none",
         }}
       >
-        {/* the sheets underneath, so the pad looks thick */}
-        <div aria-hidden="true" style={{ ...sheet, transform: "translate(5px, 6px)", background: "#f1efe9", boxShadow: "0 2px 4px rgba(0,0,0,.12)" }} />
-        <div aria-hidden="true" style={{ ...sheet, transform: "translate(2px, 3px)", background: "#f7f5f0" }} />
-        <Sheet key={`base-${base}`} style={sheet}>
-          <div style={scroll}>{render(base)}</div>
-        </Sheet>
-        {moving && (
-          <Sheet key={`moving-${moving.index}`} style={{ ...sheet, transformOrigin: "top right", zIndex: 2, boxShadow: "0 10px 24px rgba(0,0,0,.22)", pointerEvents: "none", ...moving.style }}>
-            <div aria-hidden="true" style={scroll}>
-              {render(moving.index)}
-            </div>
-          </Sheet>
+        <BackBoard />
+        {/* the pages still to come: their edges, and their tabs to jump to */}
+        {Array.from({ length: Math.min(underneath, 4) }, (_, k) => (
+          <div
+            key={`edge-${k}`}
+            aria-hidden="true"
+            style={{ position: "absolute", inset: 0, transform: `translateY(${(Math.min(underneath, 4) - k) * 2}px)`, background: k % 2 ? "#f6f3ec" : "#ebe6dc", borderRadius: 2 }}
+          />
+        ))}
+        {pages.map((_, i) => (i > base && i > (moving ?? 0) ? tab(i, () => goTo(i)) : null))}
+
+        {turnedKind && (
+          <SheetBack
+            key={`turned-${turned}`}
+            kind={turnedKind}
+            style={{ position: "absolute", inset: 0, zIndex: 1, transformOrigin: "50% 0", transform: "rotateX(180deg)", backfaceVisibility: "visible" }}
+          />
         )}
+        {drawn.map((i) => {
+          const spec = pages[i];
+          if (!spec) return null;
+          const live = i === page;
+          const turning = i === moving;
+          return (
+            <div
+              key={`page-${i}`}
+              ref={(el) => {
+                if (el) sheets.current.set(i, el);
+                else sheets.current.delete(i);
+              }}
+              aria-hidden={!live}
+              inert={!live}
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: turning ? 3 : 2,
+                transformOrigin: "50% 0",
+                transformStyle: "preserve-3d",
+                pointerEvents: live && !flip ? undefined : "none",
+                animation: peeking && turning ? "binder-peek 3.4s ease-in-out 1s infinite" : undefined,
+              }}
+            >
+              <Sheet kind={spec.kind} style={{ ...face, boxShadow: turning ? "0 8px 22px rgba(0,0,0,.22)" : undefined }}>
+                {spec.kind === SheetKind.Board ? (
+                  render(i, goTo)
+                ) : (
+                  <div style={{ position: "absolute", inset: 0, overflowY: "auto", overscrollBehavior: "contain", paddingTop: 22 }}>{render(i, goTo)}</div>
+                )}
+                {tab(i)}
+                <span data-shade="cast" style={{ ...shade, background: "linear-gradient(to top, rgba(40,25,10,.3), rgba(40,25,10,.08) 55%, transparent)" }} />
+                <span data-shade="front" style={{ ...shade, background: "linear-gradient(to bottom, rgba(0,0,0,.1), #000)" }} />
+              </Sheet>
+              <SheetBack kind={spec.kind} style={{ ...face, transform: "rotateX(180deg)" }}>
+                <span data-shade="back" style={{ ...shade, background: "linear-gradient(to top, #fff, rgba(255,255,255,.2))" }} />
+              </SheetBack>
+            </div>
+          );
+        })}
         <Rings />
       </div>
 
-      <div style={{ textAlign: "center", marginTop: 14, fontFamily: FONT.hand, fontSize: 20, color: COLORS.ink }}>
-        <span aria-hidden="true">{last ? "→ swipe right to look back" : page === 0 ? "swipe left to turn the page ←" : "← next · back →"}</span>
+      <div style={{ textAlign: "center", fontFamily: FONT.hand, fontSize: 20, color: COLORS.ink }}>
+        <span aria-hidden="true">{last ? "→ swipe right to look back" : page === 0 ? "swipe ← to open" : "← next · back →"}</span>
         <span style={{ display: "block", fontFamily: FONT.marker, fontSize: 13, marginTop: 2 }}>
           {page + 1} / {count}
         </span>
-        <button type="button" className="sr-only focus:not-sr-only" onClick={() => go(TurnDir.Back, slide(-OFF))} disabled={page === 0}>
+        <button type="button" className="sr-only focus:not-sr-only" onClick={() => turn(TurnDir.Back, page - 1)} disabled={page === 0}>
           Previous page
         </button>
-        <button type="button" className="sr-only focus:not-sr-only" onClick={() => go(TurnDir.Forward, "none")} disabled={last}>
+        <button type="button" className="sr-only focus:not-sr-only" onClick={() => turn(TurnDir.Forward, page + 1)} disabled={last}>
           Next page
         </button>
       </div>

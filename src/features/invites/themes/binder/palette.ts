@@ -11,4 +11,9 @@ export const COLORS = {
   /** Yes and the picked time: a deeper shade of the sage card */
   accent: "#5f7d52",
   dot: "#f0a050",
+  /** The hard cover's book cloth, and its shadowed edge */
+  cloth: "#71896a",
+  clothEdge: "#4f6449",
+  /** The chipboard back board */
+  chip: "#a8957c",
 } as const;

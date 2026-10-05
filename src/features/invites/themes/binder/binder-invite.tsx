@@ -7,17 +7,17 @@ import { BackgroundSong } from "../shared/background-song";
 import { useFirstTap } from "../shared/use-first-tap";
 import { usePlanSelection } from "../shared/use-plan-selection";
 import { Answered } from "./answered";
-import { Chapter, Cover } from "./chapter";
+import { Chapter, CHAPTER_PAGE, Contents, HardCover } from "./chapter";
 import { markerFont } from "./fonts";
-import { Pad } from "./pad";
+import { Pad, type PadPage } from "./pad";
 import { COLORS } from "./palette";
-import { BOARD_BG } from "./pieces";
+import { BOARD_BG, SheetKind } from "./pieces";
 import { QuestionPage } from "./question-page";
 
 /**
- * Binder: a scrapbook pad on top rings that shows the whole Plan up front. The
- * cover lists the Stops, each Stop is a page, and the question is the last
- * page. Pages turn by swiping right to left. Maybe later is there from the start,
+ * Binder: a cloth-covered scrapbook binder on top rings that shows the whole
+ * Plan up front. Inside the cover the contents list the Stops, each Stop is a
+ * page with its own divider tab, and the question is the last page. Pages turn by swiping right to left. Maybe later is there from the start,
  * and the Song plays from the first touch.
  */
 export function BinderInvite(props: InviteThemeProps) {
@@ -32,10 +32,18 @@ export function BinderInvite(props: InviteThemeProps) {
   const song = invite.answer ? null : invite.song;
   const tapped = useFirstTap(!!song);
 
-  const render = (index: number) => {
-    if (index === 0) return <Cover plan={invite.plan} recipientName={invite.recipientName} />;
-    const stop = stops[index - 1];
-    if (stop) return <Chapter stop={stop} n={index} />;
+  const pages: PadPage[] = [
+    { kind: SheetKind.Board, tab: null },
+    { kind: SheetKind.Paper, tab: { label: "plan", name: "the plan" } },
+    ...stops.map((s, i) => ({ kind: SheetKind.Paper, tab: { label: String(i + 1).padStart(2, "0"), name: `chapter ${i + 1}: ${s.title}` } })),
+    { kind: SheetKind.Paper, tab: { label: "♡", name: "the question" } },
+  ];
+
+  const render = (index: number, goTo: (page: number) => void) => {
+    if (index === 0) return <HardCover plan={invite.plan} recipientName={invite.recipientName} />;
+    if (index === 1) return <Contents plan={invite.plan} goTo={goTo} />;
+    const stop = stops[index - CHAPTER_PAGE];
+    if (stop) return <Chapter stop={stop} n={index - CHAPTER_PAGE + 1} />;
     return (
       <QuestionPage
         invite={invite}
@@ -64,14 +72,14 @@ export function BinderInvite(props: InviteThemeProps) {
         color: COLORS.ink,
         display: "grid",
         placeItems: "center",
-        padding: "40px 16px 32px",
+        padding: "44px 16px 28px",
         overflowX: "clip",
       }}
     >
       {answering.answer ? (
         <Answered answer={answering.answer} plan={invite.plan} timezone={invite.timezone} justAnswered={justAnswered} />
       ) : (
-        <Pad count={stops.length + 2} render={render} />
+        <Pad pages={pages} render={render} />
       )}
       {song && <BackgroundSong song={song} playing={tapped} />}
     </div>
