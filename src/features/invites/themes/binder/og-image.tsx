@@ -5,23 +5,20 @@ import { SITE_TITLE } from "@/lib/site";
 import { OG_IMAGE_SIZE, type OgImageInput } from "../types";
 import { COLORS } from "./palette";
 
-const { paper: PAPER, board: BOARD, ink: INK, soft: SOFT } = COLORS;
-/** The highlighter under the question's emphasised words: the sage card, see-through */
-const SAGE = "rgba(143,174,126,.55)";
+const { paper: PAPER, board: BOARD, blue: BLUE, soft: SOFT, sage: SAGE } = COLORS;
 
 const sizeFor = (text: string) => (text.length > 40 ? 72 : text.length > 24 ? 88 : 104);
 
-/** Binder's link preview: the question handwritten on a grid-paper sheet under the rings. Never shows the Recipient's name. */
+/** Binder's link preview: the question in blue pen on a notebook page on a spiral, its emphasised words cut out. Never shows the Recipient's name. */
 export async function renderBinderOgImage({ question }: OgImageInput) {
   const [hand, note] = await Promise.all([
     readFile(join(process.cwd(), "assets/Caveat-Bold.ttf")),
     readFile(join(process.cwd(), "assets/ArchitectsDaughter-Regular.ttf")),
   ]);
   const fontSize = sizeFor(question.map((s) => s.text).join(""));
-  const grid =
-    "linear-gradient(rgba(70,90,120,.09) 1px, transparent 1px), linear-gradient(90deg, rgba(70,90,120,.09) 1px, transparent 1px)";
-  const ring = (x: number) => (
-    <div key={x} style={{ position: "absolute", left: x, top: 22, width: 22, height: 48, borderRadius: 11, border: "5px solid #a9a9a9", display: "flex" }} />
+  // One coil every 30px down the page's left edge.
+  const coil = (y: number) => (
+    <div key={y} style={{ position: "absolute", left: 52, top: y, width: 50, height: 16, borderRadius: 8, border: "4px solid #a9a9a9", display: "flex" }} />
   );
 
   return new ImageResponse(
@@ -34,10 +31,9 @@ export async function renderBinderOgImage({ question }: OgImageInput) {
             display: "flex",
             flexDirection: "column",
             background: PAPER,
-            backgroundImage: grid,
-            backgroundSize: "22px 22px",
+            borderRadius: "4px 18px 18px 4px",
             boxShadow: "0 6px 18px rgba(0,0,0,.18)",
-            padding: "70px 70px 36px",
+            padding: "56px 70px 36px 90px",
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "ArchitectsDaughter", fontSize: 22, color: SOFT }}>
@@ -55,7 +51,7 @@ export async function renderBinderOgImage({ question }: OgImageInput) {
               fontFamily: "Caveat",
               fontSize,
               lineHeight: 1.1,
-              color: INK,
+              color: BLUE,
               textAlign: "center",
             }}
           >
@@ -66,7 +62,7 @@ export async function renderBinderOgImage({ question }: OgImageInput) {
                 .map((word, j) => (
                   <span
                     key={`${i}-${j}`}
-                    style={{ margin: "0 10px", padding: "0 4px", backgroundImage: segment.emphasis ? `linear-gradient(transparent 58%, ${SAGE} 58%)` : "none" }}
+                    style={{ margin: "0 10px", padding: "0 8px", background: segment.emphasis ? SAGE : "transparent", color: segment.emphasis ? "#1f1c1a" : BLUE }}
                   >
                     {word}
                   </span>
@@ -74,7 +70,7 @@ export async function renderBinderOgImage({ question }: OgImageInput) {
             )}
           </div>
         </div>
-        {[180, 240, 300, 750, 810, 870].map(ring)}
+        {Array.from({ length: 18 }, (_, i) => coil(64 + i * 30))}
       </div>
     ),
     {

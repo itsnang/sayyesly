@@ -3,7 +3,7 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 import type { EnumValue } from "@/lib/enums";
 import { COLORS } from "./palette";
-import { BackBoard, FONT, Rings, Sheet, SheetBack, SheetKind, Tab } from "./pieces";
+import { BackBoard, COIL_REACH, FONT, HINGE, Sheet, SheetBack, SheetKind, Spiral } from "./pieces";
 
 /** How long a whole turn takes; part of one takes its share. */
 const TURN_MS = 720;
@@ -12,44 +12,46 @@ const THRESHOLD = 60;
 /** Movement smaller than this is still a tap. */
 const SLOP = 8;
 const RAD = Math.PI / 180;
+/** Wider than this, the page turned last lies open on the left as a spread. */
+const SPREAD_MIN = 820;
 
-/** Which way a page turns: forward (swiped right to left, up over the rings) or back down. */
+/** Which way a page turns: forward (swiped right to left, over the spiral) or back. */
 const TurnDir = { Forward: "forward", Back: "back" } as const;
 type TurnDir = EnumValue<typeof TurnDir>;
 
-/** A page of the binder: what it's made of, and its divider tab (none on the cover). */
-export type PadPage = { kind: SheetKind; tab: { label: string; name: string } | null };
+/** A page of the notebook: what it's made of. */
+export type PadPage = { kind: SheetKind };
 
 /**
- * Which sheets are drawn: the one lying flat on top, and the one turning over
- * it. `angle` is how far that one has turned: 0 lies on the pad, 180 has gone
- * over the rings. When `to` is set it's finishing on its own, then `next` is the page.
+ * Which sheets are drawn: the one lying on top, and the one turning over it.
+ * `angle` is how far that one has turned: 0 lies on the pad, 180 lies open on
+ * the left. When `to` is set it's finishing on its own, then `next` is the page.
  */
 type Flip = { moving: number; base: number; dir: TurnDir; to: number | null; next: number };
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 const easeOut = (t: number) => 1 - (1 - t) ** 3;
 
-/** Draws a sheet turned `angle` degrees up over the rings, its shading, and its shadow on the page below. */
+/** Draws a sheet turned `angle` degrees round the spiral, its shading, and its shadow on the page below. */
 function paint(sheet: HTMLElement | undefined, under: HTMLElement | undefined, angle: number | null) {
   if (sheet) {
     const a = angle ?? 0;
-    // A slight twist, as if lifted by its bottom right corner.
-    sheet.style.transform = angle === null ? "" : `rotateX(${a}deg) rotateY(${-Math.sin(a * RAD) * 7}deg)`;
+    // The free edge leads, lifting a little at the bottom, as a hand turns paper.
+    sheet.style.transform = angle === null ? "" : `rotateY(${-a}deg) rotateX(${-Math.sin(a * RAD) * 4}deg)`;
     const front = sheet.querySelector<HTMLElement>("[data-shade=front]");
     const back = sheet.querySelector<HTMLElement>("[data-shade=back]");
-    if (front) front.style.opacity = String((Math.min(a, 90) / 90) * 0.32);
-    if (back) back.style.opacity = String((clamp(180 - a, 0, 90) / 90) * 0.28);
+    if (front) front.style.opacity = String((Math.min(a, 90) / 90) * 0.34);
+    if (back) back.style.opacity = String((clamp(180 - a, 0, 90) / 90) * 0.3);
   }
   const cast = under?.querySelector<HTMLElement>("[data-shade=cast]");
   if (cast) cast.style.opacity = angle === null ? "0" : String(Math.sin(clamp(angle, 0, 90) * RAD) * clamp(1 - angle / 150, 0, 1));
 }
 
 /**
- * A binder on top rings: a cloth cover, then grid-paper pages with divider tabs
- * along the bottom. Swipe right to left and the sheet lifts by its corner and
- * turns up over the rings, following the finger; left to right brings the last
- * one back down; a short swipe drops back. Tapping a tab turns to that page.
+ * A spiral notebook: a chipboard cover, then cream pages, on a silver spiral
+ * down the left. Swipe right to left and the page turns over the spiral,
+ * following the finger; left to right brings the last one back; a short swipe
+ * drops back. On a wide screen the page turned last lies open on the left.
  * Vertical movement stays the browser's (each page scrolls). ← / → keys and the
  * screen-reader buttons turn pages too. Pages hold no state of their own:
  * `render` is called for each sheet drawn, so whatever they show lives above.
@@ -155,41 +157,36 @@ export function Pad({ pages, render }: { pages: PadPage[]; render: (index: numbe
   const base = flip?.base ?? (peeking ? 1 : page);
   const moving = flip?.moving ?? (peeking ? 0 : null);
   const drawn = moving === null ? [base] : [base, moving];
-  // The last page turned lies flat above the rings, as on a desk; a turn lands on it.
+  const underneath = Math.min(4, Math.max(0, count - 1 - Math.max(base, moving ?? 0)));
+  // The page turned last lies open on the left (seen on a wide screen); a turn lands on it.
   const turned = Math.min(base, moving ?? base) - 1;
   const turnedKind = pages[turned]?.kind;
-  const underneath = Math.max(0, count - 1 - Math.max(base, moving ?? 0));
-  const tabbed = pages.filter((p) => p.tab).length;
-  /** A tab's place along the bottom: its page's place among the pages with tabs. */
-  const slotOf = (i: number) => pages.slice(0, i).filter((p) => p.tab).length;
   const last = page + 1 === count;
-
-  const tab = (i: number, onClick?: () => void) => {
-    const spec = pages[i]?.tab;
-    return spec ? <Tab key={`tab-${i}`} label={spec.label} name={spec.name} slot={slotOf(i)} of={tabbed} {...(onClick ? { onClick } : {})} /> : null;
-  };
 
   const face: CSSProperties = { position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" };
   const shade: CSSProperties = { position: "absolute", inset: 0, pointerEvents: "none", opacity: 0, borderRadius: "inherit" };
+  // Where a sheet lies once turned: mirrored across the spiral.
+  const openLeft: CSSProperties = { position: "absolute", top: 0, bottom: 0, width: "100%", right: `calc(100% + ${2 * HINGE}px)` };
 
   return (
-    <div style={{ width: "min(380px, 100%)" }}>
+    <div className="binder-notebook" style={{ width: "min(380px, 100%)", paddingLeft: COIL_REACH - 12 }}>
       <style>{`
         @keyframes binder-peek {
           0%, 64%, 100% { transform: none }
-          74% { transform: rotateX(26deg) rotateY(-4deg) }
-          84% { transform: rotateX(4deg) }
-          90% { transform: rotateX(9deg) }
+          74% { transform: rotateY(-30deg) rotateX(-2deg) }
+          84% { transform: rotateY(-5deg) }
+          90% { transform: rotateY(-11deg) }
         }
+        @media (min-width: ${SPREAD_MIN}px) { .binder-notebook { position: relative; left: 190px } }
       `}</style>
       <div
         ref={pad}
         role="region"
-        aria-roledescription="binder"
+        aria-roledescription="notebook"
         aria-label={`Page ${page + 1} of ${count}`}
         tabIndex={0}
         onKeyDown={(e) => {
-          // Only on the binder itself: arrows typed in the note or time box move the cursor.
+          // Only on the notebook itself: arrows typed in the note or time box move the cursor.
           if (e.target !== e.currentTarget) return;
           if (e.key === "ArrowLeft") turn(TurnDir.Back, page - 1);
           if (e.key === "ArrowRight") turn(TurnDir.Forward, page + 1);
@@ -202,34 +199,32 @@ export function Pad({ pages, render }: { pages: PadPage[]; render: (index: numbe
         onDragStart={(e) => e.preventDefault()}
         style={{
           position: "relative",
-          height: "min(660px, calc(100svh - 170px))",
-          minHeight: 500,
-          marginBottom: 30,
+          height: "min(680px, calc(100svh - 130px))",
+          minHeight: 520,
           perspective: 1900,
-          perspectiveOrigin: "50% 0%",
+          perspectiveOrigin: "0% 50%",
           touchAction: "pan-y",
           userSelect: "none",
           outline: "none",
         }}
       >
         <BackBoard />
-        {/* the pages still to come: their edges, and their tabs to jump to */}
-        {Array.from({ length: Math.min(underneath, 4) }, (_, k) => (
+        {/* the pages still to come, their edges showing */}
+        {Array.from({ length: underneath }, (_, k) => (
           <div
             key={`edge-${k}`}
             aria-hidden="true"
-            style={{ position: "absolute", inset: 0, transform: `translateY(${(Math.min(underneath, 4) - k) * 2}px)`, background: k % 2 ? "#f6f3ec" : "#ebe6dc", borderRadius: 2 }}
+            style={{
+              position: "absolute",
+              inset: 0,
+              transform: `translate(${(underneath - k) * 1.5}px, ${(underneath - k) * 1.5}px)`,
+              background: k % 2 ? "#f6f3ec" : "#e7e1d5",
+              borderRadius: "2px 9px 9px 2px",
+            }}
           />
         ))}
-        {pages.map((_, i) => (i > base && i > (moving ?? 0) ? tab(i, () => goTo(i)) : null))}
+        {turnedKind && <SheetBack key={`turned-${turned}`} kind={turnedKind} style={{ ...openLeft, zIndex: 1 }} />}
 
-        {turnedKind && (
-          <SheetBack
-            key={`turned-${turned}`}
-            kind={turnedKind}
-            style={{ position: "absolute", inset: 0, zIndex: 1, transformOrigin: "50% 0", transform: "rotateX(180deg)", backfaceVisibility: "visible" }}
-          />
-        )}
         {drawn.map((i) => {
           const spec = pages[i];
           if (!spec) return null;
@@ -248,7 +243,7 @@ export function Pad({ pages, render }: { pages: PadPage[]; render: (index: numbe
                 position: "absolute",
                 inset: 0,
                 zIndex: turning ? 3 : 2,
-                transformOrigin: "50% 0",
+                transformOrigin: `${-HINGE}px 50%`,
                 transformStyle: "preserve-3d",
                 pointerEvents: live && !flip ? undefined : "none",
                 animation: peeking && turning ? "binder-peek 3.4s ease-in-out 1s infinite" : undefined,
@@ -258,22 +253,21 @@ export function Pad({ pages, render }: { pages: PadPage[]; render: (index: numbe
                 {spec.kind === SheetKind.Board ? (
                   render(i, goTo)
                 ) : (
-                  <div style={{ position: "absolute", inset: 0, overflowY: "auto", overscrollBehavior: "contain", paddingTop: 22 }}>{render(i, goTo)}</div>
+                  <div style={{ position: "absolute", inset: 0, overflowY: "auto", overscrollBehavior: "contain" }}>{render(i, goTo)}</div>
                 )}
-                {tab(i)}
-                <span data-shade="cast" style={{ ...shade, background: "linear-gradient(to top, rgba(40,25,10,.3), rgba(40,25,10,.08) 55%, transparent)" }} />
-                <span data-shade="front" style={{ ...shade, background: "linear-gradient(to bottom, rgba(0,0,0,.1), #000)" }} />
+                <span data-shade="cast" style={{ ...shade, background: "linear-gradient(to right, rgba(40,25,10,.3), rgba(40,25,10,.08) 55%, transparent)" }} />
+                <span data-shade="front" style={{ ...shade, background: "linear-gradient(to left, #000, rgba(0,0,0,.15))" }} />
               </Sheet>
-              <SheetBack kind={spec.kind} style={{ ...face, transform: "rotateX(180deg)" }}>
-                <span data-shade="back" style={{ ...shade, background: "linear-gradient(to top, #fff, rgba(255,255,255,.2))" }} />
+              <SheetBack kind={spec.kind} style={{ ...face, transform: "rotateY(180deg)" }}>
+                <span data-shade="back" style={{ ...shade, background: "linear-gradient(to right, #fff, rgba(255,255,255,.2))" }} />
               </SheetBack>
             </div>
           );
         })}
-        <Rings />
+        <Spiral />
       </div>
 
-      <div style={{ textAlign: "center", fontFamily: FONT.hand, fontSize: 20, color: COLORS.ink }}>
+      <div style={{ textAlign: "center", marginTop: 18, fontFamily: FONT.hand, fontSize: 20, color: COLORS.ink }}>
         <span aria-hidden="true">{last ? "→ swipe right to look back" : page === 0 ? "swipe ← to open" : "← next · back →"}</span>
         <span style={{ display: "block", fontFamily: FONT.marker, fontSize: 13, marginTop: 2 }}>
           {page + 1} / {count}
