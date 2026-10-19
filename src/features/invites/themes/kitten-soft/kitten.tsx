@@ -43,9 +43,9 @@ const BODY: Record<Mood, string> = {
 const doodle: CSSProperties = { position: "absolute", pointerEvents: "none", zIndex: 3 };
 
 /** A heart that rises from the kitten and fades. */
-function RisingHeart({ left, delay, size, color }: { left: string; delay: number; size: number; color: string }) {
+function RisingHeart({ left, delay, size, color, loops }: { left: string; delay: number; size: number; color: string; loops: number | "infinite" }) {
   return (
-    <span aria-hidden="true" style={{ ...doodle, left, bottom: "45%", fontSize: size, color, animation: `heart-rise 2.2s ease-out ${delay}s infinite` }}>
+    <span aria-hidden="true" style={{ ...doodle, left, bottom: "45%", fontSize: size, color, opacity: 0, animation: `heart-rise 2.2s ease-out ${delay}s ${loops}` }}>
       ♥
     </span>
   );
@@ -74,17 +74,12 @@ export function ReactiveKitten({ src, alt, mood, beat = 0, width }: { src: strin
         </>
       )}
 
+      {/* while reaching for Yes they keep rising; for joy, a few and then calm */}
       {(mood === Mood.Hopeful || mood === Mood.Joy) && (
         <>
-          <RisingHeart left="18%" delay={0} size={22} color="var(--accent)" />
-          <RisingHeart left="70%" delay={0.5} size={18} color="var(--accent-2)" />
-          <RisingHeart left="44%" delay={1} size={26} color="var(--accent)" />
-          {mood === Mood.Joy && (
-            <>
-              <RisingHeart left="8%" delay={0.25} size={16} color="var(--accent-2)" />
-              <RisingHeart left="84%" delay={0.75} size={20} color="var(--accent)" />
-            </>
-          )}
+          <RisingHeart left="18%" delay={0} size={22} color="var(--accent)" loops={mood === Mood.Joy ? 2 : "infinite"} />
+          <RisingHeart left="70%" delay={0.5} size={18} color="var(--accent-2)" loops={mood === Mood.Joy ? 2 : "infinite"} />
+          <RisingHeart left="44%" delay={1} size={26} color="var(--accent)" loops={mood === Mood.Joy ? 2 : "infinite"} />
         </>
       )}
 

@@ -51,7 +51,7 @@ export function KittenSoftInvite(props: InviteThemeProps) {
         error={answering.error}
         onDodge={(n) => (dodges.current = n)}
         onYes={() => {
-          celebrate(1300);
+          celebrate();
           setStage(Stage.Plan);
           window.scrollTo(0, 0);
         }}
@@ -68,7 +68,7 @@ export function KittenSoftInvite(props: InviteThemeProps) {
         error={answering.error}
         onConfirm={async (choice, note) => {
           if (await answering.sayYes(choice, note, dodges.current)) {
-            celebrate(5400);
+            celebrate();
             window.scrollTo(0, 0);
           }
         }}

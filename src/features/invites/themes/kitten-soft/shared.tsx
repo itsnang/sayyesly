@@ -120,41 +120,35 @@ type Scrap = {
   delay: number;
 };
 
-const MARKS = ["♥", "♡", "✓", "✦", "★"];
-const COLORS = ["var(--accent)", "var(--accent-2)", "var(--ink)"];
+const MARKS = ["♥", "♡", "♥", "✦"];
+const COLORS = ["var(--accent)", "var(--accent-2)"];
+/** One light shower: enough to feel happy, never enough to hide the page. */
+const BURST = 16;
 let scrapId = 0;
 
 const pick = <T,>(items: readonly T[], fallback: T): T => items[Math.floor(Math.random() * items.length)] ?? fallback;
 
-/** Confetti of hearts and stars. `celebrate(ms)` rains for that long. */
+/** A light shower of hearts. `celebrate()` lets one fall. */
 export function useRain() {
   const [scraps, setScraps] = useState<Scrap[]>([]);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  const burst = useCallback(() => {
-    const batch: Scrap[] = Array.from({ length: 52 }, () => ({
+  const celebrate = useCallback(() => {
+    const batch: Scrap[] = Array.from({ length: BURST }, () => ({
       id: ++scrapId,
       mark: pick(MARKS, "♥"),
       color: pick(COLORS, "var(--accent)"),
       left: Math.random() * 100 + "vw",
-      fontSize: 20 + Math.random() * 20,
-      rot: Math.random() * 500 - 250,
-      dur: 2.8 + Math.random() * 2.4,
-      delay: Math.random() * 0.6,
+      fontSize: 14 + Math.random() * 12,
+      rot: Math.random() * 240 - 120,
+      dur: 3.4 + Math.random() * 2,
+      delay: Math.random() * 1.2,
     }));
     setScraps((prev) => [...prev, ...batch]);
     timers.current.push(
-      setTimeout(() => setScraps((prev) => prev.filter((s) => !batch.some((b) => b.id === s.id))), 6200),
+      setTimeout(() => setScraps((prev) => prev.filter((s) => !batch.some((b) => b.id === s.id))), 7000),
     );
   }, []);
-
-  const celebrate = useCallback(
-    (ms: number) => {
-      burst();
-      for (let at = 1300; at < ms; at += 1300) timers.current.push(setTimeout(burst, at));
-    },
-    [burst],
-  );
 
   useEffect(() => {
     const pending = timers.current;
@@ -175,6 +169,7 @@ export function useRain() {
             color: s.color,
             fontFamily: "var(--hand)",
             zIndex: 45,
+            opacity: 0.8,
             pointerEvents: "none",
             animation: `drop ${s.dur.toFixed(2)}s linear ${s.delay.toFixed(2)}s forwards`,
             ["--rot" as string]: `${s.rot}deg`,
