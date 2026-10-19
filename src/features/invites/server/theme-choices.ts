@@ -10,6 +10,8 @@ export type ThemeChoice = {
   id: string;
   name: string;
   priceCents: number;
+  /** What it normally costs while it's on sale, shown crossed out; null otherwise */
+  regularPriceCents: number | null;
   thumbnail: string;
   /** Which fields the editor shows while this Theme is selected */
   content: ThemeContent;
@@ -38,6 +40,7 @@ export async function getThemeChoices(userId: string): Promise<ThemeChoice[]> {
       id: t.id,
       name: t.name,
       priceCents: t.priceCents,
+      regularPriceCents: t.regularPriceCents,
       thumbnail: def.thumbnail,
       content: def.content,
       usable: isThemeUsable(t, access),

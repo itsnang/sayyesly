@@ -57,6 +57,13 @@
       "when": 1791106185380,
       "tag": "0007_invite-plan-stops",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792418584993,
+      "tag": "0008_theme-sale",
+      "breakpoints": true
     }
   ]
 }

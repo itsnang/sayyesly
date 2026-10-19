@@ -2,7 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, Sparkle, Star } from "@/components/shared/doodles";
 import { Tape } from "@/components/shared/studio";
-import { formatUsd } from "@/lib/format";
+import { SalePrice } from "@/components/shared/ui";
+import { isOnSale, percentOff, type ThemePrice } from "@/lib/format";
+import type { ReactNode } from "react";
 import { ThemesMotion } from "./themes-motion";
 
 function Polaroid({
@@ -18,7 +20,7 @@ function Polaroid({
   src: string;
   alt: string;
   caption: string;
-  price: string;
+  price: ReactNode;
   /** One line on what the Theme looks like. */
   note: string;
   href: string;
@@ -52,7 +54,7 @@ function Polaroid({
   );
 }
 
-export function ThemesBoard({ envelopePrice }: { envelopePrice: number | undefined }) {
+export function ThemesBoard({ envelopePrice }: { envelopePrice: ThemePrice | undefined }) {
   return (
     <section id="themes" aria-labelledby="themes-title" className="mx-auto mt-28 max-w-6xl scroll-mt-24 px-5 sm:mt-36 sm:px-8">
       <div className="text-center">
@@ -91,10 +93,10 @@ export function ThemesBoard({ envelopePrice }: { envelopePrice: number | undefin
               src="/landing/envelope-card.png"
               alt="the Envelope Theme: a sealed envelope that opens into a letter"
               caption="envelope"
-              price={formatUsd(envelopePrice)}
+              price={<SalePrice price={envelopePrice} />}
               note="A sealed envelope that opens into a handwritten letter with your plan."
               href="/demo?theme=envelope"
-              stamp="new"
+              stamp={isOnSale(envelopePrice) ? `${percentOff(envelopePrice)}% off` : "new"}
               className="rotate-2"
             />
           </div>

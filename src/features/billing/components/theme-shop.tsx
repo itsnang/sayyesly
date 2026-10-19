@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { Button, buttonClass, Stamp } from "@/components/shared/ui";
-import { formatUsd } from "@/lib/format";
+import { Button, buttonClass, SalePrice, Stamp } from "@/components/shared/ui";
+import { formatUsd, isOnSale, percentOff } from "@/lib/format";
 import type { ThemeForSale } from "../types";
 import { BuyThemeDialog } from "./checkout";
 
@@ -20,15 +20,21 @@ export function ThemeShop({ themes }: { themes: ThemeForShop[] }) {
           <li key={theme.id} className="flex flex-col rounded-[8px] border-[1.5px] border-ink bg-card p-2">
             <span className="relative block aspect-[4/5] overflow-hidden rounded-[4px] border-[1.5px] border-ink bg-surface">
               {theme.thumbnail && <Image src={theme.thumbnail} alt="" fill sizes="240px" className="object-cover object-[50%_32%]" />}
-              {theme.usable && (
-                <Stamp tone={theme.priceCents === 0 ? "ink" : "green"} className="absolute top-2 left-2 bg-card">
-                  {theme.priceCents === 0 ? "Free" : "Yours"}
+              {isOnSale(theme) ? (
+                <Stamp tone="rose" className="absolute top-2 left-2 bg-card">
+                  {percentOff(theme)}% off
                 </Stamp>
+              ) : (
+                theme.usable && (
+                  <Stamp tone={theme.priceCents === 0 ? "ink" : "green"} className="absolute top-2 left-2 bg-card">
+                    {theme.priceCents === 0 ? "Free" : "Yours"}
+                  </Stamp>
+                )
               )}
             </span>
             <div className="mt-3 flex items-baseline justify-between gap-2 px-1">
               <span className="truncate text-[15px] font-medium text-ink">{theme.name}</span>
-              {!theme.usable && <span className="text-[13px] font-bold text-ink">{formatUsd(theme.priceCents)}</span>}
+              {(!theme.usable || isOnSale(theme)) && <SalePrice price={theme} className="shrink-0 text-[13px] font-bold text-ink" />}
             </div>
             <div className="mt-3 grid gap-1.5 px-1 pb-1">
               {!theme.usable && (

@@ -27,35 +27,38 @@ if (!SEED_OWNER_TELEGRAM_ID || !/^\d+$/.test(SEED_OWNER_TELEGRAM_ID)) {
 const client = postgres(DATABASE_URL, { max: 1 });
 const db = drizzle(client, { schema });
 
+// Every Paid theme is free for now, its usual $1.99 shown crossed out (migration 0008).
+const ON_SALE = { priceCents: 0, regularPriceCents: 199 };
+
 async function main() {
   await db
     .insert(schema.themes)
     .values({ id: "kitten-soft", name: "Kitten Soft", priceCents: 0, isActive: true, sortOrder: 0 })
     .onConflictDoUpdate({
       target: schema.themes.id,
-      set: { name: "Kitten Soft", priceCents: 0, isActive: true, sortOrder: 0 },
+      set: { name: "Kitten Soft", priceCents: 0, regularPriceCents: null, isActive: true, sortOrder: 0 },
     });
   // Placeholder paid theme (kitten-soft at night) so the payment flow has something to sell.
   await db
     .insert(schema.themes)
-    .values({ id: "kitten-night", name: "Kitten Night", priceCents: 199, isActive: true, sortOrder: 1 })
+    .values({ id: "kitten-night", name: "Kitten Night", ...ON_SALE, isActive: true, sortOrder: 1 })
     .onConflictDoUpdate({
       target: schema.themes.id,
-      set: { name: "Kitten Night", priceCents: 199, isActive: true, sortOrder: 1 },
+      set: { name: "Kitten Night", ...ON_SALE, isActive: true, sortOrder: 1 },
     });
   await db
     .insert(schema.themes)
-    .values({ id: "envelope", name: "Envelope", priceCents: 199, isActive: true, sortOrder: 2 })
+    .values({ id: "envelope", name: "Envelope", ...ON_SALE, isActive: true, sortOrder: 2 })
     .onConflictDoUpdate({
       target: schema.themes.id,
-      set: { name: "Envelope", priceCents: 199, isActive: true, sortOrder: 2 },
+      set: { name: "Envelope", ...ON_SALE, isActive: true, sortOrder: 2 },
     });
   await db
     .insert(schema.themes)
-    .values({ id: "binder", name: "Binder", priceCents: 199, isActive: true, sortOrder: 3 })
+    .values({ id: "binder", name: "Binder", ...ON_SALE, isActive: true, sortOrder: 3 })
     .onConflictDoUpdate({
       target: schema.themes.id,
-      set: { name: "Binder", priceCents: 199, isActive: true, sortOrder: 3 },
+      set: { name: "Binder", ...ON_SALE, isActive: true, sortOrder: 3 },
     });
 
   const telegramId = BigInt(SEED_OWNER_TELEGRAM_ID!);

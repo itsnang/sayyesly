@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { buttonClass, cx } from "@/components/shared/ui";
-import { formatUsd } from "@/lib/format";
+import { buttonClass, cx, SalePrice } from "@/components/shared/ui";
+import { formatUsd, isOnSale } from "@/lib/format";
 import type { ThemeChoice } from "../../../server/theme-choices";
 
 type ThemeFieldProps = {
@@ -72,7 +72,9 @@ export function ThemeField({ themes, value, savedThemeId, onChange, onUnlock, di
                   )}
                 </span>
                 <span className="mt-1.5 block truncate text-[13px] font-medium text-ink">{theme.name}</span>
-                <span className="block text-[12px] text-muted">{theme.priceCents === 0 ? "Free" : theme.usable ? "Yours" : "Try it free"}</span>
+                <span className="block text-[12px] text-muted">
+                  {isOnSale(theme) ? <SalePrice price={theme} className="font-semibold text-ink" /> : theme.priceCents === 0 ? "Free" : theme.usable ? "Yours" : "Try it free"}
+                </span>
               </button>
             </li>
           );

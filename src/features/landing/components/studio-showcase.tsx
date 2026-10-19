@@ -4,8 +4,9 @@ import { trackClick } from "@/lib/analytics/track";
 import { InkButton } from "@/components/shared/studio";
 import { StudioMock } from "./studio-mock";
 import { StudioMotion } from "./studio-motion";
+import type { ThemePrice } from "@/lib/format";
 
-export function StudioShowcase({ envelopePrice }: { envelopePrice: number | undefined }) {
+export function StudioShowcase({ envelopePrice }: { envelopePrice: ThemePrice | undefined }) {
   return (
     <section id="studio" aria-labelledby="studio-title" className="relative mx-auto mt-28 max-w-6xl scroll-mt-24 px-5 sm:mt-36 sm:px-8">
       <div className="text-center">

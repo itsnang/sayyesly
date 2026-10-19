@@ -1,6 +1,7 @@
 import Image from "next/image";
-import { buttonClass, cx } from "@/components/shared/ui";
-import { formatUsd } from "@/lib/format";
+import { buttonClass, cx, SalePrice } from "@/components/shared/ui";
+import type { ThemePrice } from "@/lib/format";
+import type { ReactNode } from "react";
 import { PhoneFrame } from "./phone-frame";
 
 function Chevron() {
@@ -11,7 +12,7 @@ function Chevron() {
   );
 }
 
-function ThemeCard({ id, src, name, price, selected }: { id: string; src: string; name: string; price: string; selected?: boolean }) {
+function ThemeCard({ id, src, name, price, selected }: { id: string; src: string; name: string; price: ReactNode; selected?: boolean }) {
   return (
     <div className="w-[76px]">
       <div className="relative aspect-[3/4] rounded-[6px] border border-hairline bg-surface">
@@ -35,7 +36,7 @@ const WAVE = [0.4, 0.7, 0.5, 0.9, 0.6, 1, 0.7, 0.45, 0.8, 0.55, 0.95, 0.6, 0.75,
  * (inputs, Theme cards, rows, the Song's part picker, the iPhone preview on
  * the grey stage). Its `data-studio` parts are what StudioMotion's demo reel animates.
  */
-export function StudioMock({ envelopePrice, className }: { envelopePrice: number | undefined; className?: string }) {
+export function StudioMock({ envelopePrice, className }: { envelopePrice: ThemePrice | undefined; className?: string }) {
   const words = ["will", "you", "have", "dinner", "with", "me?"];
   // Envelope leads while it's on sale; otherwise the free Theme stands in.
   const showEnvelope = envelopePrice !== undefined;
@@ -88,7 +89,7 @@ export function StudioMock({ envelopePrice, className }: { envelopePrice: number
             </div>
             <div className="mt-3 flex gap-3">
               <ThemeCard id="kitten" src="/landing/step-ask.png" name="Kitten Soft" price="Free" selected={!showEnvelope} />
-              {showEnvelope && <ThemeCard id="envelope" src="/landing/envelope-card.png" name="Envelope" price={formatUsd(envelopePrice)} selected />}
+              {showEnvelope && <ThemeCard id="envelope" src="/landing/envelope-card.png" name="Envelope" price={<SalePrice price={envelopePrice} />} selected />}
             </div>
           </div>
 
