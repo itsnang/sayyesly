@@ -5,8 +5,6 @@ import type { CSSProperties } from "react";
 import { isOptimizable } from "@/lib/media";
 
 /** Fine paper grain, drawn as an SVG noise tile so no image has to load. */
-export const GRAIN =
-  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .36  0 0 0 0 .31  0 0 0 0 .24  0 0 0 .1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")";
 
 export const FIBRES =
   "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.02 .09' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .43  0 0 0 0 .33  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>\")";

@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 import type { ImageResponse } from "next/og";
-import type { AnswerInput, PlanPhoto, PublicInvite, QuestionSegment, SubmitAnswerResult } from "../types";
+import type { AnswerInput, PlanPhoto, PlanStop, PublicInvite, QuestionSegment, SubmitAnswerResult } from "../types";
 
 /**
  * Props every Theme's invite component receives. Themes never load or save
@@ -42,6 +42,11 @@ export type ThemeContent = {
   note: boolean;
   /** Photos of the place on the Plan screen */
   planPhotos: boolean;
+  /**
+   * A Plan of several Stops: what the Theme calls one (e.g. "chapter"), or
+   * `false` for a single place. The studio asks for Stops only when it's set.
+   */
+  stops: { label: string } | false;
   /** Plays the Song the Creator linked, drawn in the Theme's own style. Turn on only once the Theme can play it. */
   song: boolean;
   /**
@@ -55,6 +60,9 @@ export type ThemeContent = {
     /** null when the Theme's own picture already stands in */
     picture: string | null;
     planPhotos: PlanPhoto[];
+    /** For Themes with several Stops: the cover title and Stops shown while the Creator has written none */
+    planTitle?: string;
+    stops?: PlanStop[];
   };
 };
 

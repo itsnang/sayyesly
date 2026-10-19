@@ -32,7 +32,9 @@ export default async function DemoPage({ searchParams }: PageProps<"/demo">) {
   const { theme: requested } = await searchParams;
   const theme = getTheme(typeof requested === "string" && hasTheme(requested) ? requested : DEFAULT_THEME_ID);
   if (!theme) notFound();
-  const { values } = withExample(blankInviteForm(theme.id, DEMO_OVERRIDES), theme.content);
+  // A Theme with several Stops shows its own example Stops; a plain activity would stand in for them instead.
+  const overrides = theme.content.stops ? { recipientName: DEMO_OVERRIDES.recipientName } : DEMO_OVERRIDES;
+  const { values } = withExample(blankInviteForm(theme.id, overrides), theme.content);
   return (
     <>
       <ThemePreview fixedValues={values} />

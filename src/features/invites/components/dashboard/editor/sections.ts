@@ -15,7 +15,7 @@ type Field = FieldPath<InviteFormValues>;
 
 /** Which form fields each section holds, so a problem opens the right one. */
 export const SECTION_FIELDS: Record<StudioSection, Field[]> = {
-  [StudioSection.Plan]: ["planPlace", "planActivity", "planMapUrl", "planDressCode", "planNotes", "planPhotos"],
+  [StudioSection.Plan]: ["planPlace", "planActivity", "planMapUrl", "planDressCode", "planNotes", "planPhotos", "planTitle", "planStops"],
   [StudioSection.When]: ["timezone", "timeSlots", "allowCustomTime", "timeOfDay"],
   [StudioSection.Extras]: ["message", "imageUrl", "songUrl"],
 };
@@ -35,6 +35,7 @@ export const ALL_CONTENT: ThemeContent = {
   picture: { label: "Picture", whenEmpty: "the theme's own picture" },
   note: true,
   planPhotos: true,
+  stops: false,
   song: true,
   example: kittenSoftContent.example,
 };

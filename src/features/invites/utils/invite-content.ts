@@ -1,10 +1,10 @@
-import type { AnswerRow, Invite } from "@/lib/db/schema";
+import type { AnswerRow, Invite, PlanPhoto, PlanStop } from "@/lib/db/schema";
 import type { AnswerKind } from "@/lib/enums";
 import { utcToZonedParts, zonedTimeToUtc } from "@/lib/time";
 import { safeHttpUrl } from "@/lib/validation";
 import { InviteStatus } from "../enums";
-import type { InviteFormValues } from "../schemas";
-import type { PublicAnswer, PublicInvite } from "../types";
+import { STOP_TEXT_FIELDS, type InviteFormValues, type StopFormValues } from "../schemas";
+import type { PublicAnswer, PublicInvite, Stop } from "../types";
 import { isExpired } from "./answer";
 import { parseQuestion } from "./question";
 import { DEFAULT_SONG_LENGTH, songClip, songFromUrl } from "./song";
@@ -31,6 +31,8 @@ export type InviteContent = Pick<
   | "planDressCode"
   | "planNotes"
   | "planPhotos"
+  | "planTitle"
+  | "planStops"
   | "songUrl"
   | "songStart"
   | "songLength"
@@ -72,6 +74,47 @@ export function toPublicAnswer(answer: Pick<AnswerRow, "kind" | "startsAt" | "no
   };
 }
 
+// A Plan with several Stops. An Invite saved before Stops (or never given any)
+// still has its one place: shown in, or edited for, a Theme with several Stops,
+// that place stands in as the only Stop, so nothing the Creator wrote is lost.
+
+/** What the stand-in Stop is called: what you'll do there, else the place. */
+const standInTitle = (activity: string | null, place: string | null) => activity || place || "our day";
+
+/** The one place as a Stop, or null when nothing is planned at all. */
+function placeAsStop(invite: Pick<InviteContent, "planPlace" | "planActivity" | "planMapUrl" | "planPhotos">): PlanStop | null {
+  const { planPlace: place, planActivity: activity, planMapUrl: mapUrl, planPhotos: photos } = invite;
+  if (!place && !activity && !mapUrl && photos.length === 0) return null;
+  return { title: standInTitle(activity, place), ...(place ? { place } : {}), ...(mapUrl ? { mapUrl } : {}), photos };
+}
+
+/**
+ * The place the Telegram message about an Answer names: the one the Recipient
+ * saw. A Theme with several Stops showed the first Stop (or the one place
+ * standing in for it); any other Theme its one place, whatever Stops another
+ * Theme left behind.
+ */
+export function placeToNotify(
+  invite: Pick<InviteContent, "planPlace" | "planActivity" | "planMapUrl" | "planPhotos" | "planStops">,
+  showsStops: boolean,
+): { place: string | null; mapUrl: string | null } {
+  if (!showsStops) return { place: invite.planPlace, mapUrl: invite.planMapUrl };
+  const first = invite.planStops[0] ?? placeAsStop(invite);
+  return { place: first?.place ?? null, mapUrl: first?.mapUrl ?? null };
+}
+
+function toPublicStop(stop: PlanStop): Stop {
+  return {
+    title: stop.title,
+    line: stop.line ?? null,
+    time: stop.time ?? null,
+    description: stop.description ?? null,
+    place: stop.place ?? null,
+    mapUrl: safeHttpUrl(stop.mapUrl ?? null),
+    photos: stop.photos,
+  };
+}
+
 /** What the Invite's Theme shows the Recipient at `now`: only upcoming Time slots, a safe map link, the Song's chosen part. */
 export function toPublicInvite(
   invite: SavedInvite,
@@ -93,6 +136,8 @@ export function toPublicInvite(
       dressCode: invite.planDressCode,
       notes: invite.planNotes,
       photos: invite.planPhotos,
+      title: invite.planTitle,
+      stops: (invite.planStops.length > 0 ? invite.planStops : [placeAsStop(invite)].filter((s) => s !== null)).map(toPublicStop),
     },
     timezone: invite.timezone,
     timeSlots: state.upcomingSlots.map((slot) => ({ id: slot.id, startsAt: slot.startsAt.toISOString() })),
@@ -121,6 +166,8 @@ export function blankInviteForm(themeId: string, overrides: Partial<InviteFormVa
     planDressCode: "",
     planNotes: "",
     planPhotos: [],
+    planTitle: "",
+    planStops: [],
     songUrl: "",
     songStart: 0,
     songLength: DEFAULT_SONG_LENGTH,
@@ -134,6 +181,50 @@ export function blankInviteForm(themeId: string, overrides: Partial<InviteFormVa
 }
 
 const emptyToNull = (v: string) => (v === "" ? null : v);
+
+// A row without a picture can only be mid-edit (the schema refuses it), so the preview skips it.
+const savedPhotos = (rows: InviteFormValues["planPhotos"], fallbackAlt: string): PlanPhoto[] =>
+  rows.filter((p) => p.url).map((p) => ({ url: p.url, alt: p.alt || fallbackAlt, ...(p.caption ? { caption: p.caption } : {}) }));
+
+const photoRows = (photos: PlanPhoto[]): InviteFormValues["planPhotos"] =>
+  photos.map((p) => ({ url: p.url, alt: p.alt, caption: p.caption ?? "" }));
+
+/** A Stop as saved: its title and photos, and only the parts that were filled in. */
+function savedStop(stop: StopFormValues): PlanStop {
+  const optional = STOP_TEXT_FIELDS.filter((k) => k !== "title" && stop[k] !== "");
+  return { title: stop.title, ...Object.fromEntries(optional.map((k) => [k, stop[k]])), photos: savedPhotos(stop.photos, "stop photo") };
+}
+
+/** A saved Stop as the studio's form holds it. */
+export function stopRow(stop: PlanStop): StopFormValues {
+  return {
+    title: stop.title,
+    line: stop.line ?? "",
+    time: stop.time ?? "",
+    description: stop.description ?? "",
+    place: stop.place ?? "",
+    mapUrl: stop.mapUrl ?? "",
+    photos: photoRows(stop.photos),
+  };
+}
+
+/** Nothing written on it: the studio's starting card, left as it was. Not saved. */
+const isBlankStop = (stop: StopFormValues) => stop.photos.length === 0 && STOP_TEXT_FIELDS.every((k) => stop[k].trim() === "");
+
+/** A Stop with nothing written yet, as the studio adds one. */
+export const blankStop = (): StopFormValues => ({ title: "", line: "", time: "", description: "", place: "", mapUrl: "", photos: [] });
+
+/**
+ * The Stops the studio starts from when the Theme shows several: those already
+ * there; else the one place as a Stop, so nothing typed disappears; else one
+ * empty Stop to fill in.
+ */
+export function startingStops(values: InviteFormValues): StopFormValues[] {
+  if (values.planStops.length > 0) return values.planStops;
+  const { planPlace: place, planActivity: activity, planMapUrl: mapUrl, planPhotos: photos } = values;
+  if (!place && !activity && !mapUrl && photos.length === 0) return [blankStop()];
+  return [{ ...blankStop(), title: standInTitle(activity, place), place, mapUrl, photos }];
+}
 // Saved in one form whatever was pasted (youtu.be, Shorts, ?si=…), so it compares and plays the same.
 const canonicalSongUrl = (v: string) => songFromUrl(v)?.url ?? null;
 
@@ -161,10 +252,9 @@ export function formToSaved(values: InviteFormValues): FormAsSaved {
     planMapUrl: emptyToNull(values.planMapUrl),
     planDressCode: emptyToNull(values.planDressCode),
     planNotes: emptyToNull(values.planNotes),
-    // A row without a picture can only be mid-edit (the schema refuses it), so the preview skips it.
-    planPhotos: values.planPhotos
-      .filter((p) => p.url)
-      .map((p) => ({ url: p.url, alt: p.alt || "plan photo", ...(p.caption ? { caption: p.caption } : {}) })),
+    planPhotos: savedPhotos(values.planPhotos, "plan photo"),
+    planTitle: emptyToNull(values.planTitle),
+    planStops: values.planStops.filter((s) => !isBlankStop(s)).map(savedStop),
     songUrl: canonicalSongUrl(values.songUrl),
     songStart: values.songStart,
     songLength: values.songLength,
@@ -198,7 +288,9 @@ export function savedToForm(invite: SavedInvite, now: Date): InviteFormValues {
     planMapUrl: invite.planMapUrl ?? "",
     planDressCode: invite.planDressCode ?? "",
     planNotes: invite.planNotes ?? "",
-    planPhotos: invite.planPhotos.map((p) => ({ url: p.url, alt: p.alt, caption: p.caption ?? "" })),
+    planPhotos: photoRows(invite.planPhotos),
+    planTitle: invite.planTitle ?? "",
+    planStops: invite.planStops.map(stopRow),
     songUrl: invite.songUrl ?? "",
     songStart: invite.songStart,
     songLength: invite.songLength,

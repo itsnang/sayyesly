@@ -1,12 +1,23 @@
 import type { SongClip } from "./utils/song";
-import type { PlanPhoto } from "@/lib/db/schema";
+import type { PlanPhoto, PlanStop } from "@/lib/db/schema";
 import type { AnswerKind, TimeOfDay } from "@/lib/enums";
 import type { AnswerInput } from "./utils/answer";
 
-export type { PlanPhoto, AnswerInput };
+export type { PlanPhoto, PlanStop, AnswerInput };
 
 /** One piece of an Invite's question; `emphasis` marks the *highlighted* word(s). */
 export type QuestionSegment = { text: string; emphasis: boolean };
+
+/** One Stop as a Theme shows it: parts left empty are null, and the map link is safe. */
+export type Stop = {
+  title: string;
+  line: string | null;
+  time: string | null;
+  description: string | null;
+  place: string | null;
+  mapUrl: string | null;
+  photos: PlanPhoto[];
+};
 
 export type Plan = {
   place: string | null;
@@ -15,6 +26,13 @@ export type Plan = {
   dressCode: string | null;
   notes: string | null;
   photos: PlanPhoto[];
+  /** The cover title of a Plan with several Stops; null when not given */
+  title: string | null;
+  /**
+   * The Stops in order, for Themes that show several. An Invite with none
+   * saved gets its one place as the only Stop; nothing planned at all is empty.
+   */
+  stops: Stop[];
 };
 
 export type TimeSlot = {

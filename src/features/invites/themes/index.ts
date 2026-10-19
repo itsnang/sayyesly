@@ -1,4 +1,5 @@
 import { currentThemeId } from "@/lib/theme-ids";
+import { binder } from "./binder";
 import { envelope } from "./envelope";
 import { kittenNight } from "./kitten-night";
 import { kittenSoft } from "./kitten-soft";
@@ -12,6 +13,7 @@ const registry: Record<string, ThemeDefinition> = {
   [kittenSoft.id]: kittenSoft,
   [kittenNight.id]: kittenNight,
   [envelope.id]: envelope,
+  [binder.id]: binder,
 };
 
 export const DEFAULT_THEME_ID = kittenSoft.id;

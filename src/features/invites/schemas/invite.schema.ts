@@ -32,6 +32,41 @@ const songUrl = z
 
 export const MAX_TIME_SLOTS = 8;
 export const MAX_PLAN_PHOTOS = 3;
+export const MAX_STOPS = 5;
+
+const photoRows = z
+  .array(
+    z.object({
+      url: imageUrl.refine((v) => v !== "", "Add the photo or remove this row"),
+      alt: optionalText(120),
+      caption: optionalText(40),
+    }),
+  )
+  .max(MAX_PLAN_PHOTOS);
+
+/** A Stop's written parts besides its photos, in the order the studio asks for them. */
+export const STOP_TEXT_FIELDS = ["title", "line", "time", "description", "place", "mapUrl"] as const;
+export type StopTextField = (typeof STOP_TEXT_FIELDS)[number];
+
+/**
+ * One Stop of a Plan with several. It needs a title once anything else on it is
+ * filled in; a Stop left entirely empty (the studio's starting card) is fine and
+ * isn't saved.
+ */
+const stopSchema = z
+  .object({
+    title: optionalText(30),
+    line: optionalText(40),
+    time: optionalText(20),
+    description: optionalText(300),
+    place: optionalText(80),
+    mapUrl: linkUrl,
+    photos: photoRows,
+  })
+  .refine((s) => s.title !== "" || (s.photos.length === 0 && STOP_TEXT_FIELDS.every((k) => s[k] === "")), {
+    message: "Give it a name, e.g. Lunch",
+    path: ["title"],
+  });
 
 export const inviteFormSchema = z
   .object({
@@ -50,15 +85,10 @@ export const inviteFormSchema = z
     planMapUrl: linkUrl,
     planDressCode: optionalText(80),
     planNotes: optionalText(500),
-    planPhotos: z
-      .array(
-        z.object({
-          url: imageUrl.refine((v) => v !== "", "Add the photo or remove this row"),
-          alt: optionalText(120),
-          caption: optionalText(40),
-        }),
-      )
-      .max(MAX_PLAN_PHOTOS),
+    planPhotos: photoRows,
+    // A Plan with several Stops (only Themes that support them show these).
+    planTitle: optionalText(40),
+    planStops: z.array(stopSchema).max(MAX_STOPS, `At most ${MAX_STOPS}`),
     songUrl,
     // Which part of the Song plays: its start (seconds) and length (15, 30 or 60).
     songStart: z.number().int().min(0).max(3 * 60 * 60),
@@ -85,3 +115,4 @@ export const inviteFormSchema = z
   });
 
 export type InviteFormValues = z.infer<typeof inviteFormSchema>;
+export type StopFormValues = InviteFormValues["planStops"][number];

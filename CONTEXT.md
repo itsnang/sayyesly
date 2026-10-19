@@ -29,8 +29,12 @@ One date invitation from a Creator to a single Recipient, reachable through its 
 _Avoid_: page, card, date
 
 **Plan**:
-The details of the date (place, map link, activity, dress code, notes). A Theme that asks first reveals them after the Recipient says Yes; a Theme that invites shows them up front.
+The details of the date (place, map link, activity, dress code, notes). A Theme that asks first reveals them after the Recipient says Yes; a Theme that invites shows them up front. In a Theme that supports several Stops, the Plan is its Stops in order, with dress code and notes for the whole day and an optional title on the cover; an Invite without Stops shows its one place as the only Stop.
 _Avoid_: details, itinerary
+
+**Stop**:
+One part of a date that has several, in order (lunch, then thrift shops, then coffee at sunset). A Plan is one or more Stops; only a Theme that supports several Stops lets the Creator add more than one. A Theme may call them by its own name, like "chapters".
+_Avoid_: chapter, place, step, leg
 
 **Song**:
 A piece of music the Creator attaches to an Invite by linking to it on a music service. It plays in the background once the Recipient first taps the Invite: only the part the Creator chose (15, 30 or 60 seconds), over and over. At most one per Invite, and free on every Theme.

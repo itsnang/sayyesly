@@ -1,11 +1,12 @@
 import { utcToZonedParts } from "@/lib/time";
 import type { InviteFormValues } from "../schemas";
 import type { ThemeContent } from "../themes/types";
+import { startingStops, stopRow } from "./invite-content";
 import { timesFor } from "./time-of-day";
 
 /**
  * The form values the studio preview shows: the Theme's example stands in for
- * the headline, note, picture and plan photos while the Creator leaves them
+ * the headline, note, picture, plan photos and Stops while the Creator leaves them
  * empty (an empty Plan text stays empty, since that previews a surprise), and
  * "I'll pick the times" with no times yet shows one for tomorrow.
  * `filled` names what came from the example, for the preview's label.
@@ -30,6 +31,13 @@ export function withExample(values: InviteFormValues, content: ThemeContent, now
   if (content.planPhotos && !values.planPhotos?.some((p) => p.url)) {
     next.planPhotos = example.planPhotos.map((p) => ({ url: p.url, alt: p.alt, caption: p.caption ?? "" }));
     filled.push("plan photos");
+  }
+  // The example's Stops stand in only while nothing is planned: no Stop named
+  // yet, and no one place that would show as the only Stop.
+  if (content.stops && example.stops && startingStops(values).every((s) => !s.title.trim())) {
+    next.planStops = example.stops.map(stopRow);
+    if (!values.planTitle?.trim() && example.planTitle) next.planTitle = example.planTitle;
+    filled.push(`${content.stops.label}s`);
   }
   if (!values.allowCustomTime && !values.timeSlots?.length) {
     const { date } = utcToZonedParts(new Date(now + 86_400_000), values.timezone || "UTC");
