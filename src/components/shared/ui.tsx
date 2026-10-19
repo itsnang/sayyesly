@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
+import { formatUsd, isOnSale, priceLabel, type ThemePrice } from "@/lib/format";
 
 // Small presentational kit for the product UI (login, dashboard, checkout).
 // Wrap pages in the `studio` utility so these colours and fonts apply.
@@ -228,5 +229,21 @@ export function Note({ tone = "info", children, className }: { tone?: "info" | "
     <div role={tone === "error" ? "alert" : undefined} className={cx("rounded-[8px] border px-4 py-3 text-[14px] leading-snug", tones[tone], className)}>
       {children}
     </div>
+  );
+}
+
+/**
+ * A Theme's price. On sale, its regular price is crossed out before what it
+ * costs now, e.g. "~~$1.99~~ Free"; screen readers hear "was $1.99, now Free".
+ */
+export function SalePrice({ price, className }: { price: ThemePrice; className?: string }) {
+  if (!isOnSale(price)) return <span className={className}>{priceLabel(price.priceCents)}</span>;
+  return (
+    <span className={cx("inline-flex items-baseline gap-1", className)}>
+      <span className="sr-only">was</span>
+      <s className="font-normal text-muted">{formatUsd(price.regularPriceCents)}</s>
+      <span className="sr-only">, now</span>
+      <span>{priceLabel(price.priceCents)}</span>
+    </span>
   );
 }

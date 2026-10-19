@@ -17,6 +17,8 @@ export type ThemeForSale = {
   id: string;
   name: string;
   priceCents: number;
+  /** What it normally costs while it's on sale, shown crossed out; null otherwise */
+  regularPriceCents: number | null;
   /** The Creator can already use it (free, owned, or they're a Tester), so it isn't for sale to them */
   usable: boolean;
 };

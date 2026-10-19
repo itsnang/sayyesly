@@ -38,6 +38,11 @@ describe("isThemeUsable", () => {
     expect(isThemeUsable(free, tester)).toBe(true);
   });
 
+  test("a Theme on sale for free is usable by anyone: only its current price counts", () => {
+    const onSale = { id: "sale", isActive: true, priceCents: 0, regularPriceCents: 199 };
+    expect(isThemeUsable(onSale, creator)).toBe(true);
+  });
+
   test("a Paid theme on offer is not usable until it's owned", () => {
     expect(isThemeUsable(paid, creator)).toBe(false);
     expect(isThemeUsable(paid, owns("paid"))).toBe(true);

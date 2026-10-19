@@ -13,11 +13,12 @@ import { SiteNav } from "./site-nav";
 import { Story } from "./story";
 import { StudioShowcase } from "./studio-showcase";
 import { ThemesBoard } from "./themes-board";
+import type { ThemePrice } from "@/lib/format";
 
 const CLOSING = "Go on. Ask them.";
 
 /** `envelopePrice` is undefined while Envelope isn't on sale; the page then leaves it out. */
-export function LandingPage({ envelopePrice }: { envelopePrice: number | undefined }) {
+export function LandingPage({ envelopePrice }: { envelopePrice: ThemePrice | undefined }) {
   return (
     <div className="studio w-full overflow-x-clip">
       <SiteNav />

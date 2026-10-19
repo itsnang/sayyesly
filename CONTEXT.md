@@ -72,6 +72,10 @@ _Avoid_: template, skin, design
 **Paid theme**:
 A Theme with a price; a Creator can only use it after a successful Purchase of it, or while they are a Tester.
 
+**Regular price**:
+What a Theme normally costs, kept while it's on sale for less (or for free, as a discount), and shown crossed out next to what it costs now. Only the current price is ever charged. A Theme on sale for free is free to use but not owned: once the sale ends, an Invite already using it keeps it, but picking it for another Invite means buying it.
+_Avoid_: original price, list price
+
 **Published** / **Hidden**:
 Whether a Theme is currently offered. A Published Theme appears in the picker and can be bought; a Hidden one no longer does, but a Creator who already owns it keeps full use of it, and any Invite already using it is unaffected.
 _Avoid_: active/inactive, enabled/disabled, unpublished
