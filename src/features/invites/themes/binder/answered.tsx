@@ -17,11 +17,12 @@ export function Answered({ answer, plan, timezone, justAnswered }: { answer: Pub
       <div style={{ position: "relative" }}>
         <BackBoard />
         <Sheet style={{ padding: "40px 18px 40px 34px", textAlign: "center" }}>
-          <style>{`@keyframes binder-stamp { 0% { opacity: 0; transform: scale(1.8) rotate(-14deg) } 60% { opacity: 1; transform: scale(.94) rotate(-5deg) } 100% { transform: rotate(-6deg) } }`}</style>
+          <style>{`@keyframes binder-stamp { 0% { opacity: 0; transform: scale(1.8) rotate(-14deg) } 60% { opacity: 1; transform: scale(.94) rotate(-5deg) } 100% { transform: rotate(-6deg) } } @media (prefers-reduced-motion: reduce) { .binder-stamp { animation: none !important } }`}</style>
           <Sticker kind={StickerKind.Butterfly} size={46} style={{ top: 22, right: 18 }} />
           <LabelStrip>{justAnswered ? "your answer is on its way" : "your answer"}</LabelStrip>
           {/* a rubber stamp, pressed down when the Answer is sent */}
           <h1
+            className="binder-stamp"
             style={{
               display: "inline-block",
               margin: "26px 0 6px",

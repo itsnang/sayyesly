@@ -220,12 +220,12 @@ const TAPES = {
   blue: "rgba(190,205,245,.8)",
   grid: "rgba(235,235,230,.85)",
 };
-export type TapeTone = keyof typeof TAPES;
+type TapeTone = keyof typeof TAPES;
 
 const ZIGZAG = "polygon(3% 0, 97% 0, 100% 20%, 97% 40%, 100% 60%, 97% 80%, 100% 100%, 3% 100%, 0 80%, 3% 60%, 0 40%, 3% 20%)";
 
 /** A strip of tape with torn ends. */
-export function Tape({ style, tone = "masking", width = 70 }: { style?: CSSProperties; tone?: TapeTone; width?: number }) {
+function Tape({ style, tone = "masking", width = 70 }: { style?: CSSProperties; tone?: TapeTone; width?: number }) {
   const pattern =
     tone === "grid"
       ? "repeating-linear-gradient(90deg, rgba(0,0,0,.07) 0 1px, transparent 1px 6px), repeating-linear-gradient(0deg, rgba(0,0,0,.07) 0 1px, transparent 1px 6px)"
@@ -233,7 +233,7 @@ export function Tape({ style, tone = "masking", width = 70 }: { style?: CSSPrope
   return <span aria-hidden="true" style={{ position: "absolute", width, height: 20, background: `${pattern}, ${TAPES[tone]}`, clipPath: ZIGZAG, zIndex: 4, ...style }} />;
 }
 
-export type Photo = { url: string; alt: string; caption?: string | undefined };
+type Photo = { url: string; alt: string; caption?: string | undefined };
 
 /** A taped polaroid with a handwritten caption. Creators' photos can be any https link. */
 export function Polaroid({
@@ -243,6 +243,7 @@ export function Polaroid({
   width,
   rotate = 0,
   tape = "masking",
+  eager = false,
   style,
 }: {
   src: string;
@@ -251,6 +252,8 @@ export function Polaroid({
   width: number;
   rotate?: number;
   tape?: TapeTone | false;
+  /** Load straight away: the photo seen first, on the cover. */
+  eager?: boolean;
   style?: CSSProperties;
 }) {
   const tapeWidth = Math.round(width * 0.45);
@@ -258,7 +261,7 @@ export function Polaroid({
     <figure style={{ position: "relative", width, margin: 0, padding: "7px 7px 0", background: "#fff", boxShadow: "0 1px 2px rgba(0,0,0,.12), 0 6px 14px rgba(0,0,0,.14)", transform: `rotate(${rotate}deg)`, ...style }}>
       {tape && <Tape tone={tape} width={tapeWidth} style={{ top: -9, left: "50%", marginLeft: -tapeWidth / 2, transform: `rotate(${-rotate * 1.5 - 3}deg)` }} />}
       <div style={{ position: "relative", width: "100%", aspectRatio: "1 / 1", background: "#e8e4dc", overflow: "hidden" }}>
-        <Image src={src} unoptimized={!isOptimizable(src)} alt={alt} fill sizes={`${width}px`} draggable={false} style={{ objectFit: "cover" }} />
+        <Image src={src} unoptimized={!isOptimizable(src)} alt={alt} fill sizes={`${width}px`} draggable={false} loading={eager ? "eager" : "lazy"} style={{ objectFit: "cover" }} />
       </div>
       <figcaption style={{ fontFamily: FONT.hand, fontSize: 17, color: COLORS.ink, textAlign: "center", padding: "3px 2px 5px", minHeight: 24 }}>{caption}</figcaption>
     </figure>
@@ -397,7 +400,7 @@ export function StickyNote({ children, tone = NoteTone.Mint, rotate = 2, style }
   );
 }
 
-export type CheckRow = { no: string; item: ReactNode; side: ReactNode; onClick?: () => void };
+type CheckRow = { no: string; item: ReactNode; side: ReactNode; onClick?: () => void };
 
 /** A diner guest check: the plan as its order, one line per Stop. */
 export function GuestCheck({ heading, rows, total, style }: { heading: string; rows: CheckRow[]; total: ReactNode; style?: CSSProperties | undefined }) {

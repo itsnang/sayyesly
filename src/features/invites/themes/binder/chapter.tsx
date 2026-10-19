@@ -61,7 +61,7 @@ export function HardCover({ plan, recipientName }: { plan: Plan; recipientName: 
         {first && (
           <div style={{ position: "absolute", left: 0, top: "8%" }}>
             <BinderClip style={{ top: -30, left: 62 }} />
-            <Polaroid src={first.url} alt={first.alt} width={168} rotate={-4} tape={false} />
+            <Polaroid src={first.url} alt={first.alt} width={168} rotate={-4} tape={false} eager />
           </div>
         )}
         {second && <Stamp src={second.url} alt={second.alt} width={100} label="POSTA" rotate={7} style={{ position: "absolute", right: 4, top: "2%" }} />}

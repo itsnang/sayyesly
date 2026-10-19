@@ -85,10 +85,11 @@ export function Pad({ pages, render }: { pages: PadPage[]; render: (index: numbe
     if (flip.to === null) return;
     const from = angle.current;
     const to = flip.to;
-    const ms = Math.max(160, (Math.abs(to - from) / 180) * TURN_MS);
+    // With reduced motion the page simply lands.
+    const ms = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : Math.max(160, (Math.abs(to - from) / 180) * TURN_MS);
     const began = performance.now();
     let frame = requestAnimationFrame(function step(now) {
-      const t = Math.min(1, (now - began) / ms);
+      const t = ms ? Math.min(1, (now - began) / ms) : 1;
       angle.current = from + (to - from) * easeOut(t);
       paint(sheet, under, angle.current);
       if (t < 1) frame = requestAnimationFrame(step);
@@ -178,6 +179,7 @@ export function Pad({ pages, render }: { pages: PadPage[]; render: (index: numbe
           90% { transform: rotateY(-11deg) }
         }
         @media (min-width: ${SPREAD_MIN}px) { .binder-notebook { position: relative; left: 190px } }
+        @media (prefers-reduced-motion: reduce) { .binder-notebook * { animation: none !important } }
       `}</style>
       <div
         ref={pad}
