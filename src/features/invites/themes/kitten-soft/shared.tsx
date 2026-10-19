@@ -208,6 +208,57 @@ export function KittenKeyframes() {
       @keyframes drop {
         to { transform: translateY(116vh) rotate(var(--rot, 200deg)); }
       }
+      /* the kitten's reactions (kitten.tsx) */
+      @keyframes kitten-lean {
+        to { transform: translateY(-6px) scale(1.05) rotate(2deg); }
+      }
+      @keyframes kitten-shake {
+        0%, 100% { transform: none; }
+        20% { transform: translateX(-8px) rotate(-4deg); }
+        40% { transform: translateX(7px) rotate(3deg); }
+        60% { transform: translateX(-5px) rotate(-2deg); }
+        80% { transform: translateX(3px); }
+      }
+      @keyframes kitten-droop {
+        to { transform: translateY(8px) rotate(-5deg) scale(.97); }
+      }
+      @keyframes kitten-hop {
+        0%, 100% { transform: none; }
+        30% { transform: translateY(-34px) scale(1.06) rotate(-4deg); }
+        55% { transform: translateY(0) scale(1.08, .92); }
+        75% { transform: translateY(-12px) rotate(3deg); }
+      }
+      @keyframes kitten-wave {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(4deg); }
+      }
+      @keyframes heart-rise {
+        0% { transform: translateY(0) scale(.6); opacity: 0; }
+        15% { opacity: 1; }
+        100% { transform: translateY(-140px) scale(1.1) rotate(12deg); opacity: 0; }
+      }
+      @keyframes twinkle {
+        0%, 100% { opacity: .25; transform: scale(.8); }
+        50% { opacity: 1; transform: scale(1.15) rotate(20deg); }
+      }
+      @keyframes paw-fade {
+        0% { opacity: 0; transform: scale(.6); }
+        20% { opacity: 1; transform: none; }
+        100% { opacity: 0; }
+      }
+      /* "hover" means nothing on a phone */
+      .hint-touch { display: none; }
+      @media (hover: none) {
+        .hint-hover { display: none; }
+        .hint-touch { display: inline; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .kitten-soft *, .kitten-soft *::before, .kitten-soft *::after {
+          animation-duration: .01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: .01ms !important;
+        }
+      }
       @media (max-width: 860px) {
         .note { display: none !important; }
       }

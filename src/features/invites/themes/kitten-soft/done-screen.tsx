@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import type { Plan, PublicAnswer } from "../../types";
+import { Mood, ReactiveKitten } from "./kitten";
 import { formatInZone, KittenKeyframes, Squiggle, WobbleFilter } from "./shared";
 
 type DoneScreenProps = {
@@ -28,20 +28,9 @@ export function DoneScreen({ answer, plan, timezone }: DoneScreenProps) {
         }}
       >
         <div style={{ textAlign: "center", width: "min(500px, 100%)" }}>
-          <Image
-            src="/cat-nobg.png"
-            alt="celebrating cat"
-            width={220}
-            height={220}
-            style={{
-              width: "min(220px, 55vw)",
-              height: "auto",
-              display: "block",
-              margin: "0 auto",
-              animation: "pop .75s cubic-bezier(.2,.9,.3,1.6) both",
-            }}
-            priority
-          />
+          <div style={{ display: "flex", justifyContent: "center", animation: "pop .75s cubic-bezier(.2,.9,.3,1.6) both" }}>
+            <ReactiveKitten src="/cat-nobg.png" alt="the kitten, hopping for joy" mood={Mood.Joy} width="min(220px, 55vw)" />
+          </div>
 
           <h1
             style={{
@@ -82,13 +71,14 @@ export function DoneScreen({ answer, plan, timezone }: DoneScreenProps) {
                 marginBottom: 14,
               }}
             >
-              reservation confirmed ✓
+              it&apos;s a date ✓
             </div>
-            {plan.place && (
-              <div style={{ fontFamily: "var(--hand)", fontWeight: 700, fontSize: 30, color: "var(--accent)", lineHeight: 1 }}>
-                {plan.place}
+            {(plan.activity ?? plan.place) && (
+              <div style={{ fontFamily: "var(--hand)", fontWeight: 700, fontSize: 30, color: "var(--accent)", lineHeight: 1.05 }}>
+                {plan.activity ?? plan.place}
               </div>
             )}
+            {plan.activity && plan.place && <div style={{ marginTop: 6, fontFamily: "var(--hand)", fontSize: 19, color: "var(--ink-soft)" }}>📍 {plan.place}</div>}
             {when && (
               <div
                 style={{
@@ -124,6 +114,12 @@ export function DoneScreen({ answer, plan, timezone }: DoneScreenProps) {
               >
                 📍 open in maps ↗
               </a>
+            )}
+            {(plan.dressCode || plan.notes) && (
+              <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1.5px dashed var(--line)", fontFamily: "var(--hand)", fontSize: 17, color: "var(--ink-soft)", lineHeight: 1.45 }}>
+                {plan.dressCode && <div>👗 {plan.dressCode}</div>}
+                {plan.notes && <div style={{ whiteSpace: "pre-line" }}>✎ {plan.notes}</div>}
+              </div>
             )}
           </div>
 
@@ -185,7 +181,7 @@ export function DoneScreen({ answer, plan, timezone }: DoneScreenProps) {
           }}
           className="note"
         >
-          {"// dinner confirmed"}
+          {"// it's official"}
           <br />
           🌷
         </div>
@@ -205,7 +201,7 @@ export function DoneScreen({ answer, plan, timezone }: DoneScreenProps) {
             }}
             className="note"
           >
-            {"// table for two"}
+            {"// see you there"}
             <br />
             {plan.place}
           </div>

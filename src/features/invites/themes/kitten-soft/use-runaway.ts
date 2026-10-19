@@ -7,8 +7,9 @@ const EDGE_PAD = 18;
 /**
  * The runaway "No": the first Dodge pins it where it sits, every later one sends
  * it to a random spot fully on screen, and a resize or rotation never strands it.
+ * `onDodge` hears where it was just before it ran.
  */
-export function useRunaway(onDodge: (count: number) => void) {
+export function useRunaway(onDodge: (count: number, from: DOMRect | null) => void) {
   const ref = useRef<HTMLButtonElement>(null);
   const [dodges, setDodges] = useState(0);
   const [loose, setLoose] = useState(false);
@@ -28,7 +29,7 @@ export function useRunaway(onDodge: (count: number) => void) {
   const dodge = useCallback(() => {
     const n = dodges + 1;
     setDodges(n);
-    onDodge(n);
+    onDodge(n, ref.current?.getBoundingClientRect() ?? null);
     if (!loose && ref.current) {
       const r = ref.current.getBoundingClientRect();
       setPos({ left: r.left, top: r.top });

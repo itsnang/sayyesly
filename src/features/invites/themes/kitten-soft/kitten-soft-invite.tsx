@@ -78,6 +78,7 @@ export function KittenSoftInvite(props: InviteThemeProps) {
 
   return (
     <div
+      className="kitten-soft"
       style={{
         background: PAPER_BACKGROUND,
         minHeight: "100vh",

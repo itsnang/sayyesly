@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import type { PlanChoice } from "../../hooks/use-invite-answer";
 import type { Plan, PublicInvite } from "../../types";
@@ -16,7 +17,7 @@ type PlanScreenProps = {
   onConfirm: (choice: PlanChoice, note: string) => void;
 };
 
-/** The line under "let's eat!": the error, the pick so far, or what's still missing. */
+/** The line under "it's a date!": the error, the pick so far, or what's still missing. */
 function pickHint(selection: PlanSelection, invite: PublicInvite, error: string | null): string {
   if (error) return `// ${error}`;
   if (selection.slot) {
@@ -39,12 +40,36 @@ export function PlanScreen({ invite, busy, error, onConfirm }: PlanScreenProps) 
   return (
     <>
       <WobbleFilter />
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "50px 16px 70px" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "84px 16px 70px" }}>
+        <div style={{ position: "relative", width: "min(620px, 100%)" }}>
+        {/* the kitten peeking over the card */}
+        <div aria-hidden="true" style={{ position: "absolute", top: -70, right: 16, zIndex: 3, animation: "settle .5s .2s cubic-bezier(.2,.9,.3,1.2) both" }}>
+          <span
+            style={{
+              position: "absolute",
+              right: "100%",
+              top: 8,
+              marginRight: 4,
+              padding: "5px 11px",
+              background: "#fff",
+              border: "2px solid var(--line)",
+              borderRadius: 16,
+              fontFamily: "var(--hand)",
+              fontSize: 16,
+              color: "var(--ink)",
+              whiteSpace: "nowrap",
+              transform: "rotate(-4deg)",
+            }}
+          >
+            {selection.choice ? "yay! ♡" : "pick a time ♡"}
+          </span>
+          <Image src="/cat-nobg.png" alt="" width={92} height={94} style={{ display: "block", width: 92, height: "auto", animation: "kitten-wave 2.8s ease-in-out infinite", transformOrigin: "50% 100%" }} />
+        </div>
         <div
           style={{
             position: "relative",
             background: "var(--paper)",
-            width: "min(620px, 100%)",
+            width: "100%",
             borderRadius: 14,
             overflow: "hidden",
             animation: "settle .45s cubic-bezier(.2,.9,.3,1.2) both",
@@ -91,7 +116,7 @@ export function PlanScreen({ invite, busy, error, onConfirm }: PlanScreenProps) 
                 }}
               >
                 <WobblyBorder color="var(--accent)" shadow="3px 4px 0 rgba(138,45,92,0.22)" />
-                {busy ? "saving…" : "let's eat! ✦"}
+                {busy ? "saving…" : "it's a date! ✦"}
               </button>
               <div
                 aria-live="polite"
@@ -102,23 +127,35 @@ export function PlanScreen({ invite, busy, error, onConfirm }: PlanScreenProps) 
             </div>
           </div>
         </div>
+        </div>
       </div>
     </>
   );
 }
 
-/** The place in large handwriting, what you'll do, then dress code and notes. */
+/** What you'll do in large handwriting, then where (with the map), then dress code and notes as little tags. */
 function PlanDetails({ plan }: { plan: Plan }) {
+  // The activity leads when there is one; otherwise the place does.
+  const title = plan.activity ?? plan.place;
+  const where = plan.activity ? plan.place : null;
+  const tag = { display: "inline-block", padding: "4px 12px", borderRadius: 999, background: "var(--paper-2)", fontFamily: "var(--hand)", fontSize: 16, color: "var(--ink)" } as const;
   return (
     <div style={{ textAlign: "center", margin: "26px 0 0" }}>
-      {plan.place && <div style={{ fontFamily: "var(--hand)", fontWeight: 700, fontSize: 50, color: "var(--accent)", lineHeight: 1 }}>{plan.place}</div>}
-      {plan.activity && (
-        <div style={{ fontSize: 13, color: "var(--ink-soft)", marginTop: 5, letterSpacing: ".07em", textTransform: "uppercase" }}>{plan.activity}</div>
+      {title && <h1 style={{ fontFamily: "var(--hand)", fontWeight: 700, fontSize: "clamp(36px, 9vw, 50px)", color: "var(--accent)", lineHeight: 1.05, margin: 0 }}>{title}</h1>}
+      {(where || plan.mapUrl) && (
+        <div style={{ marginTop: 8, fontFamily: "var(--hand)", fontSize: 19, color: "var(--ink-soft)" }}>
+          {where && <>📍 {where}</>}
+          {plan.mapUrl && (
+            <a href={plan.mapUrl} target="_blank" rel="noopener noreferrer" style={{ marginLeft: where ? 10 : 0, fontFamily: "var(--marker)", fontSize: 13, color: "var(--accent)", textDecoration: "none" }}>
+              {where ? "map ↗" : "📍 open in maps ↗"}
+            </a>
+          )}
+        </div>
       )}
       {(plan.dressCode || plan.notes) && (
-        <div style={{ marginTop: 14, fontFamily: "var(--hand)", fontSize: 17, color: "var(--ink-soft)", lineHeight: 1.4 }}>
-          {plan.dressCode && <div>dress code: {plan.dressCode}</div>}
-          {plan.notes && <div style={{ whiteSpace: "pre-line" }}>{plan.notes}</div>}
+        <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8 }}>
+          {plan.dressCode && <span style={tag}>👗 {plan.dressCode}</span>}
+          {plan.notes && <span style={{ ...tag, whiteSpace: "pre-line" }}>✎ {plan.notes}</span>}
         </div>
       )}
     </div>
