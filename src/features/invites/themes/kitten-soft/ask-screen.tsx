@@ -1,14 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import type { QuestionSegment } from "../../types";
 import { MAYBE_LATER_AFTER_DODGES } from "../types";
+import { moodFor, PawPrint, ReactiveKitten } from "./kitten";
 import { useRunaway } from "./use-runaway";
-import { isOptimizable } from "@/lib/media";
 import { KittenKeyframes, Squiggle, WobbleFilter, WobblyBorder } from "./shared";
 
 const DEFAULT_IMAGE = "/pasted-1780506636030-0.png";
+/** How long the kitten's happy hop plays before the plan opens. */
+const HOP_MS = 650;
+
+type Paw = { id: number; left: number; top: number; rotate: number };
+let pawId = 0;
 
 const NO_LINES = [
   "// hmm, are you sure?",
@@ -41,11 +45,35 @@ export function AskScreen({ question, message, imageUrl, busy, error, onYes, onD
   const lineIdx = useRef(0);
   // The next line fades in shortly after a dodge; never after the screen has gone.
   const nextLine = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  useEffect(() => () => clearTimeout(nextLine.current), []);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  useEffect(() => {
+    const pending = timers.current;
+    return () => {
+      clearTimeout(nextLine.current);
+      pending.forEach(clearTimeout);
+    };
+  }, []);
+  const [reachingYes, setReachingYes] = useState(false);
+  const [saidYes, setSaidYes] = useState(false);
+  const [paws, setPaws] = useState<Paw[]>([]);
+
+  // Two little paw prints where "No" was, fading as it runs off.
+  const leavePaws = useCallback((from: DOMRect) => {
+    const cx = from.left + from.width / 2;
+    const cy = from.top + from.height / 2;
+    const batch = [
+      { id: ++pawId, left: cx - 26, top: cy - 6, rotate: -20 },
+      { id: ++pawId, left: cx + 2, top: cy - 20, rotate: 15 },
+    ];
+    setPaws((p) => [...p, ...batch]);
+    timers.current.push(setTimeout(() => setPaws((p) => p.filter((x) => !batch.some((b) => b.id === x.id))), 1700));
+  }, []);
 
   const onNoDodge = useCallback(
-    (n: number) => {
+    (n: number, from: DOMRect | null) => {
       onDodge(n);
+      // The first dodge only pins it in place; paw prints once it actually runs.
+      if (from && n > 1) leavePaws(from);
       setPromptText("");
       clearTimeout(nextLine.current);
       nextLine.current = setTimeout(() => {
@@ -53,11 +81,21 @@ export function AskScreen({ question, message, imageUrl, busy, error, onYes, onD
         lineIdx.current++;
       }, 120);
     },
-    [onDodge],
+    [onDodge, leavePaws],
   );
   const { ref: noRef, dodges, loose: noLoose, dodge, style: noStyle } = useRunaway(onNoDodge);
 
   const yesScale = Math.min(1 + dodges * 0.13, 2.1);
+  const mood = moodFor({ dodges, reachingYes, saidYes });
+
+  // The kitten hops for joy first; with reduced motion the plan opens straight away.
+  const sayYes = () => {
+    if (saidYes) return;
+    setSaidYes(true);
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    timers.current.push(setTimeout(onYes, still ? 0 : HOP_MS));
+  };
+  const reach = { onMouseEnter: () => setReachingYes(true), onMouseLeave: () => setReachingYes(false), onFocus: () => setReachingYes(true), onBlur: () => setReachingYes(false) };
   const noShrink = Math.max(1 - dodges * 0.06, 0.5);
 
   return (
@@ -85,23 +123,12 @@ export function AskScreen({ question, message, imageUrl, busy, error, onYes, onD
             width: "min(480px, 100%)",
           }}
         >
-          <Image
+          <ReactiveKitten
             src={imageUrl ?? DEFAULT_IMAGE}
-            unoptimized={!isOptimizable(imageUrl)}
             alt={imageUrl ? "" : "a kitten holding a hello kitty bouquet"}
-            width={300}
-            height={300}
-            style={{
-              width: "min(300px, 72vw)",
-              height: "auto",
-              display: "block",
-              filter: "contrast(1.04)",
-              marginBottom: -18,
-              position: "relative",
-              zIndex: 2,
-              animation: "float 4s ease-in-out infinite",
-            }}
-            priority
+            mood={mood}
+            beat={dodges}
+            width="min(300px, 72vw)"
           />
 
           <h1
@@ -169,7 +196,8 @@ export function AskScreen({ question, message, imageUrl, busy, error, onYes, onD
           >
             <button
               type="button"
-              onClick={onYes}
+              onClick={sayYes}
+              {...reach}
               disabled={busy}
               style={{
                 fontFamily: "var(--marker)",
@@ -232,7 +260,8 @@ export function AskScreen({ question, message, imageUrl, busy, error, onYes, onD
               fontFamily: "var(--marker)",
             }}
           >
-            hover &ldquo;no&rdquo; to see what happens ✦
+            <span className="hint-hover">hover &ldquo;no&rdquo; to see what happens ✦</span>
+            <span className="hint-touch">try tapping &ldquo;no&rdquo; ✦</span>
           </div>
 
           {/* The polite way out. Never moves, so it's always reachable. */}
@@ -306,6 +335,9 @@ export function AskScreen({ question, message, imageUrl, busy, error, onYes, onD
         </div>
       </div>
 
+      {paws.map((p) => (
+        <PawPrint key={p.id} left={p.left} top={p.top} rotate={p.rotate} />
+      ))}
       <KittenKeyframes />
     </>
   );

@@ -23,7 +23,7 @@ export function MaybeLaterScreen() {
             alt="a kitten waving"
             width={180}
             height={180}
-            style={{ width: "min(180px, 45vw)", height: "auto", display: "block", margin: "0 auto", opacity: 0.92 }}
+            style={{ width: "min(180px, 45vw)", height: "auto", display: "block", margin: "0 auto", opacity: 0.92, animation: "kitten-wave 2.6s ease-in-out infinite", transformOrigin: "50% 100%" }}
             priority
           />
           <h1
