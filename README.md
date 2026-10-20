@@ -29,10 +29,10 @@ Words like Creator, Recipient, Invite, Answer and Theme have exact meanings in t
 
 Each Theme is a complete Recipient experience, written as code. Some are free; paid ones are bought once and paid with any KHQR banking app (through [CutLuy](https://cutluy.com)).
 
-| Kitten Soft | Kitten Night | Envelope | Binder |
-|:---:|:---:|:---:|:---:|
-| <img src="docs/screenshots/theme-kitten-soft.png" alt="Kitten Soft" width="200" /> | <img src="docs/screenshots/theme-kitten-night.png" alt="Kitten Night" width="200" /> | <img src="docs/screenshots/theme-envelope.png" alt="Envelope" width="200" /> | <img src="docs/screenshots/theme-binder.png" alt="Binder" width="200" /> |
-| The "no" button runs away | The kitten, after dark | A sealed letter, answered in ink | A scrapbook binder to page through |
+| Kitten Soft | Envelope | Binder |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/theme-kitten-soft.png" alt="Kitten Soft" width="200" /> | <img src="docs/screenshots/theme-envelope.png" alt="Envelope" width="200" /> | <img src="docs/screenshots/theme-binder.png" alt="Binder" width="200" /> |
+| The "no" button runs away | A sealed letter, answered in ink | A scrapbook binder to page through |
 
 ## Features
 
